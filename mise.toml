@@ -1,0 +1,6 @@
+[tools]
+gcloud = "latest"
+go = "latest"
+just = "latest"
+node = "lts"
+pnpm = "latest"
