@@ -1,7 +1,7 @@
 ---
 date: 2026-08-23
 tags: [auth]
-status: worked
+status: decided
 worklogs: [20260823-google-auth]
 ---
 

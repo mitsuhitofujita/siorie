@@ -1,8 +1,8 @@
 ---
 date: 2026-08-23
-status: in-progress
+status: merged
 discussions: [20260823-google-auth, 20260823-local-dev-same-origin]
-decisions: []
+decisions: [0002-google-id-token-auth]
 pr: null
 ---
 
