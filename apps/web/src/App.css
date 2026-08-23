@@ -1,0 +1,5 @@
+main {
+  display: flex;
+  place-content: center;
+  min-height: 100svh;
+}

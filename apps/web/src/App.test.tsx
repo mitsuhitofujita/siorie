@@ -1,0 +1,12 @@
+import { render, screen } from '@testing-library/react'
+import { describe, expect, it } from 'vitest'
+import App from './App'
+
+describe('App', () => {
+  it('renders the Hello World heading', () => {
+    render(<App />)
+    expect(
+      screen.getByRole('heading', { name: 'Hello, World!' }),
+    ).toBeInTheDocument()
+  })
+})

@@ -1,0 +1,40 @@
+bin_dir := source_directory() / "bin"
+
+# Download Go module dependencies.
+setup:
+    cd {{source_directory()}} && go mod download
+
+# Run the API dev server.
+dev:
+    cd {{source_directory()}} && go run ./cmd/server
+
+# Build the API binary.
+build:
+    cd {{source_directory()}} && go build -o {{bin_dir}}/server ./cmd/server
+
+# Run Go tests.
+test:
+    cd {{source_directory()}} && go test ./...
+
+# Run static analysis.
+lint:
+    cd {{source_directory()}} && go vet ./...
+
+# Format Go source files.
+format:
+    cd {{source_directory()}} && gofmt -w .
+
+# Fail if any Go source file is not gofmt-formatted.
+format-check:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cd {{source_directory()}}
+    unformatted=$(gofmt -l .)
+    if [ -n "$unformatted" ]; then
+        echo "The following files are not gofmt-formatted:"
+        echo "$unformatted"
+        exit 1
+    fi
+
+# Run format-check, lint, test, and build.
+check: format-check lint test build
