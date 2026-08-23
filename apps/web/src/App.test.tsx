@@ -26,9 +26,7 @@ describe('App routing', () => {
   it('renders the standalone, layout-less home page at /', async () => {
     renderApp('/')
     await waitFor(() =>
-      expect(
-        screen.getByRole('button', { name: 'Google でログイン' }),
-      ).toBeInTheDocument(),
+      expect(screen.getByTestId('google-signin-button')).toBeInTheDocument(),
     )
     expect(
       screen.queryByRole('button', { name: 'メニューを開く' }),

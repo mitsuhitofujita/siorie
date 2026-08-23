@@ -10,16 +10,17 @@ describe('HomePage', () => {
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
 
-  it('shows a login button when unauthenticated and starts login on click', () => {
-    const login = vi.fn()
+  it('renders Google’s sign-in button into its container when unauthenticated', () => {
+    const renderSignInButton = vi.fn()
     renderWithProviders(<HomePage />, {
       authState: { status: 'unauthenticated' },
-      login,
+      renderSignInButton,
     })
 
-    const button = screen.getByRole('button', { name: 'Google でログイン' })
-    fireEvent.click(button)
-    expect(login).toHaveBeenCalledOnce()
+    expect(renderSignInButton).toHaveBeenCalledOnce()
+    expect(renderSignInButton.mock.calls[0][0]).toBe(
+      screen.getByTestId('google-signin-button'),
+    )
   })
 
   it('shows account info, a groups link, and a logout button when authenticated', () => {

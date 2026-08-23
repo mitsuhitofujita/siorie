@@ -11,19 +11,21 @@ export function renderWithProviders(
   ui: ReactElement,
   {
     authState = { status: 'unauthenticated' },
-    login = noop,
+    renderSignInButton = noop,
     logout = noopAsync,
     route = '/',
   }: {
     authState?: AuthState
-    login?: () => void
+    renderSignInButton?: (container: HTMLElement) => void
     logout?: () => Promise<void>
     route?: string
   } = {},
 ) {
   return render(
     <MemoryRouter initialEntries={[route]}>
-      <AuthContext.Provider value={{ state: authState, login, logout }}>
+      <AuthContext.Provider
+        value={{ state: authState, renderSignInButton, logout }}
+      >
         {ui}
       </AuthContext.Provider>
     </MemoryRouter>,

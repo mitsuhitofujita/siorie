@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { User } from 'lucide-react'
 
@@ -9,7 +10,14 @@ import { useAuth } from '@/lib/auth-context'
 // No common layout here on purpose: the header's account image is the nav menu's only entry
 // point, and the home page has neither before authentication finishes.
 export function HomePage() {
-  const { state, login, logout } = useAuth()
+  const { state, renderSignInButton, logout } = useAuth()
+  const signInButtonRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (state.status === 'unauthenticated' && signInButtonRef.current) {
+      renderSignInButton(signInButtonRef.current)
+    }
+  }, [state.status, renderSignInButton])
 
   if (state.status === 'loading') {
     return (
@@ -24,7 +32,7 @@ export function HomePage() {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-8 p-8 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">siorie</h1>
-        <Button onClick={login}>Google でログイン</Button>
+        <div ref={signInButtonRef} data-testid="google-signin-button" />
       </main>
     )
   }
