@@ -5,10 +5,23 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/mitsuhitofujita/siorie/apps/api/internal/googleauth"
+	"github.com/mitsuhitofujita/siorie/apps/api/internal/store"
 )
 
+func testDeps() Deps {
+	mem := store.NewMemoryStore()
+	return Deps{
+		Verifier:  &googleauth.FakeVerifier{},
+		Users:     mem,
+		Sessions:  mem,
+		AppOrigin: "http://localhost:5173",
+	}
+}
+
 func TestGetHello(t *testing.T) {
-	router := NewRouter()
+	router := NewRouter(testDeps())
 
 	req := httptest.NewRequest(http.MethodGet, "/api/hello", nil)
 	rec := httptest.NewRecorder()

@@ -1,20 +1,46 @@
+set dotenv-load
+set dotenv-filename := ".env"
+
 bin_dir := source_directory() / "bin"
+dev_firestore_emulator_port := "8090"
+test_firestore_emulator_port := "8091"
 
 # Download Go module dependencies.
 setup:
     cd {{source_directory()}} && go mod download
 
-# Run the API dev server.
+# Run the API dev server. Requires the Firestore emulator (see
+# `firestore-emulator`) and a configured .env; see .env.example.
 dev:
     cd {{source_directory()}} && go run ./cmd/server
+
+# Run the Firestore emulator for local development. Leave running in a
+# separate terminal; `dev` expects FIRESTORE_EMULATOR_HOST in .env to point
+# at it (see .env.example).
+firestore-emulator:
+    gcloud emulators firestore start --host-port=localhost:{{dev_firestore_emulator_port}}
 
 # Build the API binary.
 build:
     cd {{source_directory()}} && go build -o {{bin_dir}}/server ./cmd/server
 
-# Run Go tests.
+# Run Go tests, starting a throwaway Firestore emulator for the duration of
+# the run so store integration tests aren't skipped.
 test:
-    cd {{source_directory()}} && go test ./...
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cd {{source_directory()}}
+    gcloud emulators firestore start --host-port=localhost:{{test_firestore_emulator_port}} \
+        &> /tmp/siorie-firestore-test-emulator.log &
+    emulator_pid=$!
+    trap 'kill "$emulator_pid" 2>/dev/null || true; wait "$emulator_pid" 2>/dev/null || true' EXIT
+    for _ in $(seq 1 60); do
+        if curl -s -o /dev/null http://localhost:{{test_firestore_emulator_port}}/; then
+            break
+        fi
+        sleep 0.5
+    done
+    FIRESTORE_EMULATOR_HOST=localhost:{{test_firestore_emulator_port}} go test ./...
 
 # Run static analysis.
 lint:
