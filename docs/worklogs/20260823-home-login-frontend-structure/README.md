@@ -124,21 +124,22 @@ path alias added to `vite.config.ts` and `tsconfig.app.json`.
   up as
   [20260823-unauthenticated-route-guard](../../discussions/20260823-unauthenticated-route-guard/discovery.md).
 
-## 困難
+## Difficulties
 
-- shadcn/ui の慣例に従い `Button` から `buttonVariants`(cva の定義)を、`useAuth`/`AuthContext`
-  を `AuthProvider` から分離する必要があった。理由は `eslint-plugin-react-refresh` の
-  `only-export-components` ルールで、1 ファイルがコンポーネントと非コンポーネントを同時に export
-  すると Fast Refresh が壊れるとして弾かれるため。プロジェクト共通の `eslint.config.js` は変更せず、
-  `button-variants.ts` と `auth-context.ts` を切り出す方向で解決した。よくある shadcn/ui + Vite
-  テンプレートの組み合わせで踏む地雷だが、実際に踏むまで気づかなかった。
-- `tsconfig.app.json` に `baseUrl: "."` を足したところ、インストール済みの TypeScript
-  (`~6.0.2`、まだ存在しない将来バージョン想定のプレビュー的なもの)で `baseUrl` が deprecated
-  警告(TS5101)としてビルドを止めた。`moduleResolution: "bundler"` では `baseUrl` なしでも
-  `paths` がそのまま tsconfig からの相対パスとして解決されたため、`baseUrl` を削除して対応した。
-- shadcn/ui の `Sheet`(ナビメニュー)は本来 `tailwindcss-animate` プラグインの `animate-in` /
-  `slide-in-from-right` ユーティリティを使うが、このプラグインは未導入。Tailwind v4 は未知のクラス名を
-  静かに無視するだけでビルドエラーにはならないため、気づかず入れたままだと「メニューは開くが
-  スライドしない」という見た目の不具合になっていた。Radix の `data-[state=open]` 属性に対して
-  `translate-x-full` / `translate-x-0` を切り替えるだけの素の Tailwind トランジションに書き換えて
-  解決した。
+- Had to split `buttonVariants` (the `cva` definition) out of `Button`, and `useAuth`/`AuthContext`
+  out of `AuthProvider`, following shadcn/ui convention. The reason: `eslint-plugin-react-refresh`'s
+  `only-export-components` rule rejects a single file that exports both a component and a
+  non-component, since that breaks Fast Refresh. Rather than changing the project's shared
+  `eslint.config.js`, resolved it by extracting `button-variants.ts` and `auth-context.ts`. This is a
+  well-known landmine in the shadcn/ui + Vite template combination, but I didn't notice it until I
+  actually hit it.
+- Adding `baseUrl: "."` to `tsconfig.app.json` broke the build: the installed TypeScript
+  (`~6.0.2`, a preview-ish version ahead of any real release yet) treats `baseUrl` as deprecated
+  (TS5101) and fails. With `moduleResolution: "bundler"`, `paths` already resolve as relative paths
+  from the tsconfig without needing `baseUrl`, so removed `baseUrl` to fix it.
+- shadcn/ui's `Sheet` (the nav menu) is normally built on the `tailwindcss-animate` plugin's
+  `animate-in` / `slide-in-from-right` utilities, but that plugin isn't installed here. Tailwind v4
+  silently ignores unknown class names instead of failing the build, so leaving them in unnoticed
+  produced a visual bug where the menu opened but didn't slide in. Fixed by rewriting it as a plain
+  Tailwind transition that toggles `translate-x-full` / `translate-x-0` against Radix's
+  `data-[state=open]` attribute instead.

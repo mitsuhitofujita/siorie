@@ -159,16 +159,36 @@ All run from the repository root unless noted otherwise.
 - `just dev-web`, then loaded `http://localhost:5173/` in a real browser tab (via Claude in Chrome): page title "siorie", visible text "Hello, World!", no console errors. Tab and dev server were closed afterward.
 - `git status --short` after all of the above: only `.gitignore` (modified), `README.md` (modified), `apps/` (new), `justfile` (new) — no build artifacts, `node_modules`, or caches tracked.
 
-## 困難
+## Difficulties
 
-### `eslint-plugin-react-hooks` の `recommended-latest` が flat config 形式ではなかった
+### `eslint-plugin-react-hooks`'s `recommended-latest` was not flat-config shaped
 
-`plugins: ["react-hooks"]`（文字列配列）という eslintrc 形式のまま export されており、ESLint 10 の flat config にそのまま `extends` すると "A config object has a 'plugins' key defined as an array of strings" というエラーで即死した。パッケージの型定義や README だけでは気づけず、`node -e` で `configs` オブジェクトの中身を実際に展開して確認して初めて、`configs.flat['recommended-latest']` という別経路に正しい flat 形式（`plugins: { "react-hooks": <object> }`）が存在することが分かった。単発の設定ミスというより、react 関連の周辺パッケージが flat config への移行途中で複数の config export を併存させていること自体が罠になっている。
+It was exported in eslintrc-style form, `plugins: ["react-hooks"]` (an array of strings), and
+`extend`-ing it directly into ESLint 10's flat config died immediately with "A config object has a
+'plugins' key defined as an array of strings." The package's type definitions and README alone
+weren't enough to notice this — only by running `node -e` to actually expand the `configs` object's
+contents did it become clear that a correctly-shaped flat config exists on a different path,
+`configs.flat['recommended-latest']` (`plugins: { "react-hooks": <object> }`). This felt less like a
+one-off configuration mistake and more like a trap inherent to how React-adjacent packages currently
+keep multiple config exports side by side while migrating to flat config.
 
-### Vite のテンプレートが proposal 作成時点から変わっていた
+### The Vite template had changed since the proposal was written
 
-`pnpm create vite web --template react-ts` を実行したら、`eslint.config.js` ではなく `.oxlintrc.json` が生成され、Prettier も入っていなかった。`proposal.md` のディレクトリツリーは `.prettierrc.json` と `eslint.config.js` を明記しており、plan 側にも「ESLint と Prettier を設定する」と書かれていたため、今回は plan を正として oxlint を外し ESLint + Prettier に差し替えた。ただし、次に同じスキャフォールドをやり直す誰か（人間でもエージェントでも）が、テンプレートの現物を見て「もう oxlint が標準なのでは」と迷う可能性はある。
+Running `pnpm create vite web --template react-ts` generated `.oxlintrc.json` instead of
+`eslint.config.js`, and didn't include Prettier at all. Since `proposal.md`'s directory tree
+explicitly lists `.prettierrc.json` and `eslint.config.js`, and the plan itself says "Configure
+ESLint and Prettier," the plan was treated as authoritative: oxlint was removed and replaced with
+ESLint + Prettier. That said, whoever redoes this same scaffold next (human or agent) might look at
+the template's actual current output and reasonably wonder whether oxlint is the new standard by
+then.
 
-### 既存の worklog ディレクトリとの重複
+### Overlap with an existing worklog directory
 
-`/work` の手順は「今日の日付で新しい worklog ディレクトリを作る」ことを前提としているが、今回は対象の discussion (`20260823-monorepo-directory-design`) の `discovery.md` に、日付も一致する worklog (`20260823-scaffold-app-modules`) が既にリンクされており、しかもその中身はまさにこの実装のための完成済みの計画書だった。新しいディレクトリを作ると同じ内容がほぼ複製されるため、既存のものをそのまま継続利用した。これは事故というより、「1つの discussion から複数の worklogs が生まれうる」設計と、「/work は毎回新しい日付ディレクトリを作る」という手順の間に、既存 worklog の再利用パスが明示されていないという抜けだと思う。
+The `/work` procedure assumes creating a new worklog directory dated today. In this case, though, the
+source discussion's (`20260823-monorepo-directory-design`) `discovery.md` already linked to a worklog
+dated today (`20260823-scaffold-app-modules`), and its contents were already a complete implementation
+plan written for this exact work. Creating a second, near-duplicate directory would have just
+duplicated the same content, so the existing one was continued in place instead. This felt less like
+an accident and more like a gap between two things that don't quite line up: the design where one
+discussion can spawn multiple worklogs, and the `/work` procedure's assumption of always creating a
+fresh dated directory — there's no explicit path for reusing an existing worklog.
