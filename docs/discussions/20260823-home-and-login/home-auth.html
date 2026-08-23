@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>siorie - ホーム(認証済み)</title>
+    <style>
+      :root {
+        --background: #ffffff;
+        --foreground: #0a0a0a;
+        --border: #e4e4e7;
+        --radius: 0.5rem;
+        --primary: #18181b;
+        --primary-foreground: #fafafa;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--background);
+        color: var(--foreground);
+        font-family:
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          "Helvetica Neue",
+          Arial,
+          "Noto Sans JP",
+          sans-serif;
+      }
+      main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.75rem;
+        padding: 2rem;
+        text-align: center;
+      }
+      h1 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin: 0;
+        letter-spacing: -0.01em;
+      }
+      .account {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .avatar {
+        width: 72px;
+        height: 72px;
+        border-radius: 999px;
+        background: #e4e4e7;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 1px solid var(--border);
+      }
+      .avatar svg {
+        width: 40px;
+        height: 40px;
+        color: #a1a1aa;
+      }
+      .name {
+        font-size: 1rem;
+        font-weight: 500;
+      }
+      .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 220px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.625rem 1.25rem;
+        border-radius: var(--radius);
+        font-size: 0.9375rem;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid transparent;
+        text-decoration: none;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: var(--primary-foreground);
+      }
+      .btn-primary:hover {
+        background: #27272a;
+      }
+      .btn-outline {
+        background: transparent;
+        border-color: var(--border);
+        color: var(--foreground);
+      }
+      .btn-outline:hover {
+        background: #f4f4f5;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 共通レイアウト(ヘッダ/フッター)は使用しない -->
+    <main>
+      <h1>siorie</h1>
+      <div class="account">
+        <div class="avatar">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 12c2.485 0 4.5-2.015 4.5-4.5S14.485 3 12 3 7.5 5.015 7.5 7.5 9.515 12 12 12Z"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M20.25 20.25c0-3.728-3.694-6.75-8.25-6.75s-8.25 3.022-8.25 6.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+        <span class="name">山田 太郎</span>
+      </div>
+      <div class="actions">
+        <a class="btn btn-primary" href="#">グループ一覧へ</a>
+        <button class="btn btn-outline" type="button">ログアウト</button>
+      </div>
+    </main>
+  </body>
+</html>
