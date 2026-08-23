@@ -48,10 +48,10 @@
 │       ├── tsconfig.node.json
 │       └── vite.config.ts
 ├── docs/
+│   ├── discussions/
+│   ├── worklogs/
 │   ├── decisions/
-│   ├── plans/
-│   └── specs/
-├── topics/
+│   └── design/
 ├── .gitignore
 ├── justfile
 ├── LICENSE
@@ -83,13 +83,9 @@ Vite、TypeScript、React で構築する SPA を配置する。パッケージ�
 
 ### `docs`
 
-- `decisions/` には、理由と代替案を後から追跡すべき設計判断を置く。
-- `plans/` には、実装作業を再現できる粒度の計画を `YYYYMMDD-<what-to-do>.md` 形式で置く。
-- `specs/` には、実装が満たすべき継続的な仕様を置く。
-
-### `topics`
-
-設計トピックごとの提案と確定結果を保存する。実行時に読み込まれるソースコードや設定は置かない。
+議論から決定、現況までを `discussions/`・`worklogs/`・`decisions/`・`design/` の四層で管理する。
+役割、言語の使い分け、命名規則は `docs/README.md` を正本とする。設計トピックごとの提案は
+`docs/discussions/<YYYYMMDD-短い説明>/` に、実装作業は `docs/worklogs/<YYYYMMDD-短い説明>/` に置く。
 
 ## タスク管理
 

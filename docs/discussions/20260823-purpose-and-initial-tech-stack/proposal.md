@@ -64,6 +64,8 @@
 
 Firebase Authentication、Firebase Hosting、Cloud CDN、外部 Application Load Balancer は使用しない。
 
+CI/CD の Cloud Build 採用については、その妥当性を別トピックで再検討している（[CI/CD service selection](../20260823-cicd-service-selection/discovery.md)）。
+
 ### 言語とバージョン方針
 
 - Go は開発開始時点の最新安定版を使用する。
