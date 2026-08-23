@@ -1,7 +1,7 @@
 ---
 date: 2026-08-23
 tags: [cicd, infra]
-status: open
+status: proposed
 worklogs: []
 ---
 
