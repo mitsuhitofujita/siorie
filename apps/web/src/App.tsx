@@ -1,10 +1,30 @@
-import './App.css'
+import { Route, Routes } from 'react-router-dom'
+
+import { AppLayout } from '@/components/layout/AppLayout'
+import { GroupEditPage } from '@/pages/groups/GroupEditPage'
+import { GroupNewPage } from '@/pages/groups/GroupNewPage'
+import { GroupsListPage } from '@/pages/groups/GroupsListPage'
+import { ItemEditPage } from '@/pages/groups/items/ItemEditPage'
+import { ItemNewPage } from '@/pages/groups/items/ItemNewPage'
+import { ItemsListPage } from '@/pages/groups/items/ItemsListPage'
+import { HomePage } from '@/pages/HomePage'
 
 function App() {
   return (
-    <main>
-      <h1>Hello, World!</h1>
-    </main>
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route element={<AppLayout />}>
+        <Route path="/groups" element={<GroupsListPage />} />
+        <Route path="/groups/new" element={<GroupNewPage />} />
+        <Route path="/groups/:groupId/edit" element={<GroupEditPage />} />
+        <Route path="/groups/:groupId/items" element={<ItemsListPage />} />
+        <Route path="/groups/:groupId/items/new" element={<ItemNewPage />} />
+        <Route
+          path="/groups/:groupId/items/:itemId/edit"
+          element={<ItemEditPage />}
+        />
+      </Route>
+    </Routes>
   )
 }
 
