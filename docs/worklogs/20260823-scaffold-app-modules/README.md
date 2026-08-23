@@ -1,8 +1,8 @@
 ---
 date: 2026-08-23
-status: in-progress
+status: merged
 discussions: [20260823-purpose-and-initial-tech-stack, 20260823-monorepo-directory-design]
-decisions: []
+decisions: [0001-monorepo-scaffold]
 pr: null
 ---
 
