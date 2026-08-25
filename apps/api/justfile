@@ -16,9 +16,18 @@ dev:
 
 # Run the Firestore emulator for local development. Leave running in a
 # separate terminal; `dev` expects FIRESTORE_EMULATOR_HOST in .env to point
-# at it (see .env.example).
+# at it (see .env.example). `gcloud` runs the actual emulator (a Java
+# process) in its own process group, so it doesn't receive Ctrl+C's SIGINT;
+# `gcloud` is backgrounded and `wait`ed on (rather than run as a plain
+# foreground command) so this script itself stays responsive to the signal,
+# and the trap force-kills whatever is still listening on the port on exit.
 firestore-emulator:
-    gcloud emulators firestore start --host-port=localhost:{{dev_firestore_emulator_port}}
+    #!/usr/bin/env bash
+    set -uo pipefail
+    gcloud emulators firestore start --host-port=localhost:{{dev_firestore_emulator_port}} &
+    emulator_pid=$!
+    trap 'kill "$emulator_pid" 2>/dev/null || true; kill $(lsof -ti:{{dev_firestore_emulator_port}} 2>/dev/null) 2>/dev/null || true' EXIT
+    wait "$emulator_pid"
 
 # Build the API binary.
 build:
@@ -33,7 +42,10 @@ test:
     gcloud emulators firestore start --host-port=localhost:{{test_firestore_emulator_port}} \
         &> /tmp/siorie-firestore-test-emulator.log &
     emulator_pid=$!
-    trap 'kill "$emulator_pid" 2>/dev/null || true; wait "$emulator_pid" 2>/dev/null || true' EXIT
+    # `gcloud` runs the actual emulator (a Java process) in its own process
+    # group, so killing emulator_pid (the gcloud wrapper) alone leaves it
+    # running; the port-based kill below is the reliable way to reap it.
+    trap 'kill "$emulator_pid" 2>/dev/null || true; wait "$emulator_pid" 2>/dev/null || true; kill $(lsof -ti:{{test_firestore_emulator_port}} 2>/dev/null) 2>/dev/null || true' EXIT
     for _ in $(seq 1 60); do
         if curl -s -o /dev/null http://localhost:{{test_firestore_emulator_port}}/; then
             break
