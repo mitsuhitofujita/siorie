@@ -1,7 +1,7 @@
 ---
 date: 2026-08-23
 status: merged
-discussions: [20260823-google-auth, 20260823-local-dev-same-origin]
+discussions: [0007-google-auth, 0008-local-dev-same-origin]
 decisions: [0002-google-id-token-auth]
 pr: null
 ---
@@ -10,11 +10,11 @@ pr: null
 
 ## Scope
 
-[20260823-google-auth](../../discussions/20260823-google-auth/discovery.md) is a bare discovery
+[0007-google-auth](../../discussions/0007-google-auth/discovery.md) is a bare discovery
 note, not a proposal: "implement Google auth; put CLIENT_ID and CLIENT_SECRET in `.env`; JRE and
 gcloud are installed and authenticated." There is no proposal for this topic, so the authoritative
 spec is the already-accepted
-[purpose-and-initial-tech-stack proposal](../../discussions/20260823-purpose-and-initial-tech-stack/proposal.md),
+[purpose-and-initial-tech-stack proposal](../../discussions/0001-purpose-and-initial-tech-stack/proposal.md),
 which fully specifies the auth flow (認証フロー), session design (セッション), Firestore data model,
 and the three auth endpoints (`POST /api/auth/google`, `POST /api/auth/logout`, `GET /api/me`).
 
@@ -206,7 +206,7 @@ needs a real client ID registered with `http://localhost:5173` as an authorized 
   port wasn't something I noticed until I actually ran the stack. Since the same kind of problem
   seems likely to resurface for a future staging environment or a different deployment topology,
   wrote it up as a new discovery,
-  [20260823-local-dev-same-origin](../../discussions/20260823-local-dev-same-origin/discovery.md).
+  [0008-local-dev-same-origin](../../discussions/0008-local-dev-same-origin/discovery.md).
 - **Firestore rounds timestamps to microsecond precision.** `FirestoreStore.Upsert`/`Create`
   originally used `time.Now().UTC()` (nanosecond precision) directly for the returned value as well
   as what got persisted. A value read back from Firestore is rounded to microseconds, so the value

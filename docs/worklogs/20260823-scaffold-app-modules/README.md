@@ -1,7 +1,7 @@
 ---
 date: 2026-08-23
 status: merged
-discussions: [20260823-purpose-and-initial-tech-stack, 20260823-monorepo-directory-design]
+discussions: [0001-purpose-and-initial-tech-stack, 0002-monorepo-directory-design]
 decisions: [0001-monorepo-scaffold]
 pr: null
 ---
@@ -14,7 +14,7 @@ Done. All completion criteria below are met.
 
 ## Purpose
 
-Follow the monorepo layout defined in [monorepo directory design](../../discussions/20260823-monorepo-directory-design/proposal.md) to create minimal scaffolds for the Go API and the React SPA. Reach a state where setup, development, testing, linting, and building can all be run from the repository root.
+Follow the monorepo layout defined in [monorepo directory design](../../discussions/0002-monorepo-directory-design/proposal.md) to create minimal scaffolds for the Go API and the React SPA. Reach a state where setup, development, testing, linting, and building can all be run from the repository root.
 
 ## Assumptions
 
@@ -185,7 +185,7 @@ then.
 ### Overlap with an existing worklog directory
 
 The `/work` procedure assumes creating a new worklog directory dated today. In this case, though, the
-source discussion's (`20260823-monorepo-directory-design`) `discovery.md` already linked to a worklog
+source discussion's (`0002-monorepo-directory-design`) `discovery.md` already linked to a worklog
 dated today (`20260823-scaffold-app-modules`), and its contents were already a complete implementation
 plan written for this exact work. Creating a second, near-duplicate directory would have just
 duplicated the same content, so the existing one was continued in place instead. This felt less like

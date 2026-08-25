@@ -5,7 +5,7 @@ discovery.md の記述をもとに、共通レイアウト・ホームページ�
 ## 事前確認
 
 tags が重なる過去の discussion はなかった。同じ選択肢を検討して見送った過去の議論もない。
-ただし [purpose and initial tech stack](../20260823-purpose-and-initial-tech-stack/proposal.md) では
+ただし [purpose and initial tech stack](../0001-purpose-and-initial-tech-stack/proposal.md) では
 「画面構成と操作フロー」を後続トピックへ保留すると明記されており、本 discussion がその後続トピックにあたる。
 認証フロー（Google Identity Services → ID Token 送信 → セッション発行）自体はそちらで確定済みであることを前提に進めた。
 

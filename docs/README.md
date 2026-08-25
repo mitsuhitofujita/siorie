@@ -31,13 +31,13 @@ docs/
 意図、洞察、違和感を起点に、提案がまとまるまでの一連の流れを記録します。
 
 ```
-docs/discussions/<YYYYMMDD-短い説明>/
+docs/discussions/<NNNN-短い説明>/
 ├── discovery.md   発見の契機（変更不可）
 ├── minutes.md     議事録
 └── proposal.md    合意した提案
 ```
 
-ディレクトリは日付で並べるだけにとどめ、カテゴリによる階層は作りません。
+ディレクトリ名は `decisions/` と同じ連番（ディレクトリを作成した順）とし、カテゴリによる階層は作りません。
 分類の判断は、件数がたまって切り口が見えてから行います。
 
 ### discovery.md
@@ -96,7 +96,7 @@ frontmatter で、対応する discussions と decisions を相互に参照し�
 ---
 date: 2026-08-23
 status: in-progress   # in-progress / merged / abandoned
-discussions: [20260821-token-refresh]
+discussions: [0003-token-refresh]
 decisions: []
 pr: null
 ---

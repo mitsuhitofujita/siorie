@@ -5,7 +5,7 @@ status: open
 worklogs: [20260823-home-login-frontend-structure]
 ---
 
-[purpose and initial tech stack](../20260823-purpose-and-initial-tech-stack/proposal.md) の初期 API 一覧には、
+[purpose and initial tech stack](../0001-purpose-and-initial-tech-stack/proposal.md) の初期 API 一覧には、
 グループ・アイテムそれぞれの単体取得エンドポイントがない。
 
     GET    /api/groups                              グループ一覧の取得
@@ -20,7 +20,7 @@ worklogs: [20260823-home-login-frontend-structure]
 一覧(GET)と PATCH/DELETE by id はあるが、`GET /api/groups/{groupId}` や
 `GET /api/groups/{groupId}/items/{itemId}` に相当するものがない。
 
-一方 [home and login](../20260823-home-and-login/proposal.md) は編集ページの挙動を
+一方 [home and login](../0004-home-and-login/proposal.md) は編集ページの挙動を
 「既存データ取得中はローディング表示」と定めている。単体取得を暗黙に前提にしているように読める。
 
 [20260823-home-login-frontend-structure](../../worklogs/20260823-home-login-frontend-structure/README.md)

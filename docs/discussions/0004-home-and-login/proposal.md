@@ -6,7 +6,7 @@
 
 ## 背景
 
-[purpose and initial tech stack](../20260823-purpose-and-initial-tech-stack/proposal.md) では、
+[purpose and initial tech stack](../0001-purpose-and-initial-tech-stack/proposal.md) では、
 Google Identity Services を用いた認証フローと Firestore データモデル（`users/{sub}/groups/{groupId}/items/{itemId}`）を確定させた一方、
 「画面構成と操作フロー」は後続トピックへ保留していた。本提案はその後続トピックとして、共通レイアウト、ホームページ、
 ナビメニュー、グループ・アイテムの CRUD ページ、URL 設計、空状態・ローディング状態を定める。
@@ -59,7 +59,7 @@ Firestore のデータモデルのネスト構造（グループの配下にア�
 多重送信を防ぐ。
 
 グループ削除時に所属アイテムをまとめて削除する挙動（確認を求める点を含む）は
-[purpose and initial tech stack](../20260823-purpose-and-initial-tech-stack/proposal.md) で既に確定しており、
+[purpose and initial tech stack](../0001-purpose-and-initial-tech-stack/proposal.md) で既に確定しており、
 この確認モーダルがその確認手段にあたる。
 
 ## 空状態・ローディング状態
@@ -73,4 +73,4 @@ Firestore のデータモデルのネスト構造（グループの配下にア�
 
 - API 失敗時など、エラー状態の表示は別トピックで決定する。
 - ログイン処理そのもの（Google Identity Services の呼び出し方法、ID Token の送信）は
-  [purpose and initial tech stack](../20260823-purpose-and-initial-tech-stack/proposal.md) で確定済みのため、本提案では扱わない。
+  [purpose and initial tech stack](../0001-purpose-and-initial-tech-stack/proposal.md) で確定済みのため、本提案では扱わない。

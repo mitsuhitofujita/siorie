@@ -3,9 +3,9 @@ date: 2026-08-23
 status: in-progress
 discussions:
   [
-    20260823-home-and-login,
-    20260823-single-resource-get-for-groups-and-items,
-    20260823-unauthenticated-route-guard,
+    0004-home-and-login,
+    0005-single-resource-get-for-groups-and-items,
+    0006-unauthenticated-route-guard,
   ]
 decisions: []
 pr: null
@@ -15,7 +15,7 @@ pr: null
 
 ## Scope
 
-[20260823-home-and-login](../../discussions/20260823-home-and-login/proposal.md) defines the common
+[0004-home-and-login](../../discussions/0004-home-and-login/proposal.md) defines the common
 layout, nav menu, home page, page/URL list, and empty/loading states for the whole app.
 
 This worklog implements only the **frontend structure**: routing, the common layout, the home page
@@ -108,7 +108,7 @@ path alias added to `vite.config.ts` and `tsconfig.app.json`.
   data from the documented API. This works but means editing a group always re-fetches every group
   the user has, and doesn't scale — worth deciding explicitly (add single-resource GET endpoints, or
   confirm the list-and-filter approach) in the backend API worklog. Written up as
-  [20260823-single-resource-get-for-groups-and-items](../../discussions/20260823-single-resource-get-for-groups-and-items/discovery.md).
+  [0005-single-resource-get-for-groups-and-items](../../discussions/0005-single-resource-get-for-groups-and-items/discovery.md).
 - **Directly opening an edit URL for a nonexistent id hangs on the loading skeleton forever**,
   rather than showing a "not found" state. This is a direct consequence of the list-and-filter
   approach above (the list resolves, the `find()` comes back empty, and the page never leaves its
@@ -122,7 +122,7 @@ path alias added to `vite.config.ts` and `tsconfig.app.json`.
   backend doesn't exist, in practice every list just renders empty. Real behavior (redirect to `/`?
   show the page and let API calls 401?) should be decided alongside the backend auth worklog. Written
   up as
-  [20260823-unauthenticated-route-guard](../../discussions/20260823-unauthenticated-route-guard/discovery.md).
+  [0006-unauthenticated-route-guard](../../discussions/0006-unauthenticated-route-guard/discovery.md).
 
 ## Difficulties
 

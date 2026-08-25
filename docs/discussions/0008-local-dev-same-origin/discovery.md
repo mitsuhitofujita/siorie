@@ -8,7 +8,7 @@ worklogs: [20260823-google-auth]
 Google認証の実装中、`apps/web/vite.config.ts` に `/api` への proxy を足さないと
 `__Host-session` Cookie も `Origin` 検証もローカルではそもそも成立しないことに気づいた。
 
-`docs/discussions/20260823-purpose-and-initial-tech-stack/proposal.md` の「システム構成」は
+`docs/discussions/0001-purpose-and-initial-tech-stack/proposal.md` の「システム構成」は
 本番構成(SPA と API を同じ Cloud Run サービスから配信し、同一オリジンにする)しか書いていない。
 「ローカル開発」の節も Firestore エミュレーターと Google Identity Services の承認済みオリジン
 登録には触れているが、Vite(5173)と Go サーバー(8080)がブラウザから見て別オリジンになる、

@@ -7,7 +7,7 @@
 ## 背景
 
 discovery.md の「ホームページのGoogle認証後にユーザの名前を画像を表示する」という要求そのものは、
-すでに [20260823-home-and-login](../20260823-home-and-login/proposal.md) で提案・合意され、
+すでに [0004-home-and-login](../0004-home-and-login/proposal.md) で提案・合意され、
 [20260823-home-login-frontend-structure](../../worklogs/20260823-home-login-frontend-structure/README.md) と
 [20260823-google-auth](../../worklogs/20260823-google-auth/README.md)（merged、
 [decision 0002](../../decisions/0002-google-id-token-auth.md)）で実装・動作確認済みである。

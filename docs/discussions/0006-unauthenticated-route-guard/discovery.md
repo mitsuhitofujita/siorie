@@ -5,7 +5,7 @@ status: open
 worklogs: [20260823-home-login-frontend-structure]
 ---
 
-[home and login](../20260823-home-and-login/proposal.md) はホームページの未認証／認証済みの
+[home and login](../0004-home-and-login/proposal.md) はホームページの未認証／認証済みの
 出し分けと、共通レイアウトを使う `/groups` 以下の URL・空状態・ローディング状態を定めているが、
 未認証のまま `/groups` 以下へ直接到達した場合の挙動を定めていない。ブックマーク、共有 URL、
 ログアウト後のブラウザの「戻る」など、認証フローを経由しない到達経路は普通にあり得る。

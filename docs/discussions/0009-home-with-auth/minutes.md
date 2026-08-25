@@ -6,7 +6,7 @@ discovery.md の記述「ホームページのGoogle認証後にユーザの名�
 
 この discovery が求める内容は、tags が重なる過去の discussion で**すでに提案・実装済み**だった。
 
-- [20260823-home-and-login](../20260823-home-and-login/proposal.md)（status: proposed）が
+- [0004-home-and-login](../0004-home-and-login/proposal.md)（status: proposed）が
   「認証済み: タイトル + アカウント情報（画像・名前） + グループ一覧ページへのリンク + ログアウトボタン」と明記済み。
 - [20260823-home-login-frontend-structure](../../worklogs/20260823-home-login-frontend-structure/README.md)
   で `HomePage.tsx` に該当UIを実装済み。

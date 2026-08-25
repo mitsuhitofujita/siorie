@@ -7,7 +7,7 @@
 
 ## 背景
 
-[purpose and initial tech stack](../20260823-purpose-and-initial-tech-stack/proposal.md) では CI/CD に Cloud Build を採用しているが、
+[purpose and initial tech stack](../0001-purpose-and-initial-tech-stack/proposal.md) では CI/CD に Cloud Build を採用しているが、
 これは GCP のサービスに一通り寄せる初期方針の中で決まったものであり、CI/CD サービスとしての比較検討を経たものではなかった。
 この既定路線化に対する懸念から、本トピックで妥当性を再検討した。
 
@@ -40,7 +40,7 @@ Cloud Build を使うか使わないかの二択で判断する方針とした�
 ## 今後の扱い
 
 - CI/CD サービスの選定は、IaC・デプロイ設計を検討する後続トピックで、本提案の比較観点を踏まえて決定する。
-- [purpose and initial tech stack](../20260823-purpose-and-initial-tech-stack/proposal.md) の技術選定表・システム構成図は、当時の判断の記録として変更しない。CI/CD サービスの実際の採用技術は、後続トピックの proposal および decisions を正とする。
+- [purpose and initial tech stack](../0001-purpose-and-initial-tech-stack/proposal.md) の技術選定表・システム構成図は、当時の判断の記録として変更しない。CI/CD サービスの実際の採用技術は、後続トピックの proposal および decisions を正とする。
 
 ## 参考資料
 

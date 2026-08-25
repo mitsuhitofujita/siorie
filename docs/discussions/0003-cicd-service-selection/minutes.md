@@ -5,7 +5,7 @@ discovery.md の懸念をもとに、エージェントと CI/CD サービスの
 ## 事前確認
 
 過去の discussions・decisions・design を確認したが、CI/CD サービスの選定そのものを検討した議論はなかった。
-[purpose and initial tech stack](../20260823-purpose-and-initial-tech-stack/proposal.md) での Cloud Build 採用は、
+[purpose and initial tech stack](../0001-purpose-and-initial-tech-stack/proposal.md) での Cloud Build 採用は、
 GCP のサービスに一通り寄せる初期方針の中で決まったもので、CI/CD 単体としての比較検討を経たものではなかった。
 
 ## 前提への指摘
