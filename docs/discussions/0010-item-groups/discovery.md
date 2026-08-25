@@ -2,7 +2,7 @@
 date: 2026-08-25
 tags: [groups, items, crud, api]
 status: proposed
-worklogs: []
+worklogs: [0004-item-groups-crud]
 ---
 
 アイテムグループのCRUD操作を実装する。
