@@ -13,6 +13,10 @@ dev-api:
 dev-web:
     pnpm --dir {{web_dir}} dev
 
+# Run the local Firestore emulator for development.
+dev-firestore:
+    just apps/api/firestore-emulator
+
 # Build the API and Web app.
 build:
     just apps/api/build
