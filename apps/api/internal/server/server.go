@@ -25,6 +25,7 @@ type Deps struct {
 	Verifier  googleauth.Verifier
 	Users     store.UserStore
 	Sessions  store.SessionStore
+	Groups    store.GroupStore
 	AppOrigin string
 }
 
@@ -37,6 +38,12 @@ func NewRouter(deps Deps) http.Handler {
 		verifier:  deps.Verifier,
 		users:     deps.Users,
 		sessions:  deps.Sessions,
+		appOrigin: deps.AppOrigin,
+	})
+
+	registerGroupRoutes(api, groupsDeps{
+		sessions:  deps.Sessions,
+		groups:    deps.Groups,
 		appOrigin: deps.AppOrigin,
 	})
 

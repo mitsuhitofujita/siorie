@@ -152,3 +152,110 @@ func TestFirestoreStore_DeleteExpiredForUser(t *testing.T) {
 		t.Fatalf("expired session document still exists: snap = %v, err = %v", expiredDoc, err)
 	}
 }
+
+func TestFirestoreStore_CreateGetUpdateDeleteGroup(t *testing.T) {
+	s := newTestFirestoreStore(t)
+	ctx := context.Background()
+	userID := "user-groups-" + t.Name()
+
+	created, err := s.CreateGroup(ctx, userID, "manga cafe")
+	if err != nil {
+		t.Fatalf("CreateGroup: %v", err)
+	}
+	if created.ID == "" || created.CreatedAt.IsZero() || created.UpdatedAt.IsZero() {
+		t.Fatalf("created group not fully populated: %+v", created)
+	}
+
+	got, err := s.GetGroup(ctx, userID, created.ID)
+	if err != nil {
+		t.Fatalf("GetGroup: %v", err)
+	}
+	if got.Name != "manga cafe" {
+		t.Fatalf("GetGroup name = %q, want %q", got.Name, "manga cafe")
+	}
+
+	updated, err := s.UpdateGroup(ctx, userID, created.ID, "purchased")
+	if err != nil {
+		t.Fatalf("UpdateGroup: %v", err)
+	}
+	if updated.Name != "purchased" {
+		t.Fatalf("UpdateGroup name = %q, want %q", updated.Name, "purchased")
+	}
+	if !updated.CreatedAt.Equal(created.CreatedAt) {
+		t.Fatalf("UpdateGroup changed CreatedAt: got %v, want %v", updated.CreatedAt, created.CreatedAt)
+	}
+
+	if err := s.DeleteGroup(ctx, userID, created.ID); err != nil {
+		t.Fatalf("DeleteGroup: %v", err)
+	}
+	if _, err := s.GetGroup(ctx, userID, created.ID); err != ErrGroupNotFound {
+		t.Fatalf("GetGroup after delete: err = %v, want ErrGroupNotFound", err)
+	}
+
+	// Deleting an already-deleted group is not an error, so a retried
+	// DELETE also succeeds.
+	if err := s.DeleteGroup(ctx, userID, created.ID); err != nil {
+		t.Fatalf("DeleteGroup (already deleted): %v", err)
+	}
+}
+
+func TestFirestoreStore_GetMissingGroup(t *testing.T) {
+	s := newTestFirestoreStore(t)
+	ctx := context.Background()
+
+	_, err := s.GetGroup(ctx, "user-"+t.Name(), "no-such-group")
+	if err != ErrGroupNotFound {
+		t.Fatalf("GetGroup missing group: err = %v, want ErrGroupNotFound", err)
+	}
+}
+
+func TestFirestoreStore_ListGroupsInCreationOrderAndScopedPerUser(t *testing.T) {
+	s := newTestFirestoreStore(t)
+	ctx := context.Background()
+	userID := "user-list-" + t.Name()
+	otherUserID := "user-list-other-" + t.Name()
+
+	first, err := s.CreateGroup(ctx, userID, "first")
+	if err != nil {
+		t.Fatalf("CreateGroup (first): %v", err)
+	}
+	second, err := s.CreateGroup(ctx, userID, "second")
+	if err != nil {
+		t.Fatalf("CreateGroup (second): %v", err)
+	}
+	if _, err := s.CreateGroup(ctx, otherUserID, "someone else's group"); err != nil {
+		t.Fatalf("CreateGroup (other user): %v", err)
+	}
+
+	groups, err := s.ListGroups(ctx, userID)
+	if err != nil {
+		t.Fatalf("ListGroups: %v", err)
+	}
+	if len(groups) != 2 || groups[0].ID != first.ID || groups[1].ID != second.ID {
+		t.Fatalf("ListGroups = %+v, want [%+v, %+v] in creation order", groups, first, second)
+	}
+}
+
+func TestFirestoreStore_DeleteGroupDeletesItems(t *testing.T) {
+	s := newTestFirestoreStore(t)
+	ctx := context.Background()
+	userID := "user-cascade-" + t.Name()
+
+	group, err := s.CreateGroup(ctx, userID, "manga cafe")
+	if err != nil {
+		t.Fatalf("CreateGroup: %v", err)
+	}
+
+	itemRef := s.groupsCollection(userID).Doc(group.ID).Collection(itemsCollection).Doc("item-1")
+	if _, err := itemRef.Set(ctx, map[string]any{"title": "One Piece", "completedVolume": 100}); err != nil {
+		t.Fatalf("seed item: %v", err)
+	}
+
+	if err := s.DeleteGroup(ctx, userID, group.ID); err != nil {
+		t.Fatalf("DeleteGroup: %v", err)
+	}
+
+	if _, err := itemRef.Get(ctx); status.Code(err) != codes.NotFound {
+		t.Fatalf("item still exists after group delete: err = %v", err)
+	}
+}

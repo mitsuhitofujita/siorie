@@ -17,6 +17,8 @@ import (
 const (
 	usersCollection    = "users"
 	sessionsCollection = "sessions"
+	groupsCollection   = "groups"
+	itemsCollection    = "items"
 )
 
 // FirestoreStore implements UserStore and SessionStore against a Firestore
@@ -154,6 +156,114 @@ func (s *FirestoreStore) Delete(ctx context.Context, rawSessionID string) error 
 	docRef := s.Client.Collection(sessionsCollection).Doc(hashSessionID(rawSessionID))
 	if _, err := docRef.Delete(ctx); err != nil {
 		return fmt.Errorf("store: delete session: %w", err)
+	}
+	return nil
+}
+
+type groupDoc struct {
+	Name      string    `firestore:"name"`
+	CreatedAt time.Time `firestore:"createdAt"`
+	UpdatedAt time.Time `firestore:"updatedAt"`
+}
+
+func (s *FirestoreStore) groupsCollection(userID string) *firestore.CollectionRef {
+	return s.Client.Collection(usersCollection).Doc(userID).Collection(groupsCollection)
+}
+
+func (s *FirestoreStore) ListGroups(ctx context.Context, userID string) ([]*Group, error) {
+	iter := s.groupsCollection(userID).OrderBy("createdAt", firestore.Asc).Documents(ctx)
+	defer iter.Stop()
+
+	groups := []*Group{}
+	for {
+		snap, err := iter.Next()
+		if errors.Is(err, iterator.Done) {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("store: list groups for user %s: %w", userID, err)
+		}
+
+		var doc groupDoc
+		if err := snap.DataTo(&doc); err != nil {
+			return nil, fmt.Errorf("store: decode group %s: %w", snap.Ref.ID, err)
+		}
+		groups = append(groups, &Group{ID: snap.Ref.ID, Name: doc.Name, CreatedAt: doc.CreatedAt, UpdatedAt: doc.UpdatedAt})
+	}
+	return groups, nil
+}
+
+func (s *FirestoreStore) CreateGroup(ctx context.Context, userID, name string) (*Group, error) {
+	docRef := s.groupsCollection(userID).NewDoc()
+	now := time.Now().UTC().Truncate(time.Microsecond)
+	doc := groupDoc{Name: name, CreatedAt: now, UpdatedAt: now}
+	if _, err := docRef.Set(ctx, doc); err != nil {
+		return nil, fmt.Errorf("store: create group: %w", err)
+	}
+	return &Group{ID: docRef.ID, Name: name, CreatedAt: now, UpdatedAt: now}, nil
+}
+
+func (s *FirestoreStore) GetGroup(ctx context.Context, userID, groupID string) (*Group, error) {
+	snap, err := s.groupsCollection(userID).Doc(groupID).Get(ctx)
+	if status.Code(err) == codes.NotFound {
+		return nil, ErrGroupNotFound
+	} else if err != nil {
+		return nil, fmt.Errorf("store: get group %s: %w", groupID, err)
+	}
+
+	var doc groupDoc
+	if err := snap.DataTo(&doc); err != nil {
+		return nil, fmt.Errorf("store: decode group %s: %w", groupID, err)
+	}
+	return &Group{ID: groupID, Name: doc.Name, CreatedAt: doc.CreatedAt, UpdatedAt: doc.UpdatedAt}, nil
+}
+
+func (s *FirestoreStore) UpdateGroup(ctx context.Context, userID, groupID, name string) (*Group, error) {
+	docRef := s.groupsCollection(userID).Doc(groupID)
+	snap, err := docRef.Get(ctx)
+	if status.Code(err) == codes.NotFound {
+		return nil, ErrGroupNotFound
+	} else if err != nil {
+		return nil, fmt.Errorf("store: get group %s: %w", groupID, err)
+	}
+
+	var existing groupDoc
+	if err := snap.DataTo(&existing); err != nil {
+		return nil, fmt.Errorf("store: decode group %s: %w", groupID, err)
+	}
+
+	now := time.Now().UTC().Truncate(time.Microsecond)
+	doc := groupDoc{Name: name, CreatedAt: existing.CreatedAt, UpdatedAt: now}
+	if _, err := docRef.Set(ctx, doc); err != nil {
+		return nil, fmt.Errorf("store: update group %s: %w", groupID, err)
+	}
+	return &Group{ID: groupID, Name: name, CreatedAt: existing.CreatedAt, UpdatedAt: now}, nil
+}
+
+// Delete removes userID's group and all of its items. It deletes items
+// first, then the group document, so a retry after a partial failure
+// converges on the same end state; deleting documents that are already gone
+// is not an error in Firestore.
+func (s *FirestoreStore) DeleteGroup(ctx context.Context, userID, groupID string) error {
+	groupRef := s.groupsCollection(userID).Doc(groupID)
+
+	iter := groupRef.Collection(itemsCollection).Documents(ctx)
+	defer iter.Stop()
+	for {
+		snap, err := iter.Next()
+		if errors.Is(err, iterator.Done) {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("store: list items for group %s: %w", groupID, err)
+		}
+		if _, err := snap.Ref.Delete(ctx); err != nil {
+			return fmt.Errorf("store: delete item %s: %w", snap.Ref.ID, err)
+		}
+	}
+
+	if _, err := groupRef.Delete(ctx); err != nil {
+		return fmt.Errorf("store: delete group %s: %w", groupID, err)
 	}
 	return nil
 }

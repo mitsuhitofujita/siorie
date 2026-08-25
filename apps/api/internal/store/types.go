@@ -79,3 +79,52 @@ func newRawSessionID() (string, error) {
 	}
 	return base64.RawURLEncoding.EncodeToString(buf), nil
 }
+
+// Group is an item group belonging to a user, identified within
+// users/{sub}/groups/{groupId}.
+type Group struct {
+	ID        string
+	Name      string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+// GroupStore persists a user's item groups. Every method is scoped to a
+// userID (the Google account's "sub"), matching the proposal's rule that
+// handlers build Firestore paths from the authenticated context's user ID,
+// never from a request parameter.
+type GroupStore interface {
+	// ListGroups returns userID's groups in a fixed creation-time order.
+	ListGroups(ctx context.Context, userID string) ([]*Group, error)
+
+	// CreateGroup makes a new group named name for userID and returns it.
+	CreateGroup(ctx context.Context, userID, name string) (*Group, error)
+
+	// GetGroup returns userID's group identified by groupID, or
+	// ErrGroupNotFound.
+	GetGroup(ctx context.Context, userID, groupID string) (*Group, error)
+
+	// UpdateGroup renames userID's group identified by groupID and returns
+	// it, or ErrGroupNotFound.
+	UpdateGroup(ctx context.Context, userID, groupID, name string) (*Group, error)
+
+	// DeleteGroup removes userID's group identified by groupID along with
+	// all of its items. Deleting an already-deleted (or nonexistent) group
+	// is not an error, so callers can safely retry.
+	DeleteGroup(ctx context.Context, userID, groupID string) error
+}
+
+// ErrGroupNotFound is returned by GroupStore.Get and GroupStore.Update for a
+// group that doesn't exist (or doesn't belong to userID).
+var ErrGroupNotFound = fmt.Errorf("store: group not found")
+
+// newID generates a random opaque ID for a group or item, in the same style
+// as newRawSessionID but shorter, since these are stored in URLs and lack a
+// session ID's confidentiality requirement.
+func newID() (string, error) {
+	buf := make([]byte, 16)
+	if _, err := rand.Read(buf); err != nil {
+		return "", fmt.Errorf("store: generate id: %w", err)
+	}
+	return base64.RawURLEncoding.EncodeToString(buf), nil
+}

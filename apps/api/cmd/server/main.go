@@ -47,6 +47,7 @@ func main() {
 			Verifier:  &googleauth.GoogleVerifier{ClientID: clientID},
 			Users:     firestoreStore,
 			Sessions:  firestoreStore,
+			Groups:    firestoreStore,
 			AppOrigin: appOrigin,
 		}),
 	}

@@ -125,18 +125,12 @@ func registerAuthRoutes(api huma.API, deps authDeps) {
 		Path:        "/api/me",
 		Summary:     "Get the signed-in user",
 	}, func(ctx context.Context, input *GetMeInput) (*GetMeOutput, error) {
-		if input.Session == "" {
-			return nil, huma.Error401Unauthorized("not authenticated")
+		userID, err := authenticateSession(ctx, deps.sessions, input.Session)
+		if err != nil {
+			return nil, err
 		}
 
-		session, err := deps.sessions.Lookup(ctx, input.Session)
-		if errors.Is(err, store.ErrSessionNotFound) {
-			return nil, huma.Error401Unauthorized("not authenticated")
-		} else if err != nil {
-			return nil, huma.Error500InternalServerError("failed to look up session")
-		}
-
-		user, err := deps.users.Get(ctx, session.UserID)
+		user, err := deps.users.Get(ctx, userID)
 		if errors.Is(err, store.ErrUserNotFound) {
 			return nil, huma.Error401Unauthorized("not authenticated")
 		} else if err != nil {
@@ -147,6 +141,24 @@ func registerAuthRoutes(api huma.API, deps authDeps) {
 		resp.Body = userBody{Name: user.DisplayName, PictureURL: user.PictureURL}
 		return resp, nil
 	})
+}
+
+// authenticateSession resolves a raw session cookie value to the signed-in
+// user's ID, so route handlers don't each repeat the lookup-and-401 dance.
+// It returns a huma.StatusError suitable for returning directly from a
+// handler.
+func authenticateSession(ctx context.Context, sessions store.SessionStore, rawSessionID string) (string, error) {
+	if rawSessionID == "" {
+		return "", huma.Error401Unauthorized("not authenticated")
+	}
+
+	session, err := sessions.Lookup(ctx, rawSessionID)
+	if errors.Is(err, store.ErrSessionNotFound) {
+		return "", huma.Error401Unauthorized("not authenticated")
+	} else if err != nil {
+		return "", huma.Error500InternalServerError("failed to look up session")
+	}
+	return session.UserID, nil
 }
 
 // validateOrigin checks that a state-changing request's Origin header

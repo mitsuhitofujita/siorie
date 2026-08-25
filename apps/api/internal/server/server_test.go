@@ -16,6 +16,7 @@ func testDeps() Deps {
 		Verifier:  &googleauth.FakeVerifier{},
 		Users:     mem,
 		Sessions:  mem,
+		Groups:    mem,
 		AppOrigin: "http://localhost:5173",
 	}
 }
