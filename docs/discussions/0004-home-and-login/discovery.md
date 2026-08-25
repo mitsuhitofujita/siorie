@@ -2,7 +2,7 @@
 date: 2026-08-23
 tags: [ux, ui]
 status: proposed
-worklogs: [20260823-scaffold-app-modules, 20260823-home-login-frontend-structure]
+worklogs: [0001-scaffold-app-modules, 0002-home-login-frontend-structure]
 ---
 
 ページ一覧文書を作成する。

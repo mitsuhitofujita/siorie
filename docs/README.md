@@ -82,9 +82,11 @@ worklogs: []      # 対応する worklogs へのリンク
 実装の単位ごとに記録します。計画ではなく、やったことと、その過程で起きたことです。
 
 ```
-docs/worklogs/<YYYYMMDD-短い説明>/
+docs/worklogs/<NNNN-短い説明>/
 └── README.md
 ```
+
+ディレクトリ名は `discussions/` や `decisions/` と同じ連番（ディレクトリを作成した順）とします。
 
 実装中に生まれた検証スクリプトやログの断片も、同じディレクトリに置いて構いません。
 

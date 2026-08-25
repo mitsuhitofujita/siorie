@@ -8,8 +8,8 @@
 
 discovery.md の「ホームページのGoogle認証後にユーザの名前を画像を表示する」という要求そのものは、
 すでに [0004-home-and-login](../0004-home-and-login/proposal.md) で提案・合意され、
-[20260823-home-login-frontend-structure](../../worklogs/20260823-home-login-frontend-structure/README.md) と
-[20260823-google-auth](../../worklogs/20260823-google-auth/README.md)（merged、
+[0002-home-login-frontend-structure](../../worklogs/0002-home-login-frontend-structure/README.md) と
+[0003-google-auth](../../worklogs/0003-google-auth/README.md)（merged、
 [decision 0002](../../decisions/0002-google-id-token-auth.md)）で実装・動作確認済みである。
 `apps/web/src/pages/HomePage.tsx` の認証済みブランチは、`GET /api/me` が返す
 `name`/`pictureUrl` をすでにアバターと名前として表示している。

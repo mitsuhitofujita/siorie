@@ -2,7 +2,7 @@
 date: 2026-08-23
 tags: [purpose, tech-stack, scope]
 status: decided
-worklogs: [20260823-scaffold-app-modules]
+worklogs: [0001-scaffold-app-modules]
 ---
 
 このリポジトリでは、小規模な Web アプリケーションを開発する。

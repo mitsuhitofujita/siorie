@@ -8,9 +8,9 @@ discovery.md の記述「ホームページのGoogle認証後にユーザの名�
 
 - [0004-home-and-login](../0004-home-and-login/proposal.md)（status: proposed）が
   「認証済み: タイトル + アカウント情報（画像・名前） + グループ一覧ページへのリンク + ログアウトボタン」と明記済み。
-- [20260823-home-login-frontend-structure](../../worklogs/20260823-home-login-frontend-structure/README.md)
+- [0002-home-login-frontend-structure](../../worklogs/0002-home-login-frontend-structure/README.md)
   で `HomePage.tsx` に該当UIを実装済み。
-- [20260823-google-auth](../../worklogs/20260823-google-auth/README.md)（status: merged、
+- [0003-google-auth](../../worklogs/0003-google-auth/README.md)（status: merged、
   [decision 0002](../../decisions/0002-google-id-token-auth.md) 記録済み）で実際の認証と結線し、
   ユーザー本人のブラウザでサインインまで動作確認済みと記録されている。
 

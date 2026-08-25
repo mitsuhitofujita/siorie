@@ -2,7 +2,7 @@
 date: 2026-08-23
 tags: [auth]
 status: decided
-worklogs: [20260823-google-auth]
+worklogs: [0003-google-auth]
 ---
 
 Google認証を実装する。

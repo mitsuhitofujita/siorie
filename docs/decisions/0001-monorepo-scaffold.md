@@ -1,7 +1,7 @@
 # 0001: Monorepo layout with independent Go API and React SPA modules
 
 Discussions: [monorepo directory design](../discussions/0002-monorepo-directory-design/proposal.md), [purpose and initial tech stack](../discussions/0001-purpose-and-initial-tech-stack/proposal.md)
-Worklog: [scaffold Go API and React SPA modules](../worklogs/20260823-scaffold-app-modules/README.md)
+Worklog: [scaffold Go API and React SPA modules](../worklogs/0001-scaffold-app-modules/README.md)
 
 ## Status
 

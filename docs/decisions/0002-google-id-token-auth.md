@@ -1,7 +1,7 @@
 # 0002: Google ID Token authentication with Firestore-backed sessions
 
 Discussions: [purpose and initial tech stack](../discussions/0001-purpose-and-initial-tech-stack/proposal.md), [Google auth discovery](../discussions/0007-google-auth/discovery.md)
-Worklog: [Google authentication](../worklogs/20260823-google-auth/README.md)
+Worklog: [Google authentication](../worklogs/0003-google-auth/README.md)
 
 ## Status
 

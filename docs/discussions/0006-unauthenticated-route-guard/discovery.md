@@ -2,7 +2,7 @@
 date: 2026-08-23
 tags: [auth, ux]
 status: open
-worklogs: [20260823-home-login-frontend-structure]
+worklogs: [0002-home-login-frontend-structure]
 ---
 
 [home and login](../0004-home-and-login/proposal.md) はホームページの未認証／認証済みの
@@ -10,7 +10,7 @@ worklogs: [20260823-home-login-frontend-structure]
 未認証のまま `/groups` 以下へ直接到達した場合の挙動を定めていない。ブックマーク、共有 URL、
 ログアウト後のブラウザの「戻る」など、認証フローを経由しない到達経路は普通にあり得る。
 
-[20260823-home-login-frontend-structure](../../worklogs/20260823-home-login-frontend-structure/README.md)
+[0002-home-login-frontend-structure](../../worklogs/0002-home-login-frontend-structure/README.md)
 でルーティングを実装する際、この点が未決定であることに気づいた。今回はバックエンドが存在せず
 どのみち一覧は空扱いになるため、ルートガードなしでそのまま素通しにしている。バックエンド
 (`/api/groups` などの認証チェック)が実装された段階で、未認証アクセス時に 401 を受けて

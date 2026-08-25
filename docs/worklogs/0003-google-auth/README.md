@@ -21,7 +21,7 @@ and the three auth endpoints (`POST /api/auth/google`, `POST /api/auth/logout`, 
 This worklog implements only authentication: the three auth endpoints backed by Firestore
 (`users/{sub}`, `sessions/{sha256(sessionId)}`), the `__Host-session` cookie, and real Google
 Identity Services wiring on the frontend (replacing the `login()` stub from
-[20260823-home-login-frontend-structure](../20260823-home-login-frontend-structure/README.md)).
+[0002-home-login-frontend-structure](../0002-home-login-frontend-structure/README.md)).
 It does not implement the groups/items backend endpoints — those stay out of scope.
 
 The user does not yet have a real Google OAuth Web client ID at the start of this worklog; a real

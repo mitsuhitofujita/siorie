@@ -2,7 +2,7 @@
 date: 2026-08-23
 tags: [api, backend]
 status: open
-worklogs: [20260823-home-login-frontend-structure]
+worklogs: [0002-home-login-frontend-structure]
 ---
 
 [purpose and initial tech stack](../0001-purpose-and-initial-tech-stack/proposal.md) の初期 API 一覧には、
@@ -23,7 +23,7 @@ worklogs: [20260823-home-login-frontend-structure]
 一方 [home and login](../0004-home-and-login/proposal.md) は編集ページの挙動を
 「既存データ取得中はローディング表示」と定めている。単体取得を暗黙に前提にしているように読める。
 
-[20260823-home-login-frontend-structure](../../worklogs/20260823-home-login-frontend-structure/README.md)
+[0002-home-login-frontend-structure](../../worklogs/0002-home-login-frontend-structure/README.md)
 でフロントエンド構造を実装した際、この矛盾に実際にぶつかった。編集ページの初期データをどう取得するかが
 API 側で決まっていなかったため、一覧を取得してクライアント側で該当 id を `find()` する形で凌いだ。
 動くには動くが、編集を開くたびにそのグループ配下(あるいはユーザーの全グループ)を丸ごと取得することになり、

@@ -2,7 +2,7 @@
 date: 2026-08-23
 tags: [auth, deploy, local-dev]
 status: open
-worklogs: [20260823-google-auth]
+worklogs: [0003-google-auth]
 ---
 
 Google認証の実装中、`apps/web/vite.config.ts` に `/api` への proxy を足さないと
@@ -25,5 +25,5 @@ proposal 側で決めた話ではない。
 将来の環境それぞれで同一オリジンをどう保つかを一度きちんと設計として決めておいた方がよいのでは、
 というのがこの discovery の趣旨。
 
-詳細は [20260823-google-auth worklog](../../worklogs/20260823-google-auth/README.md) の
+詳細は [0003-google-auth worklog](../../worklogs/0003-google-auth/README.md) の
 「困難」節、特に Vite proxy に関する項目を参照。

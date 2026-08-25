@@ -186,7 +186,7 @@ then.
 
 The `/work` procedure assumes creating a new worklog directory dated today. In this case, though, the
 source discussion's (`0002-monorepo-directory-design`) `discovery.md` already linked to a worklog
-dated today (`20260823-scaffold-app-modules`), and its contents were already a complete implementation
+dated today (`0001-scaffold-app-modules`), and its contents were already a complete implementation
 plan written for this exact work. Creating a second, near-duplicate directory would have just
 duplicated the same content, so the existing one was continued in place instead. This felt less like
 an accident and more like a gap between two things that don't quite line up: the design where one
