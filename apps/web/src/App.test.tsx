@@ -43,6 +43,15 @@ describe('App routing', () => {
     ).toBeInTheDocument()
   })
 
+  it('renders the group detail route inside the common layout', async () => {
+    renderApp('/groups/g1')
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'メニューを開く' }),
+      ).toBeInTheDocument(),
+    )
+  })
+
   it('renders the group creation page', async () => {
     renderApp('/groups/new')
     expect(

@@ -32,7 +32,7 @@ describe('GroupsListPage', () => {
     ).toHaveAttribute('href', '/groups/new')
   })
 
-  it('lists groups with a link to their items and to edit', async () => {
+  it('lists groups with a link to their detail page', async () => {
     stubFetchJson([{ id: 'g1', name: '漫画喫茶' }])
     renderWithProviders(<GroupsListPage />)
 
@@ -41,11 +41,7 @@ describe('GroupsListPage', () => {
     )
     expect(screen.getByRole('link', { name: '漫画喫茶' })).toHaveAttribute(
       'href',
-      '/groups/g1/items',
-    )
-    expect(screen.getByRole('link', { name: '編集' })).toHaveAttribute(
-      'href',
-      '/groups/g1/edit',
+      '/groups/g1',
     )
   })
 

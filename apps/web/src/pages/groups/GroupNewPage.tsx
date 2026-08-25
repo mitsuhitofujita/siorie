@@ -31,6 +31,7 @@ export function GroupNewPage() {
           id="group-name"
           value={name}
           onChange={(event) => setName(event.target.value)}
+          maxLength={100}
           required
         />
       </div>

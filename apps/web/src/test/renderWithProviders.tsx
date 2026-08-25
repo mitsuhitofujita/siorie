@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react'
 import { render } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 import { AuthContext, type AuthState } from '@/lib/auth-context'
 
@@ -14,11 +14,16 @@ export function renderWithProviders(
     renderSignInButton = noop,
     logout = noopAsync,
     route = '/',
+    path,
   }: {
     authState?: AuthState
     renderSignInButton?: (container: HTMLElement) => void
     logout?: () => Promise<void>
     route?: string
+    // A route pattern (e.g. '/groups/:groupId') to match `route` against, so
+    // a page under test that reads useParams() gets real values. Pages that
+    // don't use useParams() can omit this and render directly.
+    path?: string
   } = {},
 ) {
   return render(
@@ -26,7 +31,13 @@ export function renderWithProviders(
       <AuthContext.Provider
         value={{ state: authState, renderSignInButton, logout }}
       >
-        {ui}
+        {path ? (
+          <Routes>
+            <Route path={path} element={ui} />
+          </Routes>
+        ) : (
+          ui
+        )}
       </AuthContext.Provider>
     </MemoryRouter>,
   )

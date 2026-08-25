@@ -53,18 +53,12 @@ export function GroupsListPage() {
       </div>
       <ul className="flex flex-col divide-y divide-border rounded-md border">
         {groups.map((group) => (
-          <li
-            key={group.id}
-            className="flex items-center justify-between px-4 py-3 hover:bg-accent"
-          >
-            <Link to={`/groups/${group.id}/items`} className="flex-1">
-              {group.name}
-            </Link>
+          <li key={group.id}>
             <Link
-              to={`/groups/${group.id}/edit`}
-              className="text-sm text-muted-foreground hover:underline"
+              to={`/groups/${group.id}`}
+              className="flex items-center px-4 py-3 hover:bg-accent"
             >
-              編集
+              {group.name}
             </Link>
           </li>
         ))}

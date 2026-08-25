@@ -19,14 +19,14 @@ export function GroupEditPage() {
   const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
+    if (!groupId) return
     let cancelled = false
     api
-      .listGroups()
-      .then((groups) => {
+      .getGroup(groupId)
+      .then((result) => {
         if (cancelled) return
-        const found = groups.find((g) => g.id === groupId) ?? null
-        setGroup(found)
-        setName(found?.name ?? '')
+        setGroup(result)
+        setName(result.name)
       })
       .catch(() => {
         if (!cancelled) setGroup(null)
@@ -76,6 +76,7 @@ export function GroupEditPage() {
             id="group-name"
             value={name}
             onChange={(event) => setName(event.target.value)}
+            maxLength={100}
             required
           />
         </div>
