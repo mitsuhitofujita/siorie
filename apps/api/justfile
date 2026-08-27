@@ -5,9 +5,10 @@ bin_dir := source_directory() / "bin"
 dev_firestore_emulator_port := "8090"
 test_firestore_emulator_port := "8091"
 
-# Download Go module dependencies.
+# Download Go module dependencies and install the Firestore emulator.
 setup:
     cd {{source_directory()}} && go mod download
+    gcloud components install cloud-firestore-emulator --quiet
 
 # Run the API dev server. Requires the Firestore emulator (see
 # `firestore-emulator`) and a configured .env; see .env.example.
