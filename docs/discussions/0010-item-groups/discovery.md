@@ -1,7 +1,7 @@
 ---
 date: 2026-08-25
 tags: [groups, items, crud, api]
-status: proposed
+status: decided
 worklogs: [0004-item-groups-crud]
 ---
 
