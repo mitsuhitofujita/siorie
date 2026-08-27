@@ -17,6 +17,7 @@ func testDeps() Deps {
 		Users:     mem,
 		Sessions:  mem,
 		Groups:    mem,
+		Items:     mem,
 		AppOrigin: "http://localhost:5173",
 	}
 }

@@ -236,6 +236,108 @@ func TestFirestoreStore_ListGroupsInCreationOrderAndScopedPerUser(t *testing.T) 
 	}
 }
 
+func TestFirestoreStore_CreateGetUpdateDeleteItem(t *testing.T) {
+	s := newTestFirestoreStore(t)
+	ctx := context.Background()
+	userID := "user-items-" + t.Name()
+
+	group, err := s.CreateGroup(ctx, userID, "manga cafe")
+	if err != nil {
+		t.Fatalf("CreateGroup: %v", err)
+	}
+
+	created, err := s.CreateItem(ctx, userID, group.ID, "ONE PIECE", 100)
+	if err != nil {
+		t.Fatalf("CreateItem: %v", err)
+	}
+	if created.ID == "" || created.CreatedAt.IsZero() || created.UpdatedAt.IsZero() {
+		t.Fatalf("created item not fully populated: %+v", created)
+	}
+
+	got, err := s.GetItem(ctx, userID, group.ID, created.ID)
+	if err != nil {
+		t.Fatalf("GetItem: %v", err)
+	}
+	if got.Title != "ONE PIECE" || got.CompletedVolume != 100 {
+		t.Fatalf("GetItem = %+v, want title=ONE PIECE, completedVolume=100", got)
+	}
+
+	updated, err := s.UpdateItem(ctx, userID, group.ID, created.ID, "ONE PIECE", 105)
+	if err != nil {
+		t.Fatalf("UpdateItem: %v", err)
+	}
+	if updated.CompletedVolume != 105 {
+		t.Fatalf("UpdateItem completedVolume = %d, want 105", updated.CompletedVolume)
+	}
+	if !updated.CreatedAt.Equal(created.CreatedAt) {
+		t.Fatalf("UpdateItem changed CreatedAt: got %v, want %v", updated.CreatedAt, created.CreatedAt)
+	}
+
+	if err := s.DeleteItem(ctx, userID, group.ID, created.ID); err != nil {
+		t.Fatalf("DeleteItem: %v", err)
+	}
+	if _, err := s.GetItem(ctx, userID, group.ID, created.ID); err != ErrItemNotFound {
+		t.Fatalf("GetItem after delete: err = %v, want ErrItemNotFound", err)
+	}
+
+	// Deleting an already-deleted item is not an error, so a retried DELETE
+	// also succeeds.
+	if err := s.DeleteItem(ctx, userID, group.ID, created.ID); err != nil {
+		t.Fatalf("DeleteItem (already deleted): %v", err)
+	}
+}
+
+func TestFirestoreStore_GetMissingItem(t *testing.T) {
+	s := newTestFirestoreStore(t)
+	ctx := context.Background()
+	userID := "user-" + t.Name()
+
+	group, err := s.CreateGroup(ctx, userID, "manga cafe")
+	if err != nil {
+		t.Fatalf("CreateGroup: %v", err)
+	}
+
+	_, err = s.GetItem(ctx, userID, group.ID, "no-such-item")
+	if err != ErrItemNotFound {
+		t.Fatalf("GetItem missing item: err = %v, want ErrItemNotFound", err)
+	}
+}
+
+func TestFirestoreStore_ListItemsInCreationOrderAndScopedPerGroup(t *testing.T) {
+	s := newTestFirestoreStore(t)
+	ctx := context.Background()
+	userID := "user-list-items-" + t.Name()
+
+	group, err := s.CreateGroup(ctx, userID, "manga cafe")
+	if err != nil {
+		t.Fatalf("CreateGroup: %v", err)
+	}
+	otherGroup, err := s.CreateGroup(ctx, userID, "another shelf")
+	if err != nil {
+		t.Fatalf("CreateGroup (other): %v", err)
+	}
+
+	first, err := s.CreateItem(ctx, userID, group.ID, "first", 1)
+	if err != nil {
+		t.Fatalf("CreateItem (first): %v", err)
+	}
+	second, err := s.CreateItem(ctx, userID, group.ID, "second", 2)
+	if err != nil {
+		t.Fatalf("CreateItem (second): %v", err)
+	}
+	if _, err := s.CreateItem(ctx, userID, otherGroup.ID, "someone else's item", 3); err != nil {
+		t.Fatalf("CreateItem (other group): %v", err)
+	}
+
+	items, err := s.ListItems(ctx, userID, group.ID)
+	if err != nil {
+		t.Fatalf("ListItems: %v", err)
+	}
+	if len(items) != 2 || items[0].ID != first.ID || items[1].ID != second.ID {
+		t.Fatalf("ListItems = %+v, want [%+v, %+v] in creation order", items, first, second)
+	}
+}
+
 func TestFirestoreStore_DeleteGroupDeletesItems(t *testing.T) {
 	s := newTestFirestoreStore(t)
 	ctx := context.Background()

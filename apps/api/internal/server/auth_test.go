@@ -22,6 +22,7 @@ func newTestRouter(t *testing.T, verifier googleauth.Verifier) (http.Handler, *s
 		Users:     mem,
 		Sessions:  mem,
 		Groups:    mem,
+		Items:     mem,
 		AppOrigin: testOrigin,
 	})
 	return router, mem

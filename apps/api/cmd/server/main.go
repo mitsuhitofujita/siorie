@@ -48,6 +48,7 @@ func main() {
 			Users:     firestoreStore,
 			Sessions:  firestoreStore,
 			Groups:    firestoreStore,
+			Items:     firestoreStore,
 			AppOrigin: appOrigin,
 		}),
 	}

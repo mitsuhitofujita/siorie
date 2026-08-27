@@ -26,6 +26,7 @@ type Deps struct {
 	Users     store.UserStore
 	Sessions  store.SessionStore
 	Groups    store.GroupStore
+	Items     store.ItemStore
 	AppOrigin string
 }
 
@@ -44,6 +45,13 @@ func NewRouter(deps Deps) http.Handler {
 	registerGroupRoutes(api, groupsDeps{
 		sessions:  deps.Sessions,
 		groups:    deps.Groups,
+		appOrigin: deps.AppOrigin,
+	})
+
+	registerItemRoutes(api, itemsDeps{
+		sessions:  deps.Sessions,
+		groups:    deps.Groups,
+		items:     deps.Items,
 		appOrigin: deps.AppOrigin,
 	})
 

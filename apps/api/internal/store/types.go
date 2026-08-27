@@ -118,6 +118,45 @@ type GroupStore interface {
 // group that doesn't exist (or doesn't belong to userID).
 var ErrGroupNotFound = fmt.Errorf("store: group not found")
 
+// Item is an item belonging to a group, identified within
+// users/{sub}/groups/{groupId}/items/{itemId}.
+type Item struct {
+	ID              string
+	Title           string
+	CompletedVolume int
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+}
+
+// ItemStore persists a group's items. Every method is scoped to a userID and
+// groupID, matching GroupStore's scoping rule; callers are expected to have
+// already confirmed groupID exists (and belongs to userID) via
+// GroupStore.GetGroup before calling these.
+type ItemStore interface {
+	// ListItems returns groupID's items in a fixed creation-time order.
+	ListItems(ctx context.Context, userID, groupID string) ([]*Item, error)
+
+	// CreateItem makes a new item in groupID for userID and returns it.
+	CreateItem(ctx context.Context, userID, groupID, title string, completedVolume int) (*Item, error)
+
+	// GetItem returns groupID's item identified by itemID, or
+	// ErrItemNotFound.
+	GetItem(ctx context.Context, userID, groupID, itemID string) (*Item, error)
+
+	// UpdateItem changes userID's item identified by itemID within groupID
+	// and returns it, or ErrItemNotFound.
+	UpdateItem(ctx context.Context, userID, groupID, itemID, title string, completedVolume int) (*Item, error)
+
+	// DeleteItem removes userID's item identified by itemID within groupID.
+	// Deleting an already-deleted (or nonexistent) item is not an error, so
+	// callers can safely retry.
+	DeleteItem(ctx context.Context, userID, groupID, itemID string) error
+}
+
+// ErrItemNotFound is returned by ItemStore.GetItem and ItemStore.UpdateItem
+// for an item that doesn't exist (or doesn't belong to userID/groupID).
+var ErrItemNotFound = fmt.Errorf("store: item not found")
+
 // newID generates a random opaque ID for a group or item, in the same style
 // as newRawSessionID but shorter, since these are stored in URLs and lack a
 // session ID's confidentiality requirement.
