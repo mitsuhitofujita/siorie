@@ -21,8 +21,8 @@ docs/
 `decisions/` と `design/` は AI エージェントが参照することを前提とした資料です。
 英語で記述してください。日本語の議論から英語の決定文書を起こす翻訳は、エージェントの仕事です。
 
-`worklogs/` は基本的に英語ですが、困難の記録だけは日本語で構いません。
-そこは人間が読み返す部分だからです。
+`worklogs/` は困難の記録を含め、すべて英語で記述します。
+worklog は主にエージェントが将来読み返す資料であり、日本語を混在させないためです。
 
 この README は双方が読むため日本語で書かれています。
 
@@ -39,6 +39,10 @@ docs/discussions/<NNNN-短い説明>/
 
 ディレクトリ名は `decisions/` と同じ連番（ディレクトリを作成した順）とし、カテゴリによる階層は作りません。
 分類の判断は、件数がたまって切り口が見えてから行います。
+
+discovery.md を書く時点で短い説明を決める必要はありません。
+`docs/discussions/<NNNN>/discovery.md` と連番だけで作成すれば、`/discuss` が内容を読んだ時点で
+`NNNN-短い説明` にリネームします。
 
 ### discovery.md
 
@@ -83,7 +87,7 @@ worklogs: []      # 対応する worklogs へのリンク
 
 ```
 docs/worklogs/<NNNN-短い説明>/
-└── README.md
+└── plan.md
 ```
 
 ディレクトリ名は `discussions/` や `decisions/` と同じ連番（ディレクトリを作成した順）とします。
@@ -123,8 +127,9 @@ pr: null
 
 ファイル名は `NNNN-short-title.md` の連番とします。
 
-反映の起点はマージです。worklogs の status が `merged` になった時点で、
-その変更が製品に受け入れられたとみなし、decision を起こします。
+反映の起点は `/decide` の実行です。開発初期の現在はプルリクエストもマージも介さず
+main に直接コミットする運用のため、`/decide` を呼び出した時点で worklogs の status を
+`merged` にし、decision を起こします。
 
 `proposal.md` の内容をそのまま移すのではなく、決定事項とその理由に絞って要約してください。
 検討の過程は discussions に、実装の実際は worklogs に残っているため、ここで繰り返す必要はありません。
@@ -144,7 +149,7 @@ pr: null
 合意できたら `proposal.md` を作る。ここまでが discussions です。
 
 proposal から worklogs を起こして実装し、終わったら結果と困難を追記します。
-マージされたら decisions に英語で記録し、現況が変わったなら design を書き換えます。
+`/decide` を呼んだら decisions に英語で記録し、現況が変わったなら design を書き換えます。
 
 困難から新しい discovery が生まれたなら、そこからまた一周します。
 
@@ -160,7 +165,7 @@ proposal から worklogs を起こして実装し、終わったら結果と困�
 ## 忘れやすい点
 
 提案が実装まで到達したとき、対応する decision を書き忘れる事故が最も起きやすいので、
-実装の PR には worklogs と decisions への参照を必ず含めてください。
+実装が main に反映されたら、忘れずに `/decide` を呼んでください。
 
 リンクは双方向に張ります。decision から元の議論へ、議論から結果の decision へ。
 片方向だと、あの違和感が結局どうなったのかを後から辿れなくなります。

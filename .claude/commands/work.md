@@ -1,6 +1,6 @@
 ---
 description: proposal.md から worklog を起こして実装し、結果と困難を追記する
-argument-hint: <discussions のディレクトリ名> または実施内容
+argument-hint: <docs/discussions/ 以下の相対パス（例: docs/discussions/0010-item-groups）> または実施内容
 ---
 
 `docs/README.md` に従って。
@@ -9,14 +9,14 @@ argument-hint: <discussions のディレクトリ名> または実施内容
 
 ## 1. 起点を確認する
 
-引数が `docs/discussions/` のディレクトリ名なら、その `proposal.md` を読んで。
+引数が `docs/discussions/` 以下の相対パスなら（ディレクトリでも、その中の任意のファイルでも構わない）、その `proposal.md` を読んで。
 proposal を伴わない小さな作業なら、それでいい。discovery を書かせようとしないで。
 
 実装に入る前に、関連する `docs/design/` を確認して。
 
 ## 2. worklog を作る
 
-`docs/worklogs/<今日の日付>-<短い説明>/README.md` を作って。
+`docs/worklogs/<今日の日付>-<短い説明>/plan.md` を作って。
 日付は proposal の日付ではなく、今日の日付を使って。
 
 frontmatter は以下の形で。
@@ -38,13 +38,13 @@ pr: null
 
 本文は英語で書いて。
 
-作業しながら README.md を書き足して。終わってからまとめて書かない。
+作業しながら plan.md を書き足して。終わってからまとめて書かない。
 proposal の想定と違った点があれば、その場で記録して。
 
 ## 4. 終わったら
 
-何をしたかと、どのような困難があったかを追記して。
-困難の節は日本語で構わない。私が読み返す部分だから。
+何をしたかと、どのような困難があったかを英語で追記して。
+worklog はエージェントが読み返す資料なので、困難の節も日本語を混ぜない。
 
 想定と違った点は、最も価値のある記述として扱って。
 うまくいった話より詳しく書いて。

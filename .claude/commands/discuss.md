@@ -1,15 +1,23 @@
 ---
 description: discovery.md をもとに議論し、合意できたら proposal.md をまとめる
-argument-hint: <YYYYMMDD-短い説明>
+argument-hint: <docs/discussions/ 以下の相対パス（例: docs/discussions/0010-item-groups。作成直後は連番のみの docs/discussions/0011 でも可）>
 ---
 
 `docs/README.md` に従って。
 
-対象: `docs/discussions/$1/`
+$1 はリポジトリルートからの相対パス。ディレクトリでも、その中の任意のファイルでも構わない。
+ファイルが渡されたら、それを含むディレクトリを対象とする。
+
+対象: $1
 
 ## 1. 読む
 
-まず `discovery.md` を読んで。
+まず `discovery.md` を読んで。frontmatter が無ければ、内容から判断して補って。
+
+ディレクトリ名がまだ連番のみ（例: `0011`）なら、discovery.md の内容から短い説明を考えて
+`NNNN-短い説明` にリネームして。以降はリネーム後のパスを対象とする。
+すでに短い説明が付いているなら、そのままにして。
+
 次に、関連する `docs/design/`、`docs/decisions/`、
 frontmatter のタグが重なる過去の `docs/discussions/` を確認して。
 
