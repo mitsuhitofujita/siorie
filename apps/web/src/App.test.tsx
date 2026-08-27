@@ -65,4 +65,13 @@ describe('App routing', () => {
       await screen.findByRole('heading', { name: 'アイテムを作成' }),
     ).toBeInTheDocument()
   })
+
+  it('renders the item detail route inside the common layout', async () => {
+    renderApp('/groups/g1/items/i1')
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'メニューを開く' }),
+      ).toBeInTheDocument(),
+    )
+  })
 })

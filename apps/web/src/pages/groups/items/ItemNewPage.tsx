@@ -19,7 +19,7 @@ export function ItemNewPage() {
     setIsSubmitting(true)
     try {
       await api.createItem(groupId, title, Number(completedVolume))
-      navigate(`/groups/${groupId}/items`)
+      navigate(`/groups/${groupId}`)
     } finally {
       setIsSubmitting(false)
     }

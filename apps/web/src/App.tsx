@@ -5,6 +5,7 @@ import { GroupDetailPage } from '@/pages/groups/GroupDetailPage'
 import { GroupEditPage } from '@/pages/groups/GroupEditPage'
 import { GroupNewPage } from '@/pages/groups/GroupNewPage'
 import { GroupsListPage } from '@/pages/groups/GroupsListPage'
+import { ItemDetailPage } from '@/pages/groups/items/ItemDetailPage'
 import { ItemEditPage } from '@/pages/groups/items/ItemEditPage'
 import { ItemNewPage } from '@/pages/groups/items/ItemNewPage'
 import { HomePage } from '@/pages/HomePage'
@@ -19,6 +20,10 @@ function App() {
         <Route path="/groups/:groupId" element={<GroupDetailPage />} />
         <Route path="/groups/:groupId/edit" element={<GroupEditPage />} />
         <Route path="/groups/:groupId/items/new" element={<ItemNewPage />} />
+        <Route
+          path="/groups/:groupId/items/:itemId"
+          element={<ItemDetailPage />}
+        />
         <Route
           path="/groups/:groupId/items/:itemId/edit"
           element={<ItemEditPage />}

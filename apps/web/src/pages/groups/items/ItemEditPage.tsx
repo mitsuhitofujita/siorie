@@ -20,16 +20,15 @@ export function ItemEditPage() {
   const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
-    if (!groupId) return
+    if (!groupId || !itemId) return
     let cancelled = false
     api
-      .listItems(groupId)
-      .then((items) => {
+      .getItem(groupId, itemId)
+      .then((result) => {
         if (cancelled) return
-        const found = items.find((i) => i.id === itemId) ?? null
-        setItem(found)
-        setTitle(found?.title ?? '')
-        setCompletedVolume(found ? String(found.completedVolume) : '0')
+        setItem(result)
+        setTitle(result.title)
+        setCompletedVolume(String(result.completedVolume))
       })
       .catch(() => {
         if (!cancelled) setItem(null)
@@ -55,7 +54,7 @@ export function ItemEditPage() {
     setIsSubmitting(true)
     try {
       await api.updateItem(groupId, item.id, title, Number(completedVolume))
-      navigate(`/groups/${groupId}/items`)
+      navigate(`/groups/${groupId}`)
     } finally {
       setIsSubmitting(false)
     }
@@ -66,7 +65,7 @@ export function ItemEditPage() {
     setIsDeleting(true)
     try {
       await api.deleteItem(groupId, item.id)
-      navigate(`/groups/${groupId}/items`)
+      navigate(`/groups/${groupId}`)
     } finally {
       setIsDeleting(false)
     }

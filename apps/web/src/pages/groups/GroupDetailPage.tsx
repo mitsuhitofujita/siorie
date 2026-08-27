@@ -85,7 +85,7 @@ export function GroupDetailPage() {
             {items.map((item) => (
               <li key={item.id}>
                 <Link
-                  to={`/groups/${group.id}/items/${item.id}/edit`}
+                  to={`/groups/${group.id}/items/${item.id}`}
                   className="flex items-center justify-between px-4 py-3 hover:bg-accent"
                 >
                   <span>{item.title}</span>

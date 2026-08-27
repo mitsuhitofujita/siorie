@@ -20,11 +20,6 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T
 }
 
-// The initial API (docs/discussions/20260823-purpose-and-initial-tech-stack/proposal.md) has no
-// single-resource GET for an item, only list endpoints plus PATCH/DELETE by id. The item edit page
-// fetches the parent list and picks the matching entry out of it. Groups gained a single-resource
-// GET in 0010-item-groups.
-
 export const api = {
   listGroups: () => apiFetch<Group[]>('/api/groups'),
   getGroup: (groupId: string) => apiFetch<Group>(`/api/groups/${groupId}`),
@@ -43,6 +38,8 @@ export const api = {
 
   listItems: (groupId: string) =>
     apiFetch<Item[]>(`/api/groups/${groupId}/items`),
+  getItem: (groupId: string, itemId: string) =>
+    apiFetch<Item>(`/api/groups/${groupId}/items/${itemId}`),
   createItem: (groupId: string, title: string, completedVolume: number) =>
     apiFetch<Item>(`/api/groups/${groupId}/items`, {
       method: 'POST',

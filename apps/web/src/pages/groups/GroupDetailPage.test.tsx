@@ -56,7 +56,7 @@ describe('GroupDetailPage', () => {
     ).toHaveAttribute('href', '/groups/g1/items/new')
   })
 
-  it('lists items with a link to their edit page', async () => {
+  it('lists items with a link to their detail page', async () => {
     stubFetchByPath({
       '/api/groups/g1': { id: 'g1', name: '漫画喫茶' },
       '/api/groups/g1/items': [
@@ -74,7 +74,7 @@ describe('GroupDetailPage', () => {
     expect(screen.getByText('100 巻')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /ONE PIECE/ })).toHaveAttribute(
       'href',
-      '/groups/g1/items/i1/edit',
+      '/groups/g1/items/i1',
     )
   })
 
