@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>siorie — style guide</title>
+    <!-- Mocks load the rounded-gothic family from the Google Fonts CDN for preview.
+         The implementation self-hosts it (no runtime CDN on the single-origin Cloud Run app). -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@300;400;500;700&family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ============================================================
+         siorie design tokens — moss × rounded gothic
+         mobile-only · light-only · one column · English-only
+         Every button carries a leading single-colour icon.
+         (The sole exception is the Google-rendered Sign in button.)
+         ============================================================ */
+      :root {
+        color-scheme: light;
+
+        /* --- palette: moss, plus roles derived from it --- */
+        --bg-1: #ffffff; /* cards, inputs, sheets, dialogs */
+        --bg-2: #f2ede0; /* page ground, desktop gutter */
+        --primary: #48624f; /* moss — primary action, active, focus ring */
+        --primary-hover: #3c5343;
+        --secondary: #e3c25c; /* wheat — pure accent only (badge, underline). Never a CTA. */
+        --text: #2a332c; /* dark moss — body + headings */
+        --text-muted: #5c6a5f; /* secondary text, placeholder, footer */
+        --border: #bdb5a0; /* warm grey — dividers, input border, card outline */
+        --error: #a9473e; /* muted brick — error text + destructive action */
+        --error-hover: #8f3c34;
+        --on-primary: #ffffff;
+        --ring: rgba(72, 98, 79, 0.38);
+
+        /* --- type scale: 16 · φ  (10 / 16 / 26 / 42 / 68) --- */
+        /* with √φ half-steps at 13 and 20 for headings / hints  */
+        --text-2xs: 10px;
+        --text-xs: 13px;
+        --text-base: 16px;
+        --text-md: 20px;
+        --text-lg: 26px;
+        --text-xl: 42px;
+        --text-2xl: 68px;
+        --leading-body: 1.618; /* φ */
+        --leading-tight: 1.2;
+
+        /* --- spacing: Fibonacci px, approximates φ --- */
+        --space-1: 4px;
+        --space-2: 8px;
+        --space-3: 12px;
+        --space-4: 20px;
+        --space-5: 32px;
+        --space-6: 52px;
+
+        /* --- radius: 8 · φⁿ  (8 / 13 / 21) --- */
+        --radius-sm: 8px;
+        --radius: 13px;
+        --radius-lg: 21px;
+        --radius-pill: 999px;
+
+        --shadow-soft: 0 4px 20px rgba(47, 58, 49, 0.1);
+        --content-max: 430px;
+        --font:
+          'Zen Maru Gothic', 'M PLUS Rounded 1c', ui-rounded,
+          'Hiragino Maru Gothic ProN', system-ui, sans-serif;
+        --font-ugc:
+          ui-rounded, 'Hiragino Maru Gothic ProN', 'Hiragino Sans',
+          'Yu Gothic', 'Yu Gothic UI', Meiryo, system-ui, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg-2);
+        color: var(--text);
+        font-family: var(--font);
+        font-size: var(--text-base);
+        line-height: var(--leading-body);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ---------- buttons ---------- */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        min-height: 44px;
+        padding: var(--space-3) var(--space-4);
+        border-radius: var(--radius-pill);
+        border: 1.5px solid transparent;
+        font: inherit;
+        font-weight: 500;
+        line-height: 1;
+        cursor: pointer;
+        text-decoration: none;
+        transition:
+          background-color 0.15s,
+          border-color 0.15s,
+          color 0.15s;
+      }
+      .btn svg {
+        width: 20px;
+        height: 20px;
+        flex: none;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: var(--on-primary);
+      }
+      .btn-primary:hover {
+        background: var(--primary-hover);
+      }
+      .btn-outline {
+        background: transparent;
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+      .btn-outline:hover {
+        background: rgba(72, 98, 79, 0.12);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text);
+      }
+      .btn-ghost:hover {
+        background: rgba(47, 58, 49, 0.06);
+      }
+      .btn-danger {
+        background: var(--error);
+        color: #fff;
+      }
+      .btn-danger:hover {
+        background: var(--error-hover);
+      }
+      .btn:disabled,
+      .btn[aria-disabled='true'] {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .btn:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px var(--ring);
+      }
+      .btn-block {
+        width: 100%;
+      }
+
+      /* ---------- form ---------- */
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+      }
+      .label {
+        font-weight: 500;
+      }
+      .input {
+        height: 44px;
+        padding: 0 var(--space-3);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--bg-1);
+        color: var(--text);
+        font: inherit;
+        font-family: var(--font-ugc);
+      }
+      .input::placeholder {
+        color: var(--text-muted);
+        font-family: var(--font-ugc);
+      }
+      /* user-generated content: names, titles, typed text — plain gothic */
+      .ugc {
+        font-family: var(--font-ugc);
+      }
+      .input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--ring);
+      }
+      .hint {
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+      }
+      .error-text {
+        font-size: var(--text-xs);
+        color: var(--error);
+      }
+
+      /* ---------- card / list ---------- */
+      .card {
+        background: var(--bg-1);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+      }
+      .list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-3) var(--space-4);
+        color: var(--text);
+        text-decoration: none;
+      }
+      .row + .row {
+        border-top: 1px solid var(--border);
+      }
+      .row:hover {
+        background: var(--bg-2);
+      }
+      .row .chev {
+        margin-left: auto;
+        color: var(--text-muted);
+        width: 20px;
+        height: 20px;
+        flex: none;
+      }
+
+      /* ---------- badge (secondary accent) ---------- */
+      .badge {
+        display: inline-block;
+        font-size: var(--text-2xs);
+        font-weight: 700;
+        padding: 2px var(--space-2);
+        border-radius: var(--radius-pill);
+        background: var(--secondary);
+        color: #3f3308;
+        letter-spacing: 0.02em;
+        line-height: 1.4;
+      }
+
+      /* ---------- empty / error state ---------- */
+      .state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: var(--space-3);
+        padding: var(--space-6) var(--space-4);
+        color: var(--text-muted);
+      }
+      .state svg {
+        width: 40px;
+        height: 40px;
+        color: var(--border);
+        stroke: var(--text-muted);
+      }
+
+      /* ============================================================
+         style-guide page chrome (not part of the system)
+         ============================================================ */
+      .guide {
+        max-width: var(--content-max);
+        margin-inline: auto;
+        padding: var(--space-4);
+        border-inline: 1px solid var(--border);
+        min-height: 100vh;
+        background: var(--bg-2);
+      }
+      .guide h1 {
+        font-size: var(--text-lg);
+        line-height: var(--leading-tight);
+        margin: 0 0 var(--space-2);
+      }
+      .guide > p.lede {
+        margin: 0 0 var(--space-5);
+        color: var(--text-muted);
+        font-size: var(--text-xs);
+      }
+      section {
+        margin-bottom: var(--space-6);
+      }
+      section > h2 {
+        font-size: var(--text-md);
+        line-height: var(--leading-tight);
+        margin: 0 0 var(--space-1);
+        padding-bottom: var(--space-1);
+        border-bottom: 3px solid var(--secondary);
+        display: inline-block;
+      }
+      section > p {
+        color: var(--text-muted);
+        font-size: var(--text-xs);
+        margin: var(--space-2) 0 var(--space-3);
+      }
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+      }
+      .cluster {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        align-items: center;
+      }
+
+      .swatch {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--bg-1);
+        font-size: var(--text-xs);
+      }
+      .swatch .chip {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        flex: none;
+      }
+      .swatch b {
+        font-weight: 700;
+      }
+      .swatch small {
+        display: block;
+        color: var(--text-muted);
+      }
+
+      .type-row {
+        display: flex;
+        align-items: baseline;
+        gap: var(--space-3);
+        border-bottom: 1px dashed var(--border);
+        padding-bottom: var(--space-2);
+      }
+      .type-row small {
+        color: var(--text-muted);
+        font-size: var(--text-2xs);
+        flex: none;
+        width: 96px;
+      }
+
+      .space-row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        font-size: var(--text-2xs);
+        color: var(--text-muted);
+      }
+      .space-bar {
+        height: 12px;
+        background: var(--primary);
+        border-radius: 2px;
+      }
+
+      .icon-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--space-3);
+        text-align: center;
+        font-size: var(--text-2xs);
+        color: var(--text-muted);
+      }
+      .icon-grid svg {
+        width: 24px;
+        height: 24px;
+        color: var(--text);
+        display: block;
+        margin: 0 auto var(--space-1);
+      }
+
+      .radius-demo {
+        display: flex;
+        gap: var(--space-3);
+        text-align: center;
+        font-size: var(--text-2xs);
+        color: var(--text-muted);
+      }
+      .radius-demo div > span {
+        display: block;
+        height: 52px;
+        background: var(--bg-1);
+        border: 1.5px solid var(--primary);
+        margin-bottom: var(--space-1);
+      }
+
+      .note {
+        background: var(--bg-1);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--secondary);
+        border-radius: var(--radius-sm);
+        padding: var(--space-3);
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+      }
+      .note b {
+        color: var(--text);
+      }
+
+      /* Google Sign in facsimile — shown here as the one exception */
+      .gis-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        height: 40px;
+        padding: 0 var(--space-3);
+        background: #fff;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        color: #3c4043;
+        font-family:
+          'Roboto', var(--font);
+        font-size: 14px;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="guide">
+      <h1>siorie — style guide</h1>
+      <p class="lede">
+        Moss × rounded gothic. Mobile-only, light-only, single column, English
+        copy only. Golden ratio drives the type scale and the vertical rhythm.
+        Every button carries a leading single-colour icon.
+      </p>
+
+      <section>
+        <h2>Principles</h2>
+        <ul style="font-size: var(--text-xs); color: var(--text-muted); padding-left: var(--space-4); line-height: var(--leading-body)">
+          <li>One layout: a single centred column, <b>430&nbsp;px</b> max. On desktop the column is width-constrained with a hairline side border — no separate desktop layout.</li>
+          <li>Light mode only. No dark palette, no theme switch.</li>
+          <li>All UI copy in English.</li>
+          <li>Every <b>&lt;button&gt;</b> / button-styled link has a leading monochrome line icon. Exception: the Google-rendered <i>Sign in with Google</i> button (fixed by Google).</li>
+          <li>Components are hand-written on Tailwind v4 tokens; Radix primitives (Dialog, Label, Avatar) stay for behaviour. No shadcn/ui.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Colour</h2>
+        <p>
+          Revised for contrast (feedback round 1). The moss / wheat / parchment
+          identity is kept, but every functional pair now clears WCAG&nbsp;AA. The
+          discovery’s literal values (#6B8570, #EBD07A, #FAF7F0) are retained only
+          as the <i>direction</i>; the tokens below are deeper.
+        </p>
+        <div class="stack">
+          <div class="swatch"><span class="chip" style="background: #48624f"></span><div><b>--primary</b> #48624F<small>moss — primary fill, outline, focus ring. White on it ≈ 6.7:1 ✓AA</small></div></div>
+          <div class="swatch"><span class="chip" style="background: #e3c25c"></span><div><b>--secondary</b> #E3C25C<small>wheat — accent only: badge, heading rule. Never a CTA.</small></div></div>
+          <div class="swatch"><span class="chip" style="background: #ffffff"></span><div><b>--bg-1</b> #FFFFFF<small>cards, inputs, sheets, dialogs</small></div></div>
+          <div class="swatch"><span class="chip" style="background: #f2ede0"></span><div><b>--bg-2</b> #F2EDE0<small>page ground &amp; desktop gutter — now clearly distinct from card white</small></div></div>
+          <div class="swatch"><span class="chip" style="background: #2a332c"></span><div><b>--text</b> #2A332C<small>near-black moss — body + headings. On white ≈ 13:1 ✓AAA</small></div></div>
+          <div class="swatch"><span class="chip" style="background: #5c6a5f"></span><div><b>--text-muted</b> #5C6A5F<small>secondary text, placeholder, footer. On white ≈ 5.7:1 ✓AA</small></div></div>
+          <div class="swatch"><span class="chip" style="background: #bdb5a0"></span><div><b>--border</b> #BDB5A0<small>dividers, input border, card outline — visible at 1px now</small></div></div>
+          <div class="swatch"><span class="chip" style="background: #a9473e"></span><div><b>--error</b> #A9473E<small>error text + destructive fill. On/against white ≈ 5.7:1 ✓AA</small></div></div>
+        </div>
+        <div class="note" style="margin-top: var(--space-3)">
+          <b>What changed &amp; why.</b> The first pass sat around 3–4:1 for
+          buttons, muted text and borders — legible but flat. This pass darkens
+          <b>--primary</b> (3.35 → 6.7:1 with white), <b>--text-muted</b>
+          (3.9 → 5.7:1), <b>--error</b> (4.6 → 5.7:1), makes <b>--border</b>
+          actually visible, and deepens <b>--bg-2</b> so the single column and its
+          cards separate without a shadow. Only the Google Sign-in button keeps
+          its own (fixed) colours.
+        </div>
+      </section>
+
+      <section>
+        <h2>Typography</h2>
+        <p>Two families. <b>Chrome</b> (headings, labels, buttons, nav, captions) is the rounded display face, self-hosted: Zen Maru Gothic → M PLUS Rounded 1c → system rounded. <b>User content</b> (input fields, group / item names, any typed text) uses whatever gothic the OS already ships — <code>ui-rounded</code> / Hiragino Maru Gothic on Apple, Yu Gothic UI / Meiryo on Windows, the system sans elsewhere — <b>no web font is downloaded for it</b>. Reason: the self-hosted rounded face gets hard to read in Japanese at body size, and a built-in rounded gothic is fine when the OS has one. Scale = 16&nbsp;·&nbsp;φ with √φ half-steps. Body line-height = φ (1.618).</p>
+        <div class="stack">
+          <div class="type-row"><small>68 · xl2 / φ³</small><span style="font-size: 68px; font-weight: 700; line-height: 1">Aa</span></div>
+          <div class="type-row"><small>42 · xl / φ²</small><span style="font-size: 42px; font-weight: 700; line-height: 1.1">siorie</span></div>
+          <div class="type-row"><small>26 · lg / φ</small><span style="font-size: 26px; font-weight: 700">Page title</span></div>
+          <div class="type-row"><small>20 · md / √φ↑</small><span style="font-size: 20px; font-weight: 700">Section heading</span></div>
+          <div class="type-row"><small>16 · base</small><span style="font-size: 16px">Body, labels, inputs, buttons</span></div>
+          <div class="type-row"><small>13 · xs / √φ↓</small><span style="font-size: 13px; color: var(--text-muted)">Hints, helper &amp; error text</span></div>
+          <div class="type-row"><small>10 · xs2 / φ⁻¹</small><span style="font-size: 10px; color: var(--text-muted); letter-spacing: 0.02em">FOOTER · BADGE · CAPTION</span></div>
+        </div>
+        <div class="note" style="margin-top: var(--space-3)">
+          <b>Chrome vs. content, side by side (16px):</b>
+          <div style="display: flex; gap: var(--space-4); margin-top: var(--space-2); flex-wrap: wrap">
+            <div>
+              <div style="font-size: var(--text-2xs); color: var(--text-muted)">chrome — self-hosted rounded</div>
+              <div style="font-size: 16px">葬送のフリーレン 12巻</div>
+            </div>
+            <div>
+              <div style="font-size: var(--text-2xs); color: var(--text-muted)">content — your OS’s built-in gothic</div>
+              <div class="ugc" style="font-size: 16px">葬送のフリーレン 12巻</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Spacing</h2>
+        <p>Fibonacci px (4 / 8 / 12 / 20 / 32 / 52) — a practical approximation of φ.</p>
+        <div class="stack">
+          <div class="space-row"><span class="space-bar" style="width: 4px"></span>--space-1 · 4</div>
+          <div class="space-row"><span class="space-bar" style="width: 8px"></span>--space-2 · 8</div>
+          <div class="space-row"><span class="space-bar" style="width: 12px"></span>--space-3 · 12</div>
+          <div class="space-row"><span class="space-bar" style="width: 20px"></span>--space-4 · 20</div>
+          <div class="space-row"><span class="space-bar" style="width: 32px"></span>--space-5 · 32</div>
+          <div class="space-row"><span class="space-bar" style="width: 52px"></span>--space-6 · 52</div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Radius</h2>
+        <p>8 · φⁿ → 8 / 13 / 21. Buttons are full pills.</p>
+        <div class="radius-demo">
+          <div><span style="border-radius: 8px"></span>sm · 8</div>
+          <div><span style="border-radius: 13px"></span>base · 13</div>
+          <div><span style="border-radius: 21px"></span>lg · 21</div>
+          <div><span style="border-radius: 999px"></span>pill</div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Icons</h2>
+        <p>Single-colour line icons, <b>currentColor</b>, 1.75 stroke, round caps. 20&nbsp;px in buttons, 24&nbsp;px standalone.</p>
+        <div class="icon-grid">
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>plus</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>back</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>edit</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>delete</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>log out</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>user</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>retry</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>check</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>close</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>chevron</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>groups</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>item</div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Buttons</h2>
+        <p>Min height 44. Pill. Icon + label, 8&nbsp;px gap. Variants: primary, outline, ghost, danger.</p>
+        <div class="stack">
+          <div class="cluster">
+            <button class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New group</button>
+            <button class="btn btn-outline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Edit</button>
+          </div>
+          <div class="cluster">
+            <button class="btn btn-ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log out</button>
+            <button class="btn btn-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Delete</button>
+          </div>
+          <div class="cluster">
+            <button class="btn btn-primary" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Saving…</button>
+            <span class="hint">disabled = 50% opacity, no pointer</span>
+          </div>
+          <div class="cluster">
+            <span class="gis-btn">
+              <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.9-2.26 5.36-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+              Sign in with Google
+            </span>
+            <span class="hint">exception — rendered by Google, not restyled</span>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Form field</h2>
+        <p>Label / hint / error use the rounded chrome face. The <b>input value</b> is plain gothic (<code>--font-ugc</code>).</p>
+        <div class="stack" style="gap: var(--space-4)">
+          <div class="field">
+            <label class="label" for="d1">Name</label>
+            <input class="input" id="d1" value="マンガ喫茶で読んだやつ" />
+            <span class="hint">Up to 100 characters.</span>
+          </div>
+          <div class="field">
+            <label class="label" for="d2">Name</label>
+            <input class="input" id="d2" value="" style="border-color: var(--error); box-shadow: 0 0 0 3px rgba(169, 71, 62, 0.28)" />
+            <span class="error-text">Couldn’t save. Please try again.</span>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>List row</h2>
+        <p>Row label (a group or item name) is plain gothic. Trailing figure — the completed volume — is a plain body-size number, not a shrunken badge, so it stays readable.</p>
+        <ul class="list card">
+          <li><a class="row" href="#"><span class="ugc">マンガ喫茶</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></a></li>
+          <li><a class="row" href="#"><span class="ugc">葬送のフリーレン</span><span style="margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums"><span style="font-size: var(--text-2xs); font-weight: 500; color: var(--text-muted); margin-right: 3px; letter-spacing: 0.03em">vol.</span>12</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></a></li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Empty &amp; error state</h2>
+        <div class="stack" style="gap: var(--space-4)">
+          <div class="card state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+            No groups yet.
+            <button class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New group</button>
+          </div>
+          <div class="card state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Couldn’t load. Please try again.
+            <button class="btn btn-outline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>Retry</button>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Overlays</h2>
+        <p>Dialog (delete confirm) and the nav sheet are hand-built on Radix primitives. Soft shadow, radius 21 / 13. See <b>delete-dialog.html</b> and <b>app-shell.html</b>.</p>
+        <div class="card" style="padding: var(--space-4)">
+          <div style="font-size: var(--text-md); font-weight: 700; margin-bottom: var(--space-2)">Delete this group?</div>
+          <p style="font-size: var(--text-xs); color: var(--text-muted); margin: 0 0 var(--space-4)">Its items will be deleted too. This can’t be undone.</p>
+          <div class="cluster" style="justify-content: flex-end">
+            <button class="btn btn-outline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Cancel</button>
+            <button class="btn btn-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Delete</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

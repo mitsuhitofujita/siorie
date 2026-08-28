@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>siorie — common layout &amp; nav</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@300;400;500;700&family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* === siorie shared tokens (identical across every mock in this dir) === */
+      :root {
+        color-scheme: light;
+        --bg-1: #ffffff;
+        --bg-2: #f2ede0;
+        --primary: #48624f;
+        --primary-hover: #3c5343;
+        --secondary: #e3c25c;
+        --text: #2a332c;
+        --text-muted: #5c6a5f;
+        --border: #bdb5a0;
+        --error: #a9473e;
+        --error-hover: #8f3c34;
+        --on-primary: #ffffff;
+        --ring: rgba(72, 98, 79, 0.38);
+        --text-2xs: 10px;
+        --text-xs: 13px;
+        --text-base: 16px;
+        --text-md: 20px;
+        --text-lg: 26px;
+        --text-xl: 42px;
+        --text-2xl: 68px;
+        --leading-body: 1.618;
+        --leading-tight: 1.2;
+        --space-1: 4px;
+        --space-2: 8px;
+        --space-3: 12px;
+        --space-4: 20px;
+        --space-5: 32px;
+        --space-6: 52px;
+        --radius-sm: 8px;
+        --radius: 13px;
+        --radius-lg: 21px;
+        --radius-pill: 999px;
+        --shadow-soft: 0 4px 20px rgba(47, 58, 49, 0.1);
+        --content-max: 430px;
+        --font:
+          'Zen Maru Gothic', 'M PLUS Rounded 1c', ui-rounded,
+          'Hiragino Maru Gothic ProN', system-ui, sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg-2);
+        color: var(--text);
+        font-family: var(--font);
+        font-size: var(--text-base);
+        line-height: var(--leading-body);
+        -webkit-font-smoothing: antialiased;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        min-height: 44px;
+        padding: var(--space-3) var(--space-4);
+        border-radius: var(--radius-pill);
+        border: 1.5px solid transparent;
+        font: inherit;
+        font-weight: 500;
+        line-height: 1;
+        cursor: pointer;
+        text-decoration: none;
+        transition:
+          background-color 0.15s,
+          border-color 0.15s,
+          color 0.15s;
+      }
+      .btn svg {
+        width: 20px;
+        height: 20px;
+        flex: none;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: var(--on-primary);
+      }
+      .btn-primary:hover {
+        background: var(--primary-hover);
+      }
+      .btn-outline {
+        background: transparent;
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+      .btn-outline:hover {
+        background: rgba(72, 98, 79, 0.12);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text);
+      }
+      .btn-ghost:hover {
+        background: rgba(47, 58, 49, 0.06);
+      }
+      .btn-danger {
+        background: var(--error);
+        color: #fff;
+      }
+      .btn-danger:hover {
+        background: var(--error-hover);
+      }
+      .btn:disabled,
+      .btn[aria-disabled='true'] {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .btn:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px var(--ring);
+      }
+      .btn-block {
+        width: 100%;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+      }
+      .form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+      }
+      .label {
+        font-weight: 500;
+      }
+      .input {
+        height: 44px;
+        padding: 0 var(--space-3);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--bg-1);
+        color: var(--text);
+        font: inherit;
+      }
+      .input::placeholder {
+        color: var(--text-muted);
+      }
+      .input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--ring);
+      }
+      .hint {
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+      }
+      .error-text {
+        font-size: var(--text-xs);
+        color: var(--error);
+      }
+      .card {
+        background: var(--bg-1);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+      }
+      .list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-3) var(--space-4);
+        color: var(--text);
+        text-decoration: none;
+      }
+      .row + .row {
+        border-top: 1px solid var(--border);
+      }
+      .row:hover {
+        background: var(--bg-2);
+      }
+      .row .chev {
+        margin-left: auto;
+        color: var(--text-muted);
+        width: 20px;
+        height: 20px;
+        flex: none;
+      }
+      .badge {
+        display: inline-block;
+        font-size: var(--text-2xs);
+        font-weight: 700;
+        padding: 2px var(--space-2);
+        border-radius: var(--radius-pill);
+        background: var(--secondary);
+        color: #3f3308;
+        letter-spacing: 0.02em;
+        line-height: 1.4;
+      }
+      .state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: var(--space-3);
+        padding: var(--space-6) var(--space-4);
+        color: var(--text-muted);
+      }
+      .state svg {
+        width: 40px;
+        height: 40px;
+        stroke: var(--text-muted);
+      }
+      .meta {
+        margin: 0;
+      }
+      .meta dt {
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+      }
+      .meta dd {
+        margin: var(--space-1) 0 0;
+        font-size: var(--text-base);
+      }
+      /* --- app shell --- */
+      .shell {
+        min-height: 100vh;
+        max-width: var(--content-max);
+        margin-inline: auto;
+        background: var(--bg-2);
+        display: flex;
+        flex-direction: column;
+      }
+      @media (min-width: 460px) {
+        .shell {
+          border-inline: 1px solid var(--border);
+        }
+      }
+      .appheader {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-3) var(--space-4);
+        border-bottom: 1px solid var(--border);
+      }
+      .wordmark {
+        font-size: var(--text-md);
+        font-weight: 700;
+        letter-spacing: 0.01em;
+      }
+      .avatar-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-pill);
+        border: 1px solid var(--border);
+        background: var(--bg-1);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        overflow: hidden;
+        padding: 0;
+        color: var(--text-muted);
+      }
+      .avatar-btn img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .appmain {
+        flex: 1;
+        padding: var(--space-4);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+      }
+      .appfooter {
+        padding: var(--space-4);
+        text-align: center;
+        font-size: var(--text-2xs);
+        color: var(--text-muted);
+        border-top: 1px solid var(--border);
+      }
+      .pagehead {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+      }
+      .pagehead h1 {
+        font-size: var(--text-lg);
+        line-height: var(--leading-tight);
+        margin: 0;
+      }
+      .backlink {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1);
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: var(--text-xs);
+      }
+      .backlink svg {
+        width: 16px;
+        height: 16px;
+      }
+      .toolbar {
+        display: flex;
+        justify-content: flex-end;
+      }
+      .sectionhead {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+      }
+      .sectionhead h1 {
+        font-size: var(--text-lg);
+        line-height: var(--leading-tight);
+        margin: 0;
+      }
+      .sectionhead h2 {
+        font-size: var(--text-md);
+        margin: 0;
+        line-height: var(--leading-tight);
+      }
+      /* --- nav sheet --- */
+      .scrim {
+        position: fixed;
+        inset: 0;
+        background: rgba(30, 40, 32, 0.55);
+      }
+      .sheet {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 78%;
+        max-width: 300px;
+        background: var(--bg-1);
+        box-shadow: var(--shadow-soft);
+        border-left: 1px solid var(--border);
+        padding: var(--space-4);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+      }
+      .sheet-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--space-3);
+      }
+      .sheet-head h2 {
+        font-size: var(--text-md);
+        margin: 0;
+      }
+      .sheet-close {
+        background: none;
+        border: none;
+        padding: var(--space-1);
+        cursor: pointer;
+        color: var(--text-muted);
+        display: inline-flex;
+      }
+      .sheet-close svg {
+        width: 20px;
+        height: 20px;
+      }
+      .sheet nav {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+      }
+      .sheet nav a,
+      .sheet nav button {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-3);
+        border-radius: var(--radius-sm);
+        color: var(--text);
+        text-decoration: none;
+        font: inherit;
+        font-weight: 500;
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-align: left;
+        width: 100%;
+      }
+      .sheet nav a:hover,
+      .sheet nav button:hover {
+        background: var(--bg-2);
+      }
+      .sheet nav svg {
+        width: 20px;
+        height: 20px;
+        color: var(--text-muted);
+        flex: none;
+      }
+      .caption {
+        font-size: var(--text-2xs);
+        color: var(--text-muted);
+        line-height: var(--leading-body);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Common layout: used on every page EXCEPT the home screen (home-*.html). -->
+    <div class="shell">
+      <header class="appheader">
+        <span class="wordmark">siorie</span>
+        <button class="avatar-btn" type="button" aria-label="Open menu">
+          <img src="https://i.pravatar.cc/80?img=13" alt="" />
+        </button>
+      </header>
+      <main class="appmain">
+        <p class="caption">
+          Header — wordmark (left) + avatar button (right). Tapping the avatar
+          opens the nav sheet from the right. Footer — muted wordmark only, no
+          other text. Content column is capped at 430&nbsp;px; on desktop the
+          column keeps that width with a hairline side border.
+        </p>
+        <div
+          class="card"
+          style="
+            padding: var(--space-4);
+            color: var(--text-muted);
+            font-size: var(--text-xs);
+          "
+        >
+          Page content goes here — see groups.html, group-detail.html,
+          item-detail.html, groups-create.html.
+        </div>
+      </main>
+      <footer class="appfooter">siorie</footer>
+    </div>
+
+    <!-- Nav sheet, shown in its open state. Built on Radix Dialog/Sheet
+         primitive: focus trap, Esc to close, tap scrim to close. -->
+    <div class="scrim"></div>
+    <aside class="sheet" role="dialog" aria-label="Menu">
+      <div class="sheet-head">
+        <h2>Menu</h2>
+        <button class="sheet-close" type="button" aria-label="Close menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <nav>
+        <a href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          Groups
+        </a>
+        <button type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Log out
+        </button>
+      </nav>
+    </aside>
+  </body>
+</html>

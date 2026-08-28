@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>siorie — delete confirm dialog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@300;400;500;700&family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* === siorie shared tokens === */
+      :root {
+        color-scheme: light;
+        --bg-1: #ffffff;
+        --bg-2: #f2ede0;
+        --primary: #48624f;
+        --primary-hover: #3c5343;
+        --secondary: #e3c25c;
+        --text: #2a332c;
+        --text-muted: #5c6a5f;
+        --border: #bdb5a0;
+        --error: #a9473e;
+        --error-hover: #8f3c34;
+        --on-primary: #ffffff;
+        --ring: rgba(72, 98, 79, 0.38);
+        --text-2xs: 10px;
+        --text-xs: 13px;
+        --text-base: 16px;
+        --text-md: 20px;
+        --text-lg: 26px;
+        --leading-body: 1.618;
+        --leading-tight: 1.2;
+        --space-1: 4px;
+        --space-2: 8px;
+        --space-3: 12px;
+        --space-4: 20px;
+        --space-5: 32px;
+        --space-6: 52px;
+        --radius-sm: 8px;
+        --radius: 13px;
+        --radius-lg: 21px;
+        --radius-pill: 999px;
+        --shadow-soft: 0 4px 20px rgba(47, 58, 49, 0.1);
+        --content-max: 430px;
+        --font:
+          'Zen Maru Gothic', 'M PLUS Rounded 1c', ui-rounded,
+          'Hiragino Maru Gothic ProN', system-ui, sans-serif;
+        --font-ugc:
+          ui-rounded, 'Hiragino Maru Gothic ProN', 'Hiragino Sans',
+          'Yu Gothic', 'Yu Gothic UI', Meiryo, system-ui, sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg-2);
+        color: var(--text);
+        font-family: var(--font);
+        font-size: var(--text-base);
+        line-height: var(--leading-body);
+        -webkit-font-smoothing: antialiased;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        min-height: 44px;
+        padding: var(--space-3) var(--space-4);
+        border-radius: var(--radius-pill);
+        border: 1.5px solid transparent;
+        font: inherit;
+        font-weight: 500;
+        line-height: 1;
+        cursor: pointer;
+        text-decoration: none;
+        transition:
+          background-color 0.15s,
+          border-color 0.15s;
+      }
+      .btn svg {
+        width: 20px;
+        height: 20px;
+        flex: none;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: var(--on-primary);
+      }
+      .btn-primary:hover {
+        background: var(--primary-hover);
+      }
+      .btn-outline {
+        background: transparent;
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+      .btn-outline:hover {
+        background: rgba(72, 98, 79, 0.12);
+      }
+      .btn-danger {
+        background: var(--error);
+        color: #fff;
+      }
+      .btn-danger:hover {
+        background: var(--error-hover);
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+      }
+      .form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+      }
+      .label {
+        font-weight: 500;
+      }
+      .input {
+        height: 44px;
+        padding: 0 var(--space-3);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--bg-1);
+        color: var(--text);
+        font: inherit;
+        font-family: var(--font-ugc);
+      }
+      .toolbar {
+        display: flex;
+        justify-content: flex-end;
+      }
+      .ugc {
+        font-family: var(--font-ugc);
+      }
+      .shell {
+        min-height: 100vh;
+        max-width: var(--content-max);
+        margin-inline: auto;
+        background: var(--bg-2);
+        display: flex;
+        flex-direction: column;
+        filter: blur(1px);
+      }
+      @media (min-width: 460px) {
+        .shell {
+          border-inline: 1px solid var(--border);
+        }
+      }
+      .appheader {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-3) var(--space-4);
+        border-bottom: 1px solid var(--border);
+      }
+      .wordmark {
+        font-size: var(--text-md);
+        font-weight: 700;
+        letter-spacing: 0.01em;
+      }
+      .avatar-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-pill);
+        border: 1px solid var(--border);
+        background: var(--bg-1);
+        overflow: hidden;
+        padding: 0;
+      }
+      .avatar-btn img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .appmain {
+        flex: 1;
+        padding: var(--space-4);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+      }
+      .appfooter {
+        padding: var(--space-4);
+        text-align: center;
+        font-size: var(--text-2xs);
+        color: var(--text-muted);
+        border-top: 1px solid var(--border);
+      }
+      .pagetitle {
+        font-size: var(--text-lg);
+        line-height: var(--leading-tight);
+        margin: 0;
+      }
+      /* --- overlay --- */
+      .scrim {
+        position: fixed;
+        inset: 0;
+        background: rgba(30, 40, 32, 0.55);
+      }
+      .dialog {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: calc(100% - var(--space-5));
+        max-width: 360px;
+        background: var(--bg-1);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-soft);
+        padding: var(--space-4);
+      }
+      .dialog h2 {
+        font-size: var(--text-md);
+        margin: 0 0 var(--space-2);
+        line-height: var(--leading-tight);
+      }
+      .dialog > p {
+        margin: 0 0 var(--space-4);
+        color: var(--text-muted);
+        font-size: var(--text-xs);
+      }
+      .dialog .actions {
+        display: flex;
+        gap: var(--space-2);
+        justify-content: flex-end;
+      }
+      .dialog .error-text {
+        font-size: var(--text-xs);
+        color: var(--error);
+        margin: 0 0 var(--space-3);
+      }
+      .caption {
+        font-size: var(--text-2xs);
+        color: var(--text-muted);
+        line-height: var(--leading-body);
+      }
+      .caption-wrap {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: var(--space-3) var(--space-4);
+        background: var(--bg-1);
+        border-top: 1px solid var(--border);
+        max-width: var(--content-max);
+        margin-inline: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- The delete confirm dialog is hand-built on the Radix Dialog primitive
+         (focus trap, Esc, scrim). Invoked from the group / item EDIT page.
+         The page behind is shown blurred for context. -->
+    <div class="shell">
+      <header class="appheader">
+        <span class="wordmark">siorie</span>
+        <span class="avatar-btn"><img src="https://i.pravatar.cc/80?img=13" alt="" /></span>
+      </header>
+      <main class="appmain">
+        <h1 class="pagetitle">Edit group</h1>
+        <form class="form">
+          <div class="field">
+            <label class="label" for="n">Name</label>
+            <input class="input" id="n" value="マンガ喫茶" />
+          </div>
+          <div class="toolbar">
+            <button class="btn btn-primary" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Save
+            </button>
+          </div>
+          <button class="btn btn-danger" type="button" style="align-self: flex-start">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Delete group
+          </button>
+        </form>
+      </main>
+      <footer class="appfooter">siorie</footer>
+    </div>
+
+    <div class="scrim"></div>
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dtitle">
+      <h2 id="dtitle">Delete this group?</h2>
+      <p>“<span class="ugc">マンガ喫茶</span>” and all of its items will be deleted. This can’t be undone.</p>
+      <div class="actions">
+        <button class="btn btn-outline" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Cancel
+        </button>
+        <button class="btn btn-danger" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Delete
+        </button>
+      </div>
+    </div>
+
+    <div class="caption-wrap">
+      <p class="caption" style="margin: 0">
+        While deleting: both buttons disabled, “Delete” reads “Deleting…”. On
+        failure, a fixed message appears as error text between the body copy and
+        the actions (<code>DeleteConfirmDialog</code> takes an optional
+        <code>error</code> prop — 0005 / 0012). Never uses the native
+        <code>confirm()</code>. Same dialog wording pattern is reused for item
+        deletion.
+      </p>
+    </div>
+  </body>
+</html>
