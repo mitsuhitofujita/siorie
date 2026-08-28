@@ -1,30 +1,16 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { EmptyState } from '@/components/EmptyState'
+import { ErrorState } from '@/components/ErrorState'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { api, type Group } from '@/lib/api'
+import { api } from '@/lib/api'
+import { useFetch } from '@/lib/use-fetch'
 
 export function GroupsListPage() {
-  const [groups, setGroups] = useState<Group[] | null>(null)
+  const groups = useFetch(api.listGroups)
 
-  useEffect(() => {
-    let cancelled = false
-    api
-      .listGroups()
-      .then((result) => {
-        if (!cancelled) setGroups(result)
-      })
-      .catch(() => {
-        if (!cancelled) setGroups([])
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  if (groups === null) {
+  if (groups.status === 'loading') {
     return (
       <div className="flex flex-col gap-2">
         <Skeleton className="h-12 w-full" />
@@ -34,7 +20,11 @@ export function GroupsListPage() {
     )
   }
 
-  if (groups.length === 0) {
+  if (groups.status === 'error') {
+    return <ErrorState onRetry={groups.refetch} />
+  }
+
+  if (groups.data.length === 0) {
     return (
       <EmptyState
         message="グループがまだありません"
@@ -52,7 +42,7 @@ export function GroupsListPage() {
         </Button>
       </div>
       <ul className="flex flex-col divide-y divide-border rounded-md border">
-        {groups.map((group) => (
+        {groups.data.map((group) => (
           <li key={group.id}>
             <Link
               to={`/groups/${group.id}`}

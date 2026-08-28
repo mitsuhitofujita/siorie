@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { renderWithProviders } from '@/test/renderWithProviders'
@@ -45,7 +45,7 @@ describe('GroupsListPage', () => {
     )
   })
 
-  it('falls back to the empty state when the request fails (no backend yet)', async () => {
+  it('shows an error state with a retry button when the request fails', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockRejectedValue(new Error('network error')),
@@ -53,7 +53,28 @@ describe('GroupsListPage', () => {
     renderWithProviders(<GroupsListPage />)
 
     await waitFor(() =>
-      expect(screen.getByText('グループがまだありません')).toBeInTheDocument(),
+      expect(screen.getByText('読み込みに失敗しました。')).toBeInTheDocument(),
+    )
+    expect(
+      screen.queryByText('グループがまだありません'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('retries the request when the retry button is clicked', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new Error('network error')),
+    )
+    renderWithProviders(<GroupsListPage />)
+    await waitFor(() =>
+      expect(screen.getByText('読み込みに失敗しました。')).toBeInTheDocument(),
+    )
+
+    stubFetchJson([{ id: 'g1', name: '漫画喫茶' }])
+    fireEvent.click(screen.getByRole('button', { name: '再試行' }))
+
+    await waitFor(() =>
+      expect(screen.getByText('漫画喫茶')).toBeInTheDocument(),
     )
   })
 })

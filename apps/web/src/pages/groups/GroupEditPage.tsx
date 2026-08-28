@@ -1,42 +1,60 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
+import { ErrorState } from '@/components/ErrorState'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
-import { api, type Group } from '@/lib/api'
+import { api } from '@/lib/api'
+import { useFetch } from '@/lib/use-fetch'
+import { useSubmit } from '@/lib/use-submit'
 
 export function GroupEditPage() {
   const { groupId } = useParams<{ groupId: string }>()
   const navigate = useNavigate()
 
-  const [group, setGroup] = useState<Group | null>(null)
-  const [name, setName] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-
-  useEffect(() => {
-    if (!groupId) return
-    let cancelled = false
-    api
-      .getGroup(groupId)
-      .then((result) => {
-        if (cancelled) return
-        setGroup(result)
-        setName(result.name)
-      })
-      .catch(() => {
-        if (!cancelled) setGroup(null)
-      })
-    return () => {
-      cancelled = true
-    }
+  const fetchGroup = useCallback(() => {
+    if (!groupId) return Promise.reject(new Error('missing groupId'))
+    return api.getGroup(groupId)
   }, [groupId])
+  const group = useFetch(fetchGroup)
 
-  if (!group) {
+  const [name, setName] = useState('')
+  // Seeds `name` from the fetch the first time it succeeds for this group,
+  // without clobbering in-progress edits on a later re-render. Set during
+  // render (React's documented pattern for "adjust state when a prop
+  // changes"), not in an effect: an effect would fire one render late and
+  // synchronously calling setState from inside an effect body is flagged by
+  // react-hooks/set-state-in-effect.
+  const [initializedGroupId, setInitializedGroupId] = useState<string | null>(
+    null,
+  )
+  if (group.status === 'success' && group.data.id !== initializedGroupId) {
+    setName(group.data.name)
+    setInitializedGroupId(group.data.id)
+  }
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+
+  const {
+    isSubmitting,
+    error: submitError,
+    submit: submitUpdate,
+  } = useSubmit(
+    api.updateGroup,
+    '保存できませんでした。もう一度お試しください。',
+  )
+  const {
+    isSubmitting: isDeleting,
+    error: deleteError,
+    submit: submitDelete,
+  } = useSubmit(
+    api.deleteGroup,
+    '削除できませんでした。もう一度お試しください。',
+  )
+
+  if (group.status === 'loading') {
     return (
       <div className="flex flex-col gap-4">
         <Skeleton className="h-7 w-40" />
@@ -45,25 +63,19 @@ export function GroupEditPage() {
     )
   }
 
+  if (group.status === 'error') {
+    return <ErrorState onRetry={group.refetch} />
+  }
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
-    setIsSubmitting(true)
-    try {
-      await api.updateGroup(group.id, name)
-      navigate('/groups')
-    } finally {
-      setIsSubmitting(false)
-    }
+    const result = await submitUpdate(group.data.id, name)
+    if (result.ok) navigate('/groups')
   }
 
   const handleDelete = async () => {
-    setIsDeleting(true)
-    try {
-      await api.deleteGroup(group.id)
-      navigate('/groups')
-    } finally {
-      setIsDeleting(false)
-    }
+    const result = await submitDelete(group.data.id)
+    if (result.ok) navigate('/groups')
   }
 
   return (
@@ -80,6 +92,9 @@ export function GroupEditPage() {
             required
           />
         </div>
+        {submitError && (
+          <p className="text-sm text-destructive">{submitError}</p>
+        )}
         <div className="flex justify-between gap-2">
           <Button
             type="button"
@@ -99,6 +114,7 @@ export function GroupEditPage() {
         title="グループを削除しますか?"
         description="所属するアイテムもまとめて削除されます。この操作は取り消せません。"
         isDeleting={isDeleting}
+        error={deleteError}
         onConfirm={handleDelete}
       />
     </>

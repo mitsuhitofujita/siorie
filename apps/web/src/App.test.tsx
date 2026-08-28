@@ -36,7 +36,7 @@ describe('App routing', () => {
   it('renders group/item routes inside the common layout', async () => {
     renderApp('/groups')
     await waitFor(() =>
-      expect(screen.getByText('グループがまだありません')).toBeInTheDocument(),
+      expect(screen.getByText('読み込みに失敗しました。')).toBeInTheDocument(),
     )
     expect(
       screen.getByRole('button', { name: 'メニューを開く' }),

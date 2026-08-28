@@ -54,7 +54,7 @@ describe('ItemDetailPage', () => {
     )
   })
 
-  it('keeps showing the loading skeleton when the item request fails', async () => {
+  it('shows an error state with a retry button when the item request fails', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockRejectedValue(new Error('network error')),
@@ -65,8 +65,8 @@ describe('ItemDetailPage', () => {
     })
 
     await waitFor(() =>
-      expect(screen.queryByText('ONE PIECE')).not.toBeInTheDocument(),
+      expect(screen.getByText('読み込みに失敗しました。')).toBeInTheDocument(),
     )
-    expect(screen.queryByRole('heading')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '再試行' })).toBeInTheDocument()
   })
 })

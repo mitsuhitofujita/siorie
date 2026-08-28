@@ -14,6 +14,7 @@ export function DeleteConfirmDialog({
   title,
   description,
   isDeleting,
+  error,
   onConfirm,
 }: {
   open: boolean
@@ -21,6 +22,7 @@ export function DeleteConfirmDialog({
   title: string
   description: string
   isDeleting: boolean
+  error?: string | null
   onConfirm: () => void
 }) {
   return (
@@ -30,6 +32,7 @@ export function DeleteConfirmDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
+        {error && <p className="text-sm text-destructive">{error}</p>}
         <DialogFooter>
           <Button
             variant="outline"

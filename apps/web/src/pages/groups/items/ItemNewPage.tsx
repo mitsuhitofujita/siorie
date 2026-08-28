@@ -5,24 +5,23 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { api } from '@/lib/api'
+import { useSubmit } from '@/lib/use-submit'
 
 export function ItemNewPage() {
   const { groupId } = useParams<{ groupId: string }>()
   const navigate = useNavigate()
   const [title, setTitle] = useState('')
   const [completedVolume, setCompletedVolume] = useState('0')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { isSubmitting, error, submit } = useSubmit(
+    api.createItem,
+    '保存できませんでした。もう一度お試しください。',
+  )
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
     if (!groupId) return
-    setIsSubmitting(true)
-    try {
-      await api.createItem(groupId, title, Number(completedVolume))
-      navigate(`/groups/${groupId}`)
-    } finally {
-      setIsSubmitting(false)
-    }
+    const result = await submit(groupId, title, Number(completedVolume))
+    if (result.ok) navigate(`/groups/${groupId}`)
   }
 
   return (
@@ -50,6 +49,7 @@ export function ItemNewPage() {
           required
         />
       </div>
+      {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="flex justify-end gap-2">
         <Button type="submit" disabled={isSubmitting}>
           作成する

@@ -78,7 +78,7 @@ describe('GroupDetailPage', () => {
     )
   })
 
-  it('keeps showing the loading skeleton when the group request fails (no backend yet)', async () => {
+  it('shows an error state with a retry button when the group request fails', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockRejectedValue(new Error('network error')),
@@ -89,8 +89,26 @@ describe('GroupDetailPage', () => {
     })
 
     await waitFor(() =>
-      expect(screen.queryByText('漫画喫茶')).not.toBeInTheDocument(),
+      expect(screen.getByText('読み込みに失敗しました。')).toBeInTheDocument(),
     )
-    expect(screen.queryByRole('heading')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '再試行' })).toBeInTheDocument()
+  })
+
+  it('shows an item-list error state (distinct from the empty state) when only the item request fails', async () => {
+    stubFetchByPath({ '/api/groups/g1': { id: 'g1', name: '漫画喫茶' } })
+    renderWithProviders(<GroupDetailPage />, {
+      route: '/groups/g1',
+      path: '/groups/:groupId',
+    })
+
+    await waitFor(() =>
+      expect(screen.getByText('漫画喫茶')).toBeInTheDocument(),
+    )
+    await waitFor(() =>
+      expect(screen.getByText('読み込みに失敗しました。')).toBeInTheDocument(),
+    )
+    expect(
+      screen.queryByText('アイテムがまだありません'),
+    ).not.toBeInTheDocument()
   })
 })
