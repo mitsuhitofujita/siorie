@@ -1,8 +1,8 @@
 ---
 date: 2026-08-27
-status: in-progress
+status: merged
 discussions: [0011-items-crud]
-decisions: []
+decisions: [0004-item-entity-crud]
 pr: null
 ---
 

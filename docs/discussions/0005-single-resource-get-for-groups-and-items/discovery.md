@@ -1,7 +1,7 @@
 ---
 date: 2026-08-23
 tags: [api, backend]
-status: open
+status: decided
 worklogs: [0002-home-login-frontend-structure]
 ---
 

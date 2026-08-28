@@ -1,7 +1,7 @@
 ---
 date: 2026-08-26
 tags: [items, groups, crud, api]
-status: worked
+status: decided
 worklogs: [2026-08-27-items-crud]
 ---
 
