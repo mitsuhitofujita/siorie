@@ -1,5 +1,5 @@
 // Package store persists users and sessions in Firestore, per the data
-// model in docs/discussions/20260823-purpose-and-initial-tech-stack/proposal.md:
+// model in docs/discussions/0001-purpose-and-initial-tech-stack/proposal.md:
 //
 //	users/{googleSub}
 //	sessions/{sha256(sessionId)}
