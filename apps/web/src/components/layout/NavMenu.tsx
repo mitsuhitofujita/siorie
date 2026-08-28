@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { User } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -15,7 +15,13 @@ import { useAuth } from '@/lib/auth-context'
 
 export function NavMenu() {
   const { state, logout } = useAuth()
+  const navigate = useNavigate()
   const user = state.status === 'authenticated' ? state.user : null
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/')
+  }
 
   return (
     <Sheet>
@@ -50,7 +56,7 @@ export function NavMenu() {
             <Button
               variant="ghost"
               className="justify-start px-3"
-              onClick={() => logout()}
+              onClick={() => handleLogout()}
             >
               ログアウト
             </Button>
