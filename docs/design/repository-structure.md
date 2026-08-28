@@ -19,8 +19,8 @@ This repository is a monorepo. Runnable applications live under `apps/`: `apps/a
 │   │   └── justfile
 │   └── web/
 │       ├── src/
-│       │   ├── components/       # layout, shared UI, shadcn/ui primitives (ui/)
-│       │   ├── lib/               # auth (Google Identity Services), api client, utils
+│       │   ├── components/       # layout, shared UI (empty/error states), shadcn/ui primitives (ui/)
+│       │   ├── lib/               # auth (Google Identity Services), api client, data-fetch/submit hooks, utils
 │       │   ├── pages/             # HomePage, groups/ (list/detail/new/edit), groups/items/ (detail/new/edit)
 │       │   ├── test/              # setup.ts, renderWithProviders.tsx
 │       │   ├── App.tsx
@@ -92,6 +92,17 @@ A Vite + TypeScript + React application managed with pnpm as the only package ma
   `POST`s to `/api/auth/google`, then re-checks `GET /api/me` to update auth state; `logout()` calls
   `POST /api/auth/logout`. `src/pages/HomePage.tsx` mounts the button into an empty container in the
   unauthenticated state.
+- `src/lib/use-fetch.ts` (`useFetch`) and `src/lib/use-submit.ts` (`useSubmit`) are the
+  shared data-access hooks every group/item page uses instead of ad-hoc
+  `useState`/`useEffect`. `useFetch(fetcher)` returns an explicit
+  `{ status: 'loading' | 'success' | 'error', data?, refetch }`, so a failed GET renders
+  `components/ErrorState` (a fixed-message "再試行" component mirroring
+  `components/EmptyState`) rather than a stuck skeleton. `useSubmit(action, message)` wraps
+  a create/update/delete call as `{ isSubmitting, error, submit }`, where `submit` resolves
+  to `{ ok: true; value } | { ok: false }`; a failed submit shows a fixed Japanese message
+  inline in the form, or inside `DeleteConfirmDialog` (which takes an optional `error` prop)
+  for a failed delete. Error copy is always local and fixed — `apiFetch` still throws on
+  status alone and never reads the failure body.
 - `apps/web/.env` (see `.env.example`) holds `VITE_GOOGLE_CLIENT_ID`.
 - `vite.config.ts` proxies `/api/*` to `http://localhost:8080` in dev, so `pnpm dev` and the Go API
   server present as one browser-visible origin (`http://localhost:5173`) — required for the
@@ -125,3 +136,4 @@ item-list endpoint currently returns every item with no pagination.
 - [0002: Google ID Token authentication with Firestore-backed sessions](../decisions/0002-google-id-token-auth.md)
 - [0003: Group entity CRUD](../decisions/0003-group-entity-crud.md)
 - [0004: Item entity CRUD](../decisions/0004-item-entity-crud.md)
+- [0005: Form and fetch error feedback](../decisions/0005-form-and-fetch-error-feedback.md)

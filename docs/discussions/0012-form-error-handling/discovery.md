@@ -1,7 +1,7 @@
 ---
 date: 2026-08-27
 tags: [frontend, error-handling, ux]
-status: proposed
+status: decided
 worklogs: [2026-08-27-items-crud, 2026-08-28-form-error-handling]
 ---
 
