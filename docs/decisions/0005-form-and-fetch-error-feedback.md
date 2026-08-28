@@ -1,7 +1,7 @@
 # 0005: Form and fetch error feedback
 
 Discussion: [form and fetch API error display](../discussions/0012-form-error-handling/proposal.md)
-Worklog: [API error feedback for forms and fetches](../worklogs/2026-08-28-form-error-handling/plan.md)
+Worklog: [API error feedback for forms and fetches](../worklogs/0006-form-error-handling/plan.md)
 
 ## Status
 

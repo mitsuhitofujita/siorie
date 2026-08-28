@@ -123,7 +123,7 @@ Frontend (`apps/web`):
   out of scope per the proposal ("API失敗時のエラー状態の具体的な表示" is
   deferred), so it's left as is here, not fixed as a drive-by. This looked
   structural rather than a one-off, so it became a new discovery:
-  [0012](../../discussions/0012/discovery.md).
+  [0012](../../discussions/0012-form-error-handling/discovery.md).
 
 - **Authenticated browser verification was not possible, same as worklog
   0004-item-groups-crud**: a real Google sign-in needs a real Google account
@@ -140,5 +140,5 @@ Frontend (`apps/web`):
   tests with mocked `fetch`. Hitting the exact same wall a second time (0004
   predicted it, this worklog confirmed it) looked structural rather than a
   coincidence, so it became a new discovery:
-  [0013](../../discussions/0013/discovery.md).
+  [0013](../../discussions/0013-local-e2e-test-login/discovery.md).
 

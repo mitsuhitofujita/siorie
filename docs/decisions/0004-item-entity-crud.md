@@ -1,7 +1,7 @@
 # 0004: Item entity CRUD
 
 Discussion: [item entity CRUD](../discussions/0011-items-crud/proposal.md)
-Worklog: [Item entity CRUD](../worklogs/2026-08-27-items-crud/plan.md)
+Worklog: [Item entity CRUD](../worklogs/0005-items-crud/plan.md)
 
 ## Status
 

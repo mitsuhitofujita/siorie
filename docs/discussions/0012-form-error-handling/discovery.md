@@ -2,10 +2,10 @@
 date: 2026-08-27
 tags: [frontend, error-handling, ux]
 status: decided
-worklogs: [2026-08-27-items-crud, 2026-08-28-form-error-handling]
+worklogs: [0005-items-crud, 0006-form-error-handling]
 ---
 
-worklog [2026-08-27-items-crud](../../worklogs/2026-08-27-items-crud/plan.md) で、
+worklog [0005-items-crud](../../worklogs/0005-items-crud/plan.md) で、
 「グループ作成→アイテム作成で『作成する』ボタンをタップしてもアイテムが作られず、ページの移動も無かった」
 というバグ報告を調査していて気づいたこと。
 

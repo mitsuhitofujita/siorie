@@ -2,10 +2,10 @@
 date: 2026-08-28
 tags: [testing, frontend, flaky-test]
 status: open
-worklogs: [2026-08-28-form-error-handling]
+worklogs: [0006-form-error-handling]
 ---
 
-worklog [2026-08-28-form-error-handling](../../worklogs/2026-08-28-form-error-handling/plan.md)
+worklog [0006-form-error-handling](../../worklogs/0006-form-error-handling/plan.md)
 で `just check` を流していたときに気づいたこと。今回の変更(`apps/web/src/lib/use-fetch.ts`
 などフォーム・取得系のエラー表示)とは無関係のはずの既存テストが、フルスイート実行時にだけ
 1回失敗した。

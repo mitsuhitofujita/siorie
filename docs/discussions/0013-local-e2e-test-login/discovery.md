@@ -2,7 +2,7 @@
 date: 2026-08-27
 tags: [testing, auth, dev-environment]
 status: proposed
-worklogs: [2026-08-27-items-crud]
+worklogs: [0005-items-crud]
 ---
 
 worklog [0004-item-groups-crud](../../worklogs/0004-item-groups-crud/README.md) の
@@ -14,7 +14,7 @@ Google アカウントと OAuth 認証情報が要るため実サインインが
 (例: 開発環境限定で `FakeVerifier` を使う起動オプション)を用意するかどうかは、
 別途検討の価値があるかもしれない」という一文で終わっていた。
 
-worklog [2026-08-27-items-crud](../../worklogs/2026-08-27-items-crud/plan.md) で
+worklog [0005-items-crud](../../worklogs/0005-items-crud/plan.md) で
 アイテムCRUDを実装したときも、まったく同じ手順を踏んで、まったく同じ場所で
 ブロックされた。`document.cookie = "__Host-session=...; path=/"` を実行しようと
 したところ `[BLOCKED: Cookie/query string data]` という結果になった。代わりに

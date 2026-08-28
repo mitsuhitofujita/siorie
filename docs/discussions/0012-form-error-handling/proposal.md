@@ -8,7 +8,7 @@ APIのエラーdetailをそのまま表示すること、サーバー側バリ�
 
 ## 背景
 
-worklog [2026-08-27-items-crud](../../worklogs/2026-08-27-items-crud/plan.md) の調査で、
+worklog [0005-items-crud](../../worklogs/0005-items-crud/plan.md) の調査で、
 `ItemNewPage.handleSubmit` が `try` はあるが `catch` を持たず、API失敗時にユーザーへ何のフィードバックも
 出さずボタンが無反応に見えるバグが見つかった。同じ形は `GroupNewPage`、`GroupEditPage`
 (更新・削除)、`ItemEditPage`(更新・削除)にも存在する。
@@ -153,5 +153,5 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
 - [0010: item groups](../0010-item-groups/proposal.md) — 401を一般エラーとして扱う方針の出典。
   エラー状態表示を再度先送り
 - [0011: items crud](../0011-items-crud/proposal.md) — エラー状態表示を三度先送り
-- worklog [2026-08-27-items-crud](../../worklogs/2026-08-27-items-crud/plan.md) — 本提案の発端となった
+- worklog [0005-items-crud](../../worklogs/0005-items-crud/plan.md) — 本提案の発端となった
   バグ調査

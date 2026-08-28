@@ -136,7 +136,7 @@ infinite loading skeleton).
   [0014](../../discussions/0014/discovery.md).
 
 - **Real browser verification was possible this time**, unlike worklogs
-  0004-item-groups-crud and 2026-08-27-items-crud, which both hit a hard
+  0004-item-groups-crud and 0005-items-crud, which both hit a hard
   wall trying to inject a session cookie for authenticated testing. This
   worklog didn't need to get past that wall: the pages/paths being changed
   here (fetch-failure and submit-failure display) are exercised just as
