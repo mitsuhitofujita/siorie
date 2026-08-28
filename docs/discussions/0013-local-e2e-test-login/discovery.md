@@ -1,7 +1,7 @@
 ---
 date: 2026-08-27
 tags: [testing, auth, dev-environment]
-status: open
+status: proposed
 worklogs: [2026-08-27-items-crud]
 ---
 

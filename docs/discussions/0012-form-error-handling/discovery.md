@@ -1,8 +1,8 @@
 ---
 date: 2026-08-27
 tags: [frontend, error-handling, ux]
-status: open
-worklogs: [2026-08-27-items-crud]
+status: proposed
+worklogs: [2026-08-27-items-crud, 2026-08-28-form-error-handling]
 ---
 
 worklog [2026-08-27-items-crud](../../worklogs/2026-08-27-items-crud/plan.md) で、
