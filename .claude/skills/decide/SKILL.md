@@ -1,6 +1,8 @@
 ---
+name: decide
 description: worklog を decisions に記録し、design に現況を反映する
 argument-hint: <docs/worklogs/ 以下の相対パス（例: docs/worklogs/0004-item-groups-crud）>
+disable-model-invocation: true
 ---
 
 `docs/README.md` に従って。

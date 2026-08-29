@@ -1,6 +1,8 @@
 ---
+name: work
 description: proposal.md から worklog を起こして実装し、結果と困難を追記する
 argument-hint: <docs/discussions/ 以下の相対パス（例: docs/discussions/0010-item-groups）> または実施内容
+disable-model-invocation: true
 ---
 
 `docs/README.md` に従って。
@@ -16,10 +18,11 @@ proposal を伴わない小さな作業なら、それでいい。discovery を�
 
 ## 2. worklog を作る
 
-`docs/worklogs/<今日の日付>-<短い説明>/plan.md` を作って。
-日付は proposal の日付ではなく、今日の日付を使って。
+`docs/worklogs/<NNNN-短い説明>/plan.md` を作って。
+`NNNN` は既存 worklog の続きの4桁連番（`discussions/` や `decisions/` と同じく、ディレクトリを作成した順）。
+短い説明は、既存の worklog にならって英語のケバブケースで。
 
-frontmatter は以下の形で。
+frontmatter は以下の形で。`date` には proposal の日付ではなく、今日の日付を使って。
 
 ```yaml
 ---

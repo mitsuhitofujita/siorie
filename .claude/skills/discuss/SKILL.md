@@ -1,6 +1,8 @@
 ---
+name: discuss
 description: discovery.md をもとに議論し、合意できたら proposal.md をまとめる
 argument-hint: <docs/discussions/ 以下の相対パス（例: docs/discussions/0010-item-groups。作成直後は連番のみの docs/discussions/0011 でも可）>
+disable-model-invocation: true
 ---
 
 `docs/README.md` に従って。
