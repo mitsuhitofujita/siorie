@@ -17,6 +17,16 @@ dev-web:
 dev-firestore:
     just apps/api/firestore-emulator
 
+# Serves on port 5173, the same origin as `dev-web`, so APP_ORIGIN, the
+# session cookie, and the /api proxy all behave as in dev. Stop `dev-web`
+# first (the port is shared on purpose); `dev-api` and `dev-firestore` run
+# unchanged alongside it.
+
+# Build the Web app and serve the production bundle with Vite preview.
+preview-web:
+    pnpm --dir {{web_dir}} build
+    pnpm --dir {{web_dir}} preview
+
 # Build the API and Web app.
 build:
     just apps/api/build
