@@ -19,7 +19,7 @@ This repository is a monorepo. Runnable applications live under `apps/`: `apps/a
 │   │   └── justfile
 │   └── web/
 │       ├── src/
-│       │   ├── components/       # layout, shared UI (empty/error states), shadcn/ui primitives (ui/)
+│       │   ├── components/       # layout, shared states (empty/error), hand-written UI primitives (Button, Dialog, Sheet, TextField, Avatar, Skeleton)
 │       │   ├── lib/               # auth (Google Identity Services), api client, data-fetch/submit hooks, utils
 │       │   ├── pages/             # HomePage, groups/ (list/detail/new/edit), groups/items/ (detail/new/edit)
 │       │   ├── test/              # setup.ts, renderWithProviders.tsx
@@ -86,6 +86,20 @@ A single Go module (`github.com/mitsuhitofujita/siorie/apps/api`) using chi as t
 
 A Vite + TypeScript + React application managed with pnpm as the only package manager; no pnpm workspace is used.
 
+- The visual style is a bespoke design-token system in `src/index.css` (moss ×
+  rounded-gothic): a moss colour palette, a φ-based type scale, Fibonacci-px
+  spacing, and `8·φⁿ` radius, all as CSS custom properties, with the component
+  styles in an `@layer components` block consumed as semantic classes
+  (`className="btn btn-primary"`). Mobile-only, light-only, a single centred
+  column ≤ 430 px with a hairline side border on wider viewports; the home
+  screen keeps no common layout. shadcn/ui is not used — `src/components/`
+  holds hand-written `Button`, `Dialog`, `Sheet`, `TextField`, `Avatar`, and
+  `Skeleton` on the tokens, wrapping the Radix primitives (Dialog, Label,
+  Avatar) kept for behaviour. Tailwind v4 remains as the build pipeline plus a
+  `@theme` colour map and a few layout utilities. UI copy is English;
+  user-entered content (group / item names, the signed-in user's name) renders
+  in the OS gothic with no web font, while the rounded chrome face (Zen Maru
+  Gothic, Latin subset) is self-hosted via `@fontsource` with no runtime CDN.
 - `src/lib/auth.tsx` (`AuthProvider`) loads the Google Identity Services script once, initializes
   `google.accounts.id` with `VITE_GOOGLE_CLIENT_ID`, and exposes `renderSignInButton(container)`,
   which mounts Google's own rendered "Sign in with Google" button. The button's credential callback
@@ -96,13 +110,15 @@ A Vite + TypeScript + React application managed with pnpm as the only package ma
   shared data-access hooks every group/item page uses instead of ad-hoc
   `useState`/`useEffect`. `useFetch(fetcher)` returns an explicit
   `{ status: 'loading' | 'success' | 'error', data?, refetch }`, so a failed GET renders
-  `components/ErrorState` (a fixed-message "再試行" component mirroring
+  `components/ErrorState` (a fixed-message "Retry" component mirroring
   `components/EmptyState`) rather than a stuck skeleton. `useSubmit(action, message)` wraps
   a create/update/delete call as `{ isSubmitting, error, submit }`, where `submit` resolves
-  to `{ ok: true; value } | { ok: false }`; a failed submit shows a fixed Japanese message
+  to `{ ok: true; value } | { ok: false }`; a failed submit shows a fixed English message
   inline in the form, or inside `DeleteConfirmDialog` (which takes an optional `error` prop)
   for a failed delete. Error copy is always local and fixed — `apiFetch` still throws on
-  status alone and never reads the failure body.
+  status alone and never reads the failure body. `ItemDetailPage`'s "Add a volume" button is
+  the one place a detail page issues a write: an optimistic `PATCH` of `completedVolume + 1`
+  via `useSubmit`, rolled back on failure.
 - `apps/web/.env` (see `.env.example`) holds `VITE_GOOGLE_CLIENT_ID`.
 - `vite.config.ts` proxies `/api/*` to `http://localhost:8080` in dev, so `pnpm dev` and the Go API
   server present as one browser-visible origin (`http://localhost:5173`) — required for the
@@ -126,9 +142,9 @@ A Vite + TypeScript + React application managed with pnpm as the only package ma
 ## Not yet present
 
 Combined serving of the SPA from the Go binary, Docker/Cloud Build/Cloud Run, and Terraform are
-not part of this repository yet. Firestore, Google authentication, Tailwind CSS, shadcn/ui, and
-the group and item entity API endpoints have been introduced by later worklogs (see below); the
-item-list endpoint currently returns every item with no pagination.
+not part of this repository yet. Firestore, Google authentication, Tailwind CSS, the moss
+design-token system, and the group and item entity API endpoints have been introduced by later
+worklogs (see below); the item-list endpoint currently returns every item with no pagination.
 
 ## Decisions
 
@@ -137,3 +153,4 @@ item-list endpoint currently returns every item with no pagination.
 - [0003: Group entity CRUD](../decisions/0003-group-entity-crud.md)
 - [0004: Item entity CRUD](../decisions/0004-item-entity-crud.md)
 - [0005: Form and fetch error feedback](../decisions/0005-form-and-fetch-error-feedback.md)
+- [0006: Visual style system — moss × rounded gothic, shadcn/ui removed](../decisions/0006-visual-style-system.md)

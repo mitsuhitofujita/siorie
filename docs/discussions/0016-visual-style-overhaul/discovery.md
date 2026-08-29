@@ -1,8 +1,8 @@
 ---
 date: 2026-08-28
 tags: [ui, design, css, frontend]
-status: proposed
-worklogs: []
+status: decided
+worklogs: [0009-visual-style-overhaul]
 ---
 
 スタイルを刷新して。
