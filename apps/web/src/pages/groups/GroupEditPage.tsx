@@ -1,6 +1,6 @@
 import { useCallback, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Check, Trash2 } from 'lucide-react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { Check, Trash2 } from 'lucide-react'
 
 import { Button } from '@/components/Button'
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
@@ -74,10 +74,6 @@ export function GroupEditPage() {
 
   return (
     <>
-      <Link className="backlink" to="/groups">
-        <ArrowLeft strokeWidth={1.75} />
-        Groups
-      </Link>
       <h1 className="pagetitle">Edit group</h1>
       <form className="form" onSubmit={handleSubmit}>
         <TextField
@@ -96,15 +92,16 @@ export function GroupEditPage() {
             {isSubmitting ? 'Saving…' : 'Save'}
           </Button>
         </div>
-        <Button
-          type="button"
-          variant="danger"
-          className="self-start"
-          onClick={() => setIsDeleteOpen(true)}
-        >
-          <Trash2 strokeWidth={1.75} />
-          Delete group
-        </Button>
+        <div className="form-danger">
+          <Button
+            type="button"
+            variant="danger"
+            onClick={() => setIsDeleteOpen(true)}
+          >
+            <Trash2 strokeWidth={1.75} />
+            Delete group
+          </Button>
+        </div>
       </form>
       <DeleteConfirmDialog
         open={isDeleteOpen}

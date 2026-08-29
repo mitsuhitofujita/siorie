@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Pencil, Plus } from 'lucide-react'
+import { Pencil, Plus } from 'lucide-react'
 
 import { Button } from '@/components/Button'
 import { ErrorState } from '@/components/ErrorState'
@@ -55,14 +55,9 @@ export function ItemDetailPage() {
 
   return (
     <>
-      <Link className="backlink" to={`/groups/${groupId}`}>
-        <ArrowLeft strokeWidth={1.75} />
-        Back
-      </Link>
-
       <div className="sectionhead oneline">
-        <h1 className="ugc">{item.data.title}</h1>
-        <Button asChild variant="outline" size="sm">
+        <h1>{item.data.title}</h1>
+        <Button asChild variant="outline" size="xs">
           <Link to={`/groups/${groupId}/items/${item.data.id}/edit`}>
             <Pencil strokeWidth={1.75} />
             Edit

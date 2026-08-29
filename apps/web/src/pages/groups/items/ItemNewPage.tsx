@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Check } from 'lucide-react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { Check } from 'lucide-react'
 
 import { Button } from '@/components/Button'
 import { TextField } from '@/components/TextField'
@@ -26,10 +26,6 @@ export function ItemNewPage() {
 
   return (
     <>
-      <Link className="backlink" to={`/groups/${groupId}`}>
-        <ArrowLeft strokeWidth={1.75} />
-        Back
-      </Link>
       <h1 className="pagetitle">New item</h1>
       <form className="form" onSubmit={handleSubmit}>
         <TextField

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, BookOpen, ChevronRight, Pencil, Plus } from 'lucide-react'
+import { BookOpen, ChevronRight, Pencil, Plus } from 'lucide-react'
 
 import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
@@ -38,18 +38,11 @@ export function GroupDetailPage() {
     return <ErrorState onRetry={group.refetch} />
   }
 
-  const hasItems = items.status === 'success' && items.data.length > 0
-
   return (
     <>
-      <Link className="backlink" to="/groups">
-        <ArrowLeft strokeWidth={1.75} />
-        Groups
-      </Link>
-
       <div className="sectionhead">
-        <h1 className="ugc">{group.data.name}</h1>
-        <Button asChild variant="outline" size="sm">
+        <h1>{group.data.name}</h1>
+        <Button asChild variant="outline" size="xs">
           <Link to={`/groups/${group.data.id}/edit`}>
             <Pencil strokeWidth={1.75} />
             Edit
@@ -59,14 +52,12 @@ export function GroupDetailPage() {
 
       <div className="sectionhead">
         <h2>Items</h2>
-        {hasItems && (
-          <Button asChild size="sm">
-            <Link to={`/groups/${group.data.id}/items/new`}>
-              <Plus strokeWidth={1.75} />
-              Add item
-            </Link>
-          </Button>
-        )}
+        <Button asChild size="xs">
+          <Link to={`/groups/${group.data.id}/items/new`}>
+            <Plus strokeWidth={1.75} />
+            Add item
+          </Link>
+        </Button>
       </div>
 
       {items.status === 'loading' ? (
@@ -78,12 +69,7 @@ export function GroupDetailPage() {
       ) : items.status === 'error' ? (
         <ErrorState onRetry={items.refetch} />
       ) : items.data.length === 0 ? (
-        <EmptyState
-          icon={BookOpen}
-          message="No items yet."
-          ctaLabel="Add item"
-          ctaTo={`/groups/${group.data.id}/items/new`}
-        />
+        <EmptyState icon={BookOpen} message="No items yet." />
       ) : (
         <ul className="list card">
           {items.data.map((item) => (

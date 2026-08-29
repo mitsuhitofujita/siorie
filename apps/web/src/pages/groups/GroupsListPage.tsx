@@ -25,37 +25,31 @@ export function GroupsListPage() {
     return <ErrorState onRetry={groups.refetch} />
   }
 
-  if (groups.data.length === 0) {
-    return (
-      <EmptyState
-        message="No groups yet."
-        ctaLabel="New group"
-        ctaTo="/groups/new"
-      />
-    )
-  }
-
   return (
     <>
-      <h1 className="pagetitle">Groups</h1>
-      <div className="toolbar">
-        <Button asChild>
+      <div className="sectionhead">
+        <h1>Groups</h1>
+        <Button asChild size="xs">
           <Link to="/groups/new">
             <Plus strokeWidth={1.75} />
             New group
           </Link>
         </Button>
       </div>
-      <ul className="list card">
-        {groups.data.map((group) => (
-          <li key={group.id}>
-            <Link className="row" to={`/groups/${group.id}`}>
-              <span className="title">{group.name}</span>
-              <ChevronRight className="chev" strokeWidth={1.75} />
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {groups.data.length === 0 ? (
+        <EmptyState message="No groups yet." />
+      ) : (
+        <ul className="list card">
+          {groups.data.map((group) => (
+            <li key={group.id}>
+              <Link className="row" to={`/groups/${group.id}`}>
+                <span className="title">{group.name}</span>
+                <ChevronRight className="chev" strokeWidth={1.75} />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </>
   )
 }

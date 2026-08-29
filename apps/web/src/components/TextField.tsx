@@ -4,9 +4,9 @@ import * as LabelPrimitive from '@radix-ui/react-label'
 import { cn } from '@/lib/utils'
 
 // Label + input + optional hint, on the moss tokens (see index.css `.field` /
-// `.label` / `.input` / `.hint`). The label uses the rounded chrome face; the
-// input value uses `--font-ugc` (the OS gothic) since it holds user content.
-// Form-level submit errors are rendered by the page as a sibling
+// `.label` / `.input` / `.hint`). Everything renders in the one OS-gothic
+// `--font` (chrome and user content share a family since 0021). Form-level
+// submit errors are rendered by the page as a sibling
 // `<p className="error-text">`, not here.
 type TextFieldProps = Omit<React.ComponentProps<'input'>, 'id'> & {
   id: string

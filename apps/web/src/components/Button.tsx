@@ -9,7 +9,9 @@ import { cn } from '@/lib/utils'
 // exception in the app is Google's own rendered Sign in button.
 type ButtonProps = React.ComponentProps<'button'> & {
   variant?: 'primary' | 'outline' | 'ghost' | 'danger'
-  size?: 'default' | 'sm'
+  // default 44px · sm 36px (toolbar / form submit + delete) · xs ~28px
+  // (heading-mini, inside a `.sectionhead` next to an h1 / h2)
+  size?: 'default' | 'sm' | 'xs'
   // Render as the single child element (e.g. a react-router <Link>) instead
   // of a <button>, keeping the `.btn` classes. Used for navigation actions.
   asChild?: boolean
@@ -37,6 +39,7 @@ export function Button({
         'btn',
         variantClass[variant],
         size === 'sm' && 'btn-sm',
+        size === 'xs' && 'btn-xs',
         className,
       )}
       // A bare <button> defaults to type="submit"; every non-submit call site

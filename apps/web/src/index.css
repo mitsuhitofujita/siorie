@@ -52,15 +52,11 @@
   --shadow-soft: 0 4px 20px rgba(47, 58, 49, 0.1);
   --content-max: 430px;
 
-  /* Chrome (headings, labels, buttons, nav, captions): self-hosted rounded
-     face, Latin subset only — chrome copy is English. main.tsx imports the
-     @fontsource Latin CSS. */
+  /* One family for chrome and user content alike: whatever rounded gothic the
+     OS already ships — no web font is downloaded. Rounded resolves on Apple
+     (ui-rounded → SF Rounded, then Hiragino Maru Gothic) and Windows (Yu
+     Gothic UI / Meiryo); elsewhere it falls through to a plain system sans. */
   --font:
-    'Zen Maru Gothic', 'M PLUS Rounded 1c', ui-rounded,
-    'Hiragino Maru Gothic ProN', system-ui, sans-serif;
-  /* User content (inputs, group / item names, user name): whatever rounded
-     gothic the OS already ships — no web font is downloaded for it. */
-  --font-ugc:
     ui-rounded, 'Hiragino Maru Gothic ProN', 'Hiragino Sans', 'Yu Gothic',
     'Yu Gothic UI', Meiryo, system-ui, sans-serif;
 }
@@ -95,11 +91,6 @@
     font-size: var(--fs-base);
     line-height: var(--leading-body);
     -webkit-font-smoothing: antialiased;
-  }
-
-  /* user-generated content: names, titles, typed text — the OS gothic */
-  .ugc {
-    font-family: var(--font-ugc);
   }
 }
 
@@ -179,6 +170,21 @@
     width: 16px;
     height: 16px;
   }
+  /* heading-mini: sits inside a `.sectionhead` next to an h1 / h2. Height is
+     ~the h1 ink height (cap-to-descender ≈ 26px at --fs-lg), and `.sectionhead`
+     baseline-aligns it, so the button's cap and foot track the heading's.
+     Tap target drops below the .btn-sm 36px — accepted per proposal 0021
+     (every heading action is reachable another way). */
+  .btn-xs {
+    min-height: 26px;
+    padding: 0 var(--space-2);
+    font-size: var(--fs-xs);
+    gap: var(--space-1);
+  }
+  .btn-xs svg {
+    width: 15px;
+    height: 15px;
+  }
 
   /* ---------- vertical stacks ---------- */
   .form,
@@ -216,11 +222,9 @@
     background: var(--bg-1);
     color: var(--text);
     font: inherit;
-    font-family: var(--font-ugc);
   }
   .input::placeholder {
     color: var(--text-muted);
-    font-family: var(--font-ugc);
   }
   .input:focus {
     outline: none;
@@ -275,13 +279,17 @@
   .row .title {
     min-width: 0;
     overflow-wrap: anywhere;
-    font-family: var(--font-ugc);
   }
-  /* completed-volume figure: plain body-size number, not a shrunken badge */
+  /* completed-volume figure: plain body-size number, not a shrunken badge.
+     Fixed to a three-digit column (`vol.` unit + three tabular digits) and
+     right-aligned, so the ones digit lines up down the list regardless of
+     magnitude; four digits or more (never seen in practice) overflow. */
   .vol {
     margin-left: auto;
     flex: none;
     white-space: nowrap;
+    min-width: 3.25em;
+    text-align: right;
     font-size: var(--fs-base);
     font-weight: 700;
     color: var(--text);
@@ -299,6 +307,11 @@
   }
   .row .title + .vol {
     margin-left: auto;
+  }
+  /* pull the chevron in toward the figure — the `.row` gap is tuned for
+     title-to-control spacing, too wide between the number and the chevron */
+  .row .vol + .chev {
+    margin-left: calc(var(--space-2) * -1);
   }
 
   /* ---------- badge (secondary accent) — kept in the system, currently
@@ -356,6 +369,13 @@
     font-size: var(--fs-md);
     font-weight: 700;
     letter-spacing: 0.01em;
+    color: inherit;
+    text-decoration: none;
+  }
+  .wordmark:focus-visible {
+    outline: none;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 0 0 3px var(--ring);
   }
   .avatar-btn {
     width: 40px;
@@ -412,25 +432,18 @@
   }
 
   /* ---------- page chrome ---------- */
-  .backlink {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    color: var(--text-muted);
-    text-decoration: none;
-    font-size: var(--fs-xs);
-  }
-  .backlink svg {
-    width: 16px;
-    height: 16px;
-    flex: none;
-  }
-  .backlink:hover {
-    color: var(--text);
-  }
   .toolbar {
     display: flex;
     justify-content: flex-end;
+  }
+  /* end-of-form danger zone: full-width hairline, then a right-aligned
+     destructive button. `.form`'s own gap supplies the space above; the
+     padding supplies the space below the rule. */
+  .form-danger {
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid var(--border);
+    padding-top: var(--space-4);
   }
   .pagetitle {
     font-size: var(--fs-lg);
@@ -439,7 +452,7 @@
   }
   .sectionhead {
     display: flex;
-    align-items: flex-start;
+    align-items: baseline;
     justify-content: space-between;
     gap: var(--space-3);
   }
@@ -544,7 +557,6 @@
   }
   .nav-sheet-name {
     font-weight: 500;
-    font-family: var(--font-ugc);
     margin: 0 0 var(--space-2);
   }
   .nav-sheet nav {
