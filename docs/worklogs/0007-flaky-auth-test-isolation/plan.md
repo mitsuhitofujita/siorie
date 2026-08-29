@@ -1,8 +1,8 @@
 ---
 date: 2026-08-29
-status: in-progress
+status: merged
 discussions: [0014-flaky-auth-test-isolation]
-decisions: []
+decisions: [0007-auth-test-passive-effect-flush]
 pr: null
 ---
 

@@ -1,7 +1,7 @@
 ---
 date: 2026-08-28
 tags: [testing, frontend, flaky-test]
-status: proposed
+status: decided
 worklogs: [0006-form-error-handling, 0007-flaky-auth-test-isolation]
 ---
 
