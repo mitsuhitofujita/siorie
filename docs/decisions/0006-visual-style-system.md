@@ -5,7 +5,10 @@ Worklog: [visual style overhaul](../worklogs/0009-visual-style-overhaul/plan.md)
 
 ## Status
 
-Accepted.
+Accepted. The font paragraph — the two-stack `--font` / `--font-ugc` split
+and the self-hosted Zen Maru Gothic Latin subset — is revised by
+[0010](0010-style-fit-and-finish.md): one OS rounded-gothic family for
+everything, no web font. The rest stands.
 
 ## Decision
 

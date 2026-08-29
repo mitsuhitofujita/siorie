@@ -84,6 +84,10 @@ guard for unauthenticated access to `/groups/**`
 - **Per-page `useState`/`useEffect` fetching and catch-less submits**: replaced
   by the `useFetch` / `useSubmit` hooks and `ErrorState` in
   [0005](0005-form-and-fetch-error-feedback.md).
+- **`EmptyState` as "message + create CTA"** on the list pages: the create
+  action moved into the section heading (shown even when the list is empty) by
+  [0010](0010-style-fit-and-finish.md); `EmptyState`'s CTA is now optional and
+  the two list pages omit it.
 
 ## Rationale
 

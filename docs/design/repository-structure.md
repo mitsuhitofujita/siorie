@@ -96,10 +96,11 @@ A Vite + TypeScript + React application managed with pnpm as the only package ma
   holds hand-written `Button`, `Dialog`, `Sheet`, `TextField`, `Avatar`, and
   `Skeleton` on the tokens, wrapping the Radix primitives (Dialog, Label,
   Avatar) kept for behaviour. Tailwind v4 remains as the build pipeline plus a
-  `@theme` colour map and a few layout utilities. UI copy is English;
-  user-entered content (group / item names, the signed-in user's name) renders
-  in the OS gothic with no web font, while the rounded chrome face (Zen Maru
-  Gothic, Latin subset) is self-hosted via `@fontsource` with no runtime CDN.
+  `@theme` colour map and a few layout utilities. UI copy is English. Every
+  string — chrome and user-entered content (group / item names, the signed-in
+  user's name) alike — renders in one OS rounded-gothic stack (`--font`); no
+  web font is bundled or fetched, so rounded rendering is best-effort (Apple
+  and Windows have it; elsewhere it falls back to a plain system sans).
 - Auth-state screen switching happens at the route layer, not inside a page. `src/App.tsx` maps
   `/` to `src/pages/RootRoute.tsx` (no UI: a minimal skeleton while auth is `loading`, otherwise
   `<Navigate>` to `/groups` or `/login` — the one place `loading` is handled explicitly), `/login`
@@ -113,11 +114,15 @@ A Vite + TypeScript + React application managed with pnpm as the only package ma
   `/groups/:groupId/items/{new,:itemId,:itemId/edit}` equivalents. Create and edit are always
   separate pages (a create page has no loading state; an edit page fetches its initial data via a
   single-resource `GET` and shows a skeleton meanwhile). Every route except `/` and `/login` renders
-  inside `src/components/layout/AppLayout.tsx` (header: title + account avatar; footer: app name
-  only), whose avatar opens `NavMenu`. Deletion is initiated from an edit page through
-  `src/components/DeleteConfirmDialog.tsx` (a custom modal, never `window.confirm`), not from the
-  list. List pages show `Skeleton` while loading and `src/components/EmptyState` (message + create
-  CTA) when the result is empty. `src/lib/api.ts` is a thin typed `fetch` wrapper per endpoint;
+  inside `src/components/layout/AppLayout.tsx` (header: wordmark linking to `/` + account avatar;
+  footer: app name only), whose avatar opens `NavMenu`. There are no per-page back links —
+  upward / return navigation is the browser back button and the header wordmark. Deletion is
+  initiated from an edit page through `src/components/DeleteConfirmDialog.tsx` (a custom modal,
+  never `window.confirm`), not from the list; on the edit pages the delete button sits below a
+  full-width hairline, right-aligned. List pages show `Skeleton` while loading and
+  `src/components/EmptyState` (a fixed message; its create CTA is an optional prop the two list
+  pages omit, since the create action lives in the page's section heading) when the result is
+  empty. `src/lib/api.ts` is a thin typed `fetch` wrapper per endpoint;
   `src/lib/auth-context.ts` holds `AuthState` (`loading` / `unauthenticated` / `authenticated`,
   from `GET /api/me` on mount) and `useAuth`, kept out of `auth.tsx` so Fast Refresh's
   component-only-export rule holds.
@@ -179,3 +184,4 @@ worklogs (see below); the item-list endpoint currently returns every item with n
 - [0006: Visual style system — moss × rounded gothic, shadcn/ui removed](../decisions/0006-visual-style-system.md)
 - [0008: Route-level auth split and a self-contained GoogleSignInButton](../decisions/0008-route-level-auth-split.md)
 - [0009: Frontend application structure — SPA routing, common layout, page conventions](../decisions/0009-frontend-app-structure.md)
+- [0010: Style fit-and-finish — one font family, no in-app back links, section-head create actions](../decisions/0010-style-fit-and-finish.md)

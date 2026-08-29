@@ -1,8 +1,8 @@
 ---
 date: 2026-08-29
 tags: [frontend, react, perf, ux]
-status: open
-worklogs: [0009-visual-style-overhaul]
+status: decided
+worklogs: [0009-visual-style-overhaul, 0010-style-fit-and-finish]
 ---
 
 worklog [0009-visual-style-overhaul](../../worklogs/0009-visual-style-overhaul/plan.md)

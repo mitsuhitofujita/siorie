@@ -1,8 +1,8 @@
 ---
 date: 2026-08-29
 tags: [frontend, css, ui, fonts]
-status: proposed
-worklogs: []
+status: decided
+worklogs: [0010-style-fit-and-finish]
 ---
 
 スタイルの微調整を行う。
