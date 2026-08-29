@@ -54,7 +54,7 @@ describe('App routing', () => {
       expect(screen.getByTestId('google-signin-button')).toBeInTheDocument(),
     )
     expect(
-      screen.queryByRole('button', { name: 'メニューを開く' }),
+      screen.queryByRole('button', { name: 'Open menu' }),
     ).not.toBeInTheDocument()
   })
 
@@ -62,7 +62,7 @@ describe('App routing', () => {
     renderApp('/', { authenticated: true })
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: 'メニューを開く' }),
+        screen.getByRole('button', { name: 'Open menu' }),
       ).toBeInTheDocument(),
     )
   })
@@ -73,7 +73,7 @@ describe('App routing', () => {
       expect(screen.getByTestId('google-signin-button')).toBeInTheDocument(),
     )
     expect(
-      screen.queryByRole('button', { name: 'メニューを開く' }),
+      screen.queryByRole('button', { name: 'Open menu' }),
     ).not.toBeInTheDocument()
   })
 
@@ -83,7 +83,7 @@ describe('App routing', () => {
       expect(screen.getByTestId('google-signin-button')).toBeInTheDocument(),
     )
     expect(
-      screen.queryByRole('button', { name: 'メニューを開く' }),
+      screen.queryByRole('button', { name: 'Open menu' }),
     ).not.toBeInTheDocument()
   })
 
@@ -91,11 +91,11 @@ describe('App routing', () => {
     renderApp('/groups', { authenticated: true })
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: 'メニューを開く' }),
+        screen.getByRole('button', { name: 'Open menu' }),
       ).toBeInTheDocument(),
     )
     expect(
-      await screen.findByText('読み込みに失敗しました。'),
+      await screen.findByText("Couldn't load. Please try again."),
     ).toBeInTheDocument()
   })
 
@@ -103,7 +103,7 @@ describe('App routing', () => {
     renderApp('/groups/g1', { authenticated: true })
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: 'メニューを開く' }),
+        screen.getByRole('button', { name: 'Open menu' }),
       ).toBeInTheDocument(),
     )
   })
@@ -111,14 +111,14 @@ describe('App routing', () => {
   it('renders the group creation page when authenticated', async () => {
     renderApp('/groups/new', { authenticated: true })
     expect(
-      await screen.findByRole('heading', { name: 'グループを作成' }),
+      await screen.findByRole('heading', { name: 'New group' }),
     ).toBeInTheDocument()
   })
 
   it('renders the item creation page under a group when authenticated', async () => {
     renderApp('/groups/g1/items/new', { authenticated: true })
     expect(
-      await screen.findByRole('heading', { name: 'アイテムを作成' }),
+      await screen.findByRole('heading', { name: 'New item' }),
     ).toBeInTheDocument()
   })
 
@@ -126,7 +126,7 @@ describe('App routing', () => {
     renderApp('/groups/g1/items/i1', { authenticated: true })
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: 'メニューを開く' }),
+        screen.getByRole('button', { name: 'Open menu' }),
       ).toBeInTheDocument(),
     )
   })

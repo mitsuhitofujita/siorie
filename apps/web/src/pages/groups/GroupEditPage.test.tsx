@@ -28,9 +28,11 @@ describe('GroupEditPage', () => {
     })
 
     await waitFor(() =>
-      expect(screen.getByText('読み込みに失敗しました。')).toBeInTheDocument(),
+      expect(
+        screen.getByText("Couldn't load. Please try again."),
+      ).toBeInTheDocument(),
     )
-    expect(screen.getByRole('button', { name: '再試行' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument()
   })
 
   it('shows an inline error and stays on the form when saving fails', async () => {
@@ -45,19 +47,19 @@ describe('GroupEditPage', () => {
     })
 
     await waitFor(() =>
-      expect(screen.getByLabelText('グループ名')).toHaveValue('漫画喫茶'),
+      expect(screen.getByLabelText('Name')).toHaveValue('漫画喫茶'),
     )
-    fireEvent.click(screen.getByRole('button', { name: '保存する' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     await waitFor(() =>
       expect(
-        screen.getByText('保存できませんでした。もう一度お試しください。'),
+        screen.getByText("Couldn't save. Please try again."),
       ).toBeInTheDocument(),
     )
     expect(
-      screen.getByRole('heading', { name: 'グループを編集' }),
+      screen.getByRole('heading', { name: 'Edit group' }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '保存する' })).not.toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Save' })).not.toBeDisabled()
   })
 
   it('shows an inline error inside the delete dialog when deleting fails', async () => {
@@ -72,17 +74,15 @@ describe('GroupEditPage', () => {
     })
 
     await waitFor(() =>
-      expect(screen.getByLabelText('グループ名')).toHaveValue('漫画喫茶'),
+      expect(screen.getByLabelText('Name')).toHaveValue('漫画喫茶'),
     )
-    fireEvent.click(screen.getByRole('button', { name: '削除する' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Delete group' }))
     const dialog = screen.getByRole('dialog')
-    fireEvent.click(within(dialog).getByRole('button', { name: '削除する' }))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }))
 
     await waitFor(() =>
       expect(
-        within(dialog).getByText(
-          '削除できませんでした。もう一度お試しください。',
-        ),
+        within(dialog).getByText("Couldn't delete. Please try again."),
       ).toBeInTheDocument(),
     )
     // The dialog stays open on failure, so the user can see the error and retry.

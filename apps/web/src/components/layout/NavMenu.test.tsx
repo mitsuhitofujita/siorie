@@ -16,18 +16,18 @@ describe('NavMenu', () => {
       logout,
     })
 
-    expect(screen.queryByText('メニュー')).not.toBeInTheDocument()
+    expect(screen.queryByText('Menu')).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'メニューを開く' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
 
-    expect(screen.getByText('メニュー')).toBeInTheDocument()
+    expect(screen.getByText('Menu')).toBeInTheDocument()
     expect(screen.getByText('山田 太郎')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'グループ一覧' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Groups' })).toHaveAttribute(
       'href',
       '/groups',
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'ログアウト' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Log out' }))
     expect(logout).toHaveBeenCalledOnce()
   })
 
@@ -41,14 +41,14 @@ describe('NavMenu', () => {
       logout,
       route: '/groups',
       path: '/groups',
-      extraRoutes: <Route path="/" element={<div>ホーム画面</div>} />,
+      extraRoutes: <Route path="/" element={<div>home screen</div>} />,
     })
 
-    fireEvent.click(screen.getByRole('button', { name: 'メニューを開く' }))
-    fireEvent.click(screen.getByRole('button', { name: 'ログアウト' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Log out' }))
 
     await waitFor(() =>
-      expect(screen.getByText('ホーム画面')).toBeInTheDocument(),
+      expect(screen.getByText('home screen')).toBeInTheDocument(),
     )
     expect(logout).toHaveBeenCalledOnce()
   })

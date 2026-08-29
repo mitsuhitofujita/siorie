@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom'
+import { ChevronRight, Plus } from 'lucide-react'
 
+import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
 import { ErrorState } from '@/components/ErrorState'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@/components/Skeleton'
 import { api } from '@/lib/api'
 import { useFetch } from '@/lib/use-fetch'
 
@@ -12,7 +13,7 @@ export function GroupsListPage() {
 
   if (groups.status === 'loading') {
     return (
-      <div className="flex flex-col gap-2">
+      <div className="stack-2">
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-12 w-full" />
@@ -27,32 +28,34 @@ export function GroupsListPage() {
   if (groups.data.length === 0) {
     return (
       <EmptyState
-        message="グループがまだありません"
-        ctaLabel="グループを作成"
+        message="No groups yet."
+        ctaLabel="New group"
         ctaTo="/groups/new"
       />
     )
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
+    <>
+      <h1 className="pagetitle">Groups</h1>
+      <div className="toolbar">
         <Button asChild>
-          <Link to="/groups/new">グループを作成</Link>
+          <Link to="/groups/new">
+            <Plus strokeWidth={1.75} />
+            New group
+          </Link>
         </Button>
       </div>
-      <ul className="flex flex-col divide-y divide-border rounded-md border">
+      <ul className="list card">
         {groups.data.map((group) => (
           <li key={group.id}>
-            <Link
-              to={`/groups/${group.id}`}
-              className="flex items-center px-4 py-3 hover:bg-accent"
-            >
-              {group.name}
+            <Link className="row" to={`/groups/${group.id}`}>
+              <span className="title">{group.name}</span>
+              <ChevronRight className="chev" strokeWidth={1.75} />
             </Link>
           </li>
         ))}
       </ul>
-    </div>
+    </>
   )
 }

@@ -25,11 +25,12 @@ describe('GroupsListPage', () => {
     renderWithProviders(<GroupsListPage />)
 
     await waitFor(() =>
-      expect(screen.getByText('グループがまだありません')).toBeInTheDocument(),
+      expect(screen.getByText('No groups yet.')).toBeInTheDocument(),
     )
-    expect(
-      screen.getByRole('link', { name: 'グループを作成' }),
-    ).toHaveAttribute('href', '/groups/new')
+    expect(screen.getByRole('link', { name: 'New group' })).toHaveAttribute(
+      'href',
+      '/groups/new',
+    )
   })
 
   it('lists groups with a link to their detail page', async () => {
@@ -53,11 +54,11 @@ describe('GroupsListPage', () => {
     renderWithProviders(<GroupsListPage />)
 
     await waitFor(() =>
-      expect(screen.getByText('読み込みに失敗しました。')).toBeInTheDocument(),
+      expect(
+        screen.getByText("Couldn't load. Please try again."),
+      ).toBeInTheDocument(),
     )
-    expect(
-      screen.queryByText('グループがまだありません'),
-    ).not.toBeInTheDocument()
+    expect(screen.queryByText('No groups yet.')).not.toBeInTheDocument()
   })
 
   it('retries the request when the retry button is clicked', async () => {
@@ -67,11 +68,13 @@ describe('GroupsListPage', () => {
     )
     renderWithProviders(<GroupsListPage />)
     await waitFor(() =>
-      expect(screen.getByText('読み込みに失敗しました。')).toBeInTheDocument(),
+      expect(
+        screen.getByText("Couldn't load. Please try again."),
+      ).toBeInTheDocument(),
     )
 
     stubFetchJson([{ id: 'g1', name: '漫画喫茶' }])
-    fireEvent.click(screen.getByRole('button', { name: '再試行' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }))
 
     await waitFor(() =>
       expect(screen.getByText('漫画喫茶')).toBeInTheDocument(),

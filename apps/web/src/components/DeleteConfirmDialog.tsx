@@ -1,13 +1,16 @@
-import { Button } from '@/components/ui/button'
+import { X, Trash2 } from 'lucide-react'
+
+import { Button } from '@/components/Button'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
-  DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
+} from '@/components/Dialog'
 
+// Delete confirmation. On a failed delete the dialog stays open and shows a
+// fixed message as error text between the body copy and the actions, so the
+// user can see it and retry (0005 / 0012). Never uses the native confirm().
 export function DeleteConfirmDialog({
   open,
   onOpenChange,
@@ -28,27 +31,23 @@ export function DeleteConfirmDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-        {error && <p className="text-sm text-destructive">{error}</p>}
-        <DialogFooter>
+        <DialogTitle>{title}</DialogTitle>
+        <DialogDescription>{description}</DialogDescription>
+        {error && <span className="error-text">{error}</span>}
+        <div className="actions">
           <Button
             variant="outline"
             disabled={isDeleting}
             onClick={() => onOpenChange(false)}
           >
-            キャンセル
+            <X strokeWidth={1.75} />
+            Cancel
           </Button>
-          <Button
-            variant="destructive"
-            disabled={isDeleting}
-            onClick={onConfirm}
-          >
-            {isDeleting ? '削除中...' : '削除する'}
+          <Button variant="danger" disabled={isDeleting} onClick={onConfirm}>
+            <Trash2 strokeWidth={1.75} />
+            {isDeleting ? 'Deleting…' : 'Delete'}
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   )

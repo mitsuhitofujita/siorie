@@ -1,16 +1,24 @@
-import { Button } from '@/components/ui/button'
+import { RotateCcw, TriangleAlert } from 'lucide-react'
 
+import { Button } from '@/components/Button'
+
+// Fetch-failure state inside a card: a warning line icon, a fixed message, and
+// an outline Retry button (see index.css `.state`). Mirrors EmptyState.
 export function ErrorState({
-  message = '読み込みに失敗しました。',
+  message = "Couldn't load. Please try again.",
   onRetry,
 }: {
   message?: string
   onRetry: () => void
 }) {
   return (
-    <div className="flex flex-col items-center gap-4 py-16 text-center">
-      <p className="text-muted-foreground">{message}</p>
-      <Button onClick={onRetry}>再試行</Button>
+    <div className="card state">
+      <TriangleAlert strokeWidth={1.5} />
+      <p>{message}</p>
+      <Button variant="outline" onClick={onRetry}>
+        <RotateCcw strokeWidth={1.75} />
+        Retry
+      </Button>
     </div>
   )
 }

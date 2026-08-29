@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft, Check } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Button } from '@/components/Button'
+import { TextField } from '@/components/TextField'
 import { api } from '@/lib/api'
 import { useSubmit } from '@/lib/use-submit'
 
@@ -14,7 +14,7 @@ export function ItemNewPage() {
   const [completedVolume, setCompletedVolume] = useState('0')
   const { isSubmitting, error, submit } = useSubmit(
     api.createItem,
-    '保存できませんでした。もう一度お試しください。',
+    "Couldn't save. Please try again.",
   )
 
   const handleSubmit = async (event: FormEvent) => {
@@ -25,22 +25,25 @@ export function ItemNewPage() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <h1 className="text-xl font-semibold">アイテムを作成</h1>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="item-title">タイトル</Label>
-        <Input
+    <>
+      <Link className="backlink" to={`/groups/${groupId}`}>
+        <ArrowLeft strokeWidth={1.75} />
+        Back
+      </Link>
+      <h1 className="pagetitle">New item</h1>
+      <form className="form" onSubmit={handleSubmit}>
+        <TextField
           id="item-title"
+          label="Title"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           maxLength={100}
           required
+          invalid={!!error}
         />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="item-volume">読み終わった巻数</Label>
-        <Input
+        <TextField
           id="item-volume"
+          label="Completed volume"
           type="number"
           min={0}
           step={1}
@@ -48,13 +51,14 @@ export function ItemNewPage() {
           onChange={(event) => setCompletedVolume(event.target.value)}
           required
         />
-      </div>
-      {error && <p className="text-sm text-destructive">{error}</p>}
-      <div className="flex justify-end gap-2">
-        <Button type="submit" disabled={isSubmitting}>
-          作成する
-        </Button>
-      </div>
-    </form>
+        {error && <p className="error-text">{error}</p>}
+        <div className="toolbar">
+          <Button type="submit" disabled={isSubmitting}>
+            <Check strokeWidth={1.75} />
+            {isSubmitting ? 'Creating…' : 'Create'}
+          </Button>
+        </div>
+      </form>
+    </>
   )
 }

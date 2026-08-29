@@ -44,16 +44,17 @@ describe('GroupDetailPage', () => {
     await waitFor(() =>
       expect(screen.getByText('漫画喫茶')).toBeInTheDocument(),
     )
-    expect(screen.getByRole('link', { name: '編集する' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute(
       'href',
       '/groups/g1/edit',
     )
     await waitFor(() =>
-      expect(screen.getByText('アイテムがまだありません')).toBeInTheDocument(),
+      expect(screen.getByText('No items yet.')).toBeInTheDocument(),
     )
-    expect(
-      screen.getByRole('link', { name: 'アイテムを作成' }),
-    ).toHaveAttribute('href', '/groups/g1/items/new')
+    expect(screen.getByRole('link', { name: 'Add item' })).toHaveAttribute(
+      'href',
+      '/groups/g1/items/new',
+    )
   })
 
   it('lists items with a link to their detail page', async () => {
@@ -71,7 +72,7 @@ describe('GroupDetailPage', () => {
     await waitFor(() =>
       expect(screen.getByText('ONE PIECE')).toBeInTheDocument(),
     )
-    expect(screen.getByText('100 巻')).toBeInTheDocument()
+    expect(screen.getByText('100')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /ONE PIECE/ })).toHaveAttribute(
       'href',
       '/groups/g1/items/i1',
@@ -89,9 +90,11 @@ describe('GroupDetailPage', () => {
     })
 
     await waitFor(() =>
-      expect(screen.getByText('読み込みに失敗しました。')).toBeInTheDocument(),
+      expect(
+        screen.getByText("Couldn't load. Please try again."),
+      ).toBeInTheDocument(),
     )
-    expect(screen.getByRole('button', { name: '再試行' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument()
   })
 
   it('shows an item-list error state (distinct from the empty state) when only the item request fails', async () => {
@@ -105,10 +108,10 @@ describe('GroupDetailPage', () => {
       expect(screen.getByText('漫画喫茶')).toBeInTheDocument(),
     )
     await waitFor(() =>
-      expect(screen.getByText('読み込みに失敗しました。')).toBeInTheDocument(),
+      expect(
+        screen.getByText("Couldn't load. Please try again."),
+      ).toBeInTheDocument(),
     )
-    expect(
-      screen.queryByText('アイテムがまだありません'),
-    ).not.toBeInTheDocument()
+    expect(screen.queryByText('No items yet.')).not.toBeInTheDocument()
   })
 })

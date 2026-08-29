@@ -1,12 +1,12 @@
 import { useCallback, useState, type FormEvent } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft, Check, Trash2 } from 'lucide-react'
 
+import { Button } from '@/components/Button'
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
 import { ErrorState } from '@/components/ErrorState'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@/components/Skeleton'
+import { TextField } from '@/components/TextField'
 import { api } from '@/lib/api'
 import { useFetch } from '@/lib/use-fetch'
 import { useSubmit } from '@/lib/use-submit'
@@ -40,25 +40,19 @@ export function ItemEditPage() {
     isSubmitting,
     error: submitError,
     submit: submitUpdate,
-  } = useSubmit(
-    api.updateItem,
-    '保存できませんでした。もう一度お試しください。',
-  )
+  } = useSubmit(api.updateItem, "Couldn't save. Please try again.")
   const {
     isSubmitting: isDeleting,
     error: deleteError,
     submit: submitDelete,
-  } = useSubmit(
-    api.deleteItem,
-    '削除できませんでした。もう一度お試しください。',
-  )
+  } = useSubmit(api.deleteItem, "Couldn't delete. Please try again.")
 
   if (item.status === 'loading') {
     return (
-      <div className="flex flex-col gap-4">
+      <div className="stack-3">
         <Skeleton className="h-7 w-40" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-11 w-full" />
+        <Skeleton className="h-11 w-full" />
       </div>
     )
   }
@@ -87,51 +81,53 @@ export function ItemEditPage() {
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <h1 className="text-xl font-semibold">アイテムを編集</h1>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="item-title">タイトル</Label>
-          <Input
-            id="item-title"
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            maxLength={100}
-            required
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="item-volume">読み終わった巻数</Label>
-          <Input
-            id="item-volume"
-            type="number"
-            min={0}
-            step={1}
-            value={completedVolume}
-            onChange={(event) => setCompletedVolume(event.target.value)}
-            required
-          />
-        </div>
-        {submitError && (
-          <p className="text-sm text-destructive">{submitError}</p>
-        )}
-        <div className="flex justify-between gap-2">
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={() => setIsDeleteOpen(true)}
-          >
-            削除する
-          </Button>
+      <Link className="backlink" to={`/groups/${groupId}`}>
+        <ArrowLeft strokeWidth={1.75} />
+        Back
+      </Link>
+      <h1 className="pagetitle">Edit item</h1>
+      <form className="form" onSubmit={handleSubmit}>
+        <TextField
+          id="item-title"
+          label="Title"
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+          maxLength={100}
+          required
+          invalid={!!submitError}
+        />
+        <TextField
+          id="item-volume"
+          label="Completed volume"
+          type="number"
+          min={0}
+          step={1}
+          value={completedVolume}
+          onChange={(event) => setCompletedVolume(event.target.value)}
+          required
+        />
+        {submitError && <p className="error-text">{submitError}</p>}
+        <div className="toolbar">
           <Button type="submit" disabled={isSubmitting}>
-            保存する
+            <Check strokeWidth={1.75} />
+            {isSubmitting ? 'Saving…' : 'Save'}
           </Button>
         </div>
+        <Button
+          type="button"
+          variant="danger"
+          className="self-start"
+          onClick={() => setIsDeleteOpen(true)}
+        >
+          <Trash2 strokeWidth={1.75} />
+          Delete item
+        </Button>
       </form>
       <DeleteConfirmDialog
         open={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
-        title="アイテムを削除しますか?"
-        description="この操作は取り消せません。"
+        title="Delete this item?"
+        description="This can't be undone."
         isDeleting={isDeleting}
         error={deleteError}
         onConfirm={handleDelete}

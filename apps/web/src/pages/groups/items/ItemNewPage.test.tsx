@@ -24,19 +24,19 @@ describe('ItemNewPage', () => {
       path: '/groups/:groupId/items/new',
     })
 
-    fireEvent.change(screen.getByLabelText('タイトル'), {
+    fireEvent.change(screen.getByLabelText('Title'), {
       target: { value: 'ONE PIECE' },
     })
-    fireEvent.click(screen.getByRole('button', { name: '作成する' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }))
 
     await waitFor(() =>
       expect(
-        screen.getByText('保存できませんでした。もう一度お試しください。'),
+        screen.getByText("Couldn't save. Please try again."),
       ).toBeInTheDocument(),
     )
     expect(
-      screen.getByRole('heading', { name: 'アイテムを作成' }),
+      screen.getByRole('heading', { name: 'New item' }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '作成する' })).not.toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Create' })).not.toBeDisabled()
   })
 })

@@ -1,21 +1,31 @@
+import type { ComponentType } from 'react'
 import { Link } from 'react-router-dom'
+import { Inbox, Plus } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/Button'
 
+// Empty state inside a card: a line icon, a fixed message, and a primary CTA
+// that carries a leading plus icon (see index.css `.state`).
 export function EmptyState({
+  icon: Icon = Inbox,
   message,
   ctaLabel,
   ctaTo,
 }: {
+  icon?: ComponentType<{ strokeWidth?: number }>
   message: string
   ctaLabel: string
   ctaTo: string
 }) {
   return (
-    <div className="flex flex-col items-center gap-4 py-16 text-center">
-      <p className="text-muted-foreground">{message}</p>
+    <div className="card state">
+      <Icon strokeWidth={1.5} />
+      <p>{message}</p>
       <Button asChild>
-        <Link to={ctaTo}>{ctaLabel}</Link>
+        <Link to={ctaTo}>
+          <Plus strokeWidth={1.75} />
+          {ctaLabel}
+        </Link>
       </Button>
     </div>
   )

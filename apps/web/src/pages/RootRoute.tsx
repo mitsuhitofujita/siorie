@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom'
 
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@/components/Skeleton'
 import { useAuth } from '@/lib/auth-context'
 
 // `/` holds no UI of its own: it waits for auth to settle, then redirects.
@@ -11,9 +11,9 @@ export function RootRoute() {
 
   if (state.status === 'loading') {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4">
-        <Skeleton className="h-8 w-32" />
-        <Skeleton className="h-10 w-48" />
+      <main className="home">
+        <Skeleton className="h-11 w-40" />
+        <Skeleton className="h-10 w-52" />
       </main>
     )
   }

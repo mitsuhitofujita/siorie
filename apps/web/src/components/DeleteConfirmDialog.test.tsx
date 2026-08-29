@@ -10,13 +10,13 @@ describe('DeleteConfirmDialog', () => {
       <DeleteConfirmDialog
         open={false}
         onOpenChange={vi.fn()}
-        title="削除しますか?"
-        description="この操作は取り消せません。"
+        title="Delete this?"
+        description="This can't be undone."
         isDeleting={false}
         onConfirm={vi.fn()}
       />,
     )
-    expect(screen.queryByText('削除しますか?')).not.toBeInTheDocument()
+    expect(screen.queryByText('Delete this?')).not.toBeInTheDocument()
   })
 
   it('confirms deletion and cancels without confirming', () => {
@@ -26,17 +26,17 @@ describe('DeleteConfirmDialog', () => {
       <DeleteConfirmDialog
         open
         onOpenChange={onOpenChange}
-        title="削除しますか?"
-        description="この操作は取り消せません。"
+        title="Delete this?"
+        description="This can't be undone."
         isDeleting={false}
         onConfirm={onConfirm}
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: '削除する' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
     expect(onConfirm).toHaveBeenCalledOnce()
 
-    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
     expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 
@@ -45,14 +45,14 @@ describe('DeleteConfirmDialog', () => {
       <DeleteConfirmDialog
         open
         onOpenChange={vi.fn()}
-        title="削除しますか?"
-        description="この操作は取り消せません。"
+        title="Delete this?"
+        description="This can't be undone."
         isDeleting
         onConfirm={vi.fn()}
       />,
     )
 
-    expect(screen.getByRole('button', { name: 'キャンセル' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: '削除中...' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Deleting…' })).toBeDisabled()
   })
 })

@@ -1,10 +1,11 @@
 import { useCallback } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { ArrowLeft, BookOpen, ChevronRight, Pencil, Plus } from 'lucide-react'
 
+import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
 import { ErrorState } from '@/components/ErrorState'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@/components/Skeleton'
 import { api } from '@/lib/api'
 import { useFetch } from '@/lib/use-fetch'
 
@@ -25,7 +26,7 @@ export function GroupDetailPage() {
 
   if (group.status === 'loading') {
     return (
-      <div className="flex flex-col gap-4">
+      <div className="stack-3">
         <Skeleton className="h-7 w-40" />
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-12 w-full" />
@@ -37,17 +38,39 @@ export function GroupDetailPage() {
     return <ErrorState onRetry={group.refetch} />
   }
 
+  const hasItems = items.status === 'success' && items.data.length > 0
+
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{group.data.name}</h1>
-        <Button asChild variant="outline">
-          <Link to={`/groups/${group.data.id}/edit`}>編集する</Link>
+    <>
+      <Link className="backlink" to="/groups">
+        <ArrowLeft strokeWidth={1.75} />
+        Groups
+      </Link>
+
+      <div className="sectionhead">
+        <h1 className="ugc">{group.data.name}</h1>
+        <Button asChild variant="outline" size="sm">
+          <Link to={`/groups/${group.data.id}/edit`}>
+            <Pencil strokeWidth={1.75} />
+            Edit
+          </Link>
         </Button>
       </div>
 
+      <div className="sectionhead">
+        <h2>Items</h2>
+        {hasItems && (
+          <Button asChild size="sm">
+            <Link to={`/groups/${group.data.id}/items/new`}>
+              <Plus strokeWidth={1.75} />
+              Add item
+            </Link>
+          </Button>
+        )}
+      </div>
+
       {items.status === 'loading' ? (
-        <div className="flex flex-col gap-2">
+        <div className="stack-2">
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-12 w-full" />
@@ -56,36 +79,30 @@ export function GroupDetailPage() {
         <ErrorState onRetry={items.refetch} />
       ) : items.data.length === 0 ? (
         <EmptyState
-          message="アイテムがまだありません"
-          ctaLabel="アイテムを作成"
+          icon={BookOpen}
+          message="No items yet."
+          ctaLabel="Add item"
           ctaTo={`/groups/${group.data.id}/items/new`}
         />
       ) : (
-        <div className="flex flex-col gap-4">
-          <div className="flex justify-end">
-            <Button asChild>
-              <Link to={`/groups/${group.data.id}/items/new`}>
-                アイテムを作成
+        <ul className="list card">
+          {items.data.map((item) => (
+            <li key={item.id}>
+              <Link
+                className="row"
+                to={`/groups/${group.data.id}/items/${item.id}`}
+              >
+                <span className="title">{item.title}</span>
+                <span className="vol">
+                  <span className="unit">vol.</span>
+                  {item.completedVolume}
+                </span>
+                <ChevronRight className="chev" strokeWidth={1.75} />
               </Link>
-            </Button>
-          </div>
-          <ul className="flex flex-col divide-y divide-border rounded-md border">
-            {items.data.map((item) => (
-              <li key={item.id}>
-                <Link
-                  to={`/groups/${group.data.id}/items/${item.id}`}
-                  className="flex items-center justify-between px-4 py-3 hover:bg-accent"
-                >
-                  <span>{item.title}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {item.completedVolume} 巻
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+            </li>
+          ))}
+        </ul>
       )}
-    </div>
+    </>
   )
 }

@@ -21,20 +21,20 @@ describe('GroupNewPage', () => {
     vi.stubGlobal('fetch', vi.fn().mockReturnValue(jsonResponse({}, 500)))
     renderWithProviders(<GroupNewPage />)
 
-    fireEvent.change(screen.getByLabelText('グループ名'), {
+    fireEvent.change(screen.getByLabelText('Name'), {
       target: { value: '漫画喫茶' },
     })
-    fireEvent.click(screen.getByRole('button', { name: '作成する' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }))
 
     await waitFor(() =>
       expect(
-        screen.getByText('保存できませんでした。もう一度お試しください。'),
+        screen.getByText("Couldn't save. Please try again."),
       ).toBeInTheDocument(),
     )
     expect(
-      screen.getByRole('heading', { name: 'グループを作成' }),
+      screen.getByRole('heading', { name: 'New group' }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '作成する' })).not.toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Create' })).not.toBeDisabled()
   })
 
   it('clears the error on the next successful attempt', async () => {
@@ -45,20 +45,20 @@ describe('GroupNewPage', () => {
     vi.stubGlobal('fetch', fetchMock)
     renderWithProviders(<GroupNewPage />)
 
-    fireEvent.change(screen.getByLabelText('グループ名'), {
+    fireEvent.change(screen.getByLabelText('Name'), {
       target: { value: '漫画喫茶' },
     })
-    fireEvent.click(screen.getByRole('button', { name: '作成する' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }))
     await waitFor(() =>
       expect(
-        screen.getByText('保存できませんでした。もう一度お試しください。'),
+        screen.getByText("Couldn't save. Please try again."),
       ).toBeInTheDocument(),
     )
 
-    fireEvent.click(screen.getByRole('button', { name: '作成する' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }))
     await waitFor(() =>
       expect(
-        screen.queryByText('保存できませんでした。もう一度お試しください。'),
+        screen.queryByText("Couldn't save. Please try again."),
       ).not.toBeInTheDocument(),
     )
   })

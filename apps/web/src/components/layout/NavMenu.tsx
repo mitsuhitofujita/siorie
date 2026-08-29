@@ -1,18 +1,19 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { User } from 'lucide-react'
+import { Layers, LogOut, X } from 'lucide-react'
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
+import { Avatar } from '@/components/Avatar'
 import {
   Sheet,
   SheetClose,
   SheetContent,
-  SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@/components/ui/sheet'
+} from '@/components/Sheet'
 import { useAuth } from '@/lib/auth-context'
 
+// The avatar button in the header is the only entry to the nav sheet, which
+// slides in from the right. The user's name shows inside it (in the OS gothic,
+// since it is user content); the links are Groups and Log out.
 export function NavMenu() {
   const { state, logout } = useAuth()
   const navigate = useNavigate()
@@ -26,41 +27,34 @@ export function NavMenu() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <button
-          type="button"
-          aria-label="メニューを開く"
-          className="rounded-full"
-        >
-          <Avatar>
-            <AvatarImage src={user?.pictureUrl} alt="" />
-            <AvatarFallback>
-              <User className="size-5" />
-            </AvatarFallback>
-          </Avatar>
+        <button type="button" aria-label="Open menu" className="avatar-btn">
+          <Avatar src={user?.pictureUrl} />
         </button>
       </SheetTrigger>
       <SheetContent>
-        <SheetHeader>
-          <SheetTitle>メニュー</SheetTitle>
-          {user && <p className="text-sm text-muted-foreground">{user.name}</p>}
-        </SheetHeader>
-        <nav className="flex flex-col gap-1">
+        <div className="nav-sheet-head">
+          <SheetTitle>Menu</SheetTitle>
+          <SheetClose
+            type="button"
+            className="nav-sheet-close"
+            aria-label="Close menu"
+          >
+            <X strokeWidth={1.75} />
+          </SheetClose>
+        </div>
+        {user && <p className="nav-sheet-name">{user.name}</p>}
+        <nav>
           <SheetClose asChild>
-            <Link
-              to="/groups"
-              className="rounded-md px-3 py-2 text-sm hover:bg-accent"
-            >
-              グループ一覧
+            <Link to="/groups">
+              <Layers strokeWidth={1.75} />
+              Groups
             </Link>
           </SheetClose>
           <SheetClose asChild>
-            <Button
-              variant="ghost"
-              className="justify-start px-3"
-              onClick={() => handleLogout()}
-            >
-              ログアウト
-            </Button>
+            <button type="button" onClick={() => handleLogout()}>
+              <LogOut strokeWidth={1.75} />
+              Log out
+            </button>
           </SheetClose>
         </nav>
       </SheetContent>
