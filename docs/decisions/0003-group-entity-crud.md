@@ -5,7 +5,9 @@ Worklog: [Group entity CRUD](../worklogs/0004-item-groups-crud/README.md)
 
 ## Status
 
-Accepted.
+Accepted. The "no dedicated route guard for unauthenticated `/groups/**`" point
+is superseded by [0008](0008-route-level-auth-split.md), which adds a
+client-side `<RequireAuth>` guard; every other point stands.
 
 ## Decision
 

@@ -1,7 +1,7 @@
 ---
 date: 2026-08-23
 tags: [auth, ux]
-status: open
+status: decided
 worklogs: [0002-home-login-frontend-structure]
 ---
 
@@ -32,3 +32,8 @@ worklogs: [0002-home-login-frontend-structure]
 側でガードする)を `<RequireAuth>` として実装し、未認証アクセスは `/login` に送る。実装は
 worklog [0008-home-signin-button-lifecycle](../../worklogs/0008-home-signin-button-lifecycle/plan.md)。
 0015 が decided になった時点でこの discovery を閉じる。
+
+## 追記 (2026-08-29) — closed
+
+0015 は [decision 0008-route-level-auth-split](../../decisions/0008-route-level-auth-split.md)
+として decided。この論点はそこで解決したため、status を `decided` にした。

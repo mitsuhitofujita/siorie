@@ -1,7 +1,7 @@
 ---
 date: 2026-08-28
 tags: [frontend, auth, ui, react]
-status: proposed
+status: decided
 worklogs: [0008-home-signin-button-lifecycle]
 ---
 

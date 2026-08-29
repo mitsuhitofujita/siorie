@@ -1,8 +1,8 @@
 ---
 date: 2026-08-29
-status: in-progress
+status: merged
 discussions: [0015-home-signin-button-lifecycle]
-decisions: []
+decisions: [0008-route-level-auth-split]
 pr: null
 ---
 

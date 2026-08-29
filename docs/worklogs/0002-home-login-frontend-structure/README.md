@@ -1,13 +1,13 @@
 ---
 date: 2026-08-23
-status: in-progress
+status: merged
 discussions:
   [
     0004-home-and-login,
     0005-single-resource-get-for-groups-and-items,
     0006-unauthenticated-route-guard,
   ]
-decisions: []
+decisions: [0009-frontend-app-structure]
 pr: null
 ---
 

@@ -19,9 +19,9 @@ This repository is a monorepo. Runnable applications live under `apps/`: `apps/a
 │   │   └── justfile
 │   └── web/
 │       ├── src/
-│       │   ├── components/       # layout, shared states (empty/error), hand-written UI primitives (Button, Dialog, Sheet, TextField, Avatar, Skeleton)
-│       │   ├── lib/               # auth (Google Identity Services), api client, data-fetch/submit hooks, utils
-│       │   ├── pages/             # HomePage, groups/ (list/detail/new/edit), groups/items/ (detail/new/edit)
+│       │   ├── components/       # layout, route guards (RequireAuth/RequireGuest), shared states (empty/error), hand-written UI primitives (Button, Dialog, Sheet, TextField, Avatar, Skeleton)
+│       │   ├── lib/               # auth (Google Identity Services + GoogleSignInButton), api client, data-fetch/submit hooks, utils
+│       │   ├── pages/             # RootRoute (/ redirect-only), LoginPage, groups/ (list/detail/new/edit), groups/items/ (detail/new/edit)
 │       │   ├── test/              # setup.ts, renderWithProviders.tsx
 │       │   ├── App.tsx
 │       │   ├── index.css
@@ -91,8 +91,8 @@ A Vite + TypeScript + React application managed with pnpm as the only package ma
   spacing, and `8·φⁿ` radius, all as CSS custom properties, with the component
   styles in an `@layer components` block consumed as semantic classes
   (`className="btn btn-primary"`). Mobile-only, light-only, a single centred
-  column ≤ 430 px with a hairline side border on wider viewports; the home
-  screen keeps no common layout. shadcn/ui is not used — `src/components/`
+  column ≤ 430 px with a hairline side border on wider viewports; `/` and
+  `/login` render outside the common layout. shadcn/ui is not used — `src/components/`
   holds hand-written `Button`, `Dialog`, `Sheet`, `TextField`, `Avatar`, and
   `Skeleton` on the tokens, wrapping the Radix primitives (Dialog, Label,
   Avatar) kept for behaviour. Tailwind v4 remains as the build pipeline plus a
@@ -100,12 +100,35 @@ A Vite + TypeScript + React application managed with pnpm as the only package ma
   user-entered content (group / item names, the signed-in user's name) renders
   in the OS gothic with no web font, while the rounded chrome face (Zen Maru
   Gothic, Latin subset) is self-hosted via `@fontsource` with no runtime CDN.
+- Auth-state screen switching happens at the route layer, not inside a page. `src/App.tsx` maps
+  `/` to `src/pages/RootRoute.tsx` (no UI: a minimal skeleton while auth is `loading`, otherwise
+  `<Navigate>` to `/groups` or `/login` — the one place `loading` is handled explicitly), `/login`
+  to `src/pages/LoginPage.tsx` wrapped in `<RequireGuest>`, and the `AppLayout` route element
+  (everything under `/groups`) wrapped once in `<RequireAuth>`. `RequireAuth` sends a settled
+  `unauthenticated` visitor to `/login`; `RequireGuest` sends a settled `authenticated` visitor to
+  `/groups`; both are in `src/components/route-guards.tsx`. There is no authenticated home page —
+  the signed-in user's name shows in the `NavMenu` sheet.
+- The route table's URLs nest to match the Firestore data model: `/groups`, `/groups/new`,
+  `/groups/:groupId` (detail), `/groups/:groupId/edit`, and the
+  `/groups/:groupId/items/{new,:itemId,:itemId/edit}` equivalents. Create and edit are always
+  separate pages (a create page has no loading state; an edit page fetches its initial data via a
+  single-resource `GET` and shows a skeleton meanwhile). Every route except `/` and `/login` renders
+  inside `src/components/layout/AppLayout.tsx` (header: title + account avatar; footer: app name
+  only), whose avatar opens `NavMenu`. Deletion is initiated from an edit page through
+  `src/components/DeleteConfirmDialog.tsx` (a custom modal, never `window.confirm`), not from the
+  list. List pages show `Skeleton` while loading and `src/components/EmptyState` (message + create
+  CTA) when the result is empty. `src/lib/api.ts` is a thin typed `fetch` wrapper per endpoint;
+  `src/lib/auth-context.ts` holds `AuthState` (`loading` / `unauthenticated` / `authenticated`,
+  from `GET /api/me` on mount) and `useAuth`, kept out of `auth.tsx` so Fast Refresh's
+  component-only-export rule holds.
 - `src/lib/auth.tsx` (`AuthProvider`) loads the Google Identity Services script once, initializes
-  `google.accounts.id` with `VITE_GOOGLE_CLIENT_ID`, and exposes `renderSignInButton(container)`,
-  which mounts Google's own rendered "Sign in with Google" button. The button's credential callback
-  `POST`s to `/api/auth/google`, then re-checks `GET /api/me` to update auth state; `logout()` calls
-  `POST /api/auth/logout`. `src/pages/HomePage.tsx` mounts the button into an empty container in the
-  unauthenticated state.
+  `google.accounts.id` with `VITE_GOOGLE_CLIENT_ID`, and provides `{ state, gisReady, logout }`. It
+  also exports `GoogleSignInButton`, a self-contained component that owns its container, calls
+  `google.accounts.id.renderButton` into it once `gisReady`, and on unmount clears only its own
+  container. `LoginPage` is the only place it is mounted. On sign-in the button's credential
+  callback `POST`s to `/api/auth/google`, then re-checks `GET /api/me`; auth state flips to
+  `authenticated`, `<RequireGuest>` navigates to `/groups`, and `LoginPage` unmounts (removing the
+  button's `<div>` and Google's `<iframe>` with it). `logout()` calls `POST /api/auth/logout`.
 - `src/lib/use-fetch.ts` (`useFetch`) and `src/lib/use-submit.ts` (`useSubmit`) are the
   shared data-access hooks every group/item page uses instead of ad-hoc
   `useState`/`useEffect`. `useFetch(fetcher)` returns an explicit
@@ -154,3 +177,5 @@ worklogs (see below); the item-list endpoint currently returns every item with n
 - [0004: Item entity CRUD](../decisions/0004-item-entity-crud.md)
 - [0005: Form and fetch error feedback](../decisions/0005-form-and-fetch-error-feedback.md)
 - [0006: Visual style system — moss × rounded gothic, shadcn/ui removed](../decisions/0006-visual-style-system.md)
+- [0008: Route-level auth split and a self-contained GoogleSignInButton](../decisions/0008-route-level-auth-split.md)
+- [0009: Frontend application structure — SPA routing, common layout, page conventions](../decisions/0009-frontend-app-structure.md)
