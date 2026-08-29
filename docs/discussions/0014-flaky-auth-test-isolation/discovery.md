@@ -2,7 +2,7 @@
 date: 2026-08-28
 tags: [testing, frontend, flaky-test]
 status: proposed
-worklogs: [0006-form-error-handling]
+worklogs: [0006-form-error-handling, 0007-flaky-auth-test-isolation]
 ---
 
 worklog [0006-form-error-handling](../../worklogs/0006-form-error-handling/plan.md)

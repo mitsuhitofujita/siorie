@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { useAuth } from '@/lib/auth-context'
@@ -34,7 +34,13 @@ function mockGoogleIdentityServices() {
   return { initialize, renderButton }
 }
 
-afterEach(() => {
+afterEach(async () => {
+  // Flush any pending passive effect (Probe's renderSignInButton) while the
+  // google stub is still installed, so it can't run against a deleted
+  // window.google after teardown. Without this, a congested scheduler can
+  // let that effect flush after this synchronous teardown and throw a
+  // TypeError reading window.google.accounts.
+  await act(async () => {})
   vi.unstubAllGlobals()
   delete (window as { google?: unknown }).google
 })
