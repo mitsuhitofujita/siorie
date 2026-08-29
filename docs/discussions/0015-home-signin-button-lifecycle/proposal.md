@@ -130,6 +130,13 @@ auth モジュール（`auth.tsx` / `auth-context.ts`）が公開するコンポ
   assertion を追加。`apps/web/src/lib/auth.test.tsx` の `Probe` は `renderSignInButton` 前提なので
   `<GoogleSignInButton />` を対象に書き換え。`apps/web/src/test/renderWithProviders.tsx` の
   `renderSignInButton` オプションを削除。
+- `apps/web/src/App.test.tsx`: `AuthProvider` を描画するたび実 `<script
+  src="https://accounts.google.com/gsi/client">` を `document.head` に注入し除去しない件を塞ぐ
+  （`auth.test.tsx` と同様に `window.google` を stub して実 `<script>` 分岐を踏ませない、または
+  `loadGoogleIdentityServices` に cleanup / seam を入れる）。worklog
+  [0007-flaky-auth-test-isolation](../../worklogs/0007-flaky-auth-test-isolation/plan.md) の
+  Difficulties が拾い、[0014](../0014-flaky-auth-test-isolation/proposal.md) が「スコープ外」に
+  置いていた論点を、同じ `AuthProvider` の命令的 DOM 操作として本スコープに吸収する。
 - `docs/discussions/0006-unauthenticated-route-guard/discovery.md`: 0015 へのポインタ追記。
 
 ## 検討したが採用しなかった案

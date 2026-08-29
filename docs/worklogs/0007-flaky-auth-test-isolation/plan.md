@@ -89,7 +89,15 @@ The load repro that produced 2/20 failures before now produces 0/40
   to be the first test that most often loses. This does not change the fix —
   it strengthens the case for a file-wide `afterEach` flush over
   per-test `await waitFor(renderButton)` calls, since the vulnerable set is
-  "every test", not "the first one".
+  "every test", not "the first one". The structural root under this — the
+  auth layer doing React-unmanaged imperative DOM work (`window.google`
+  assignment, `renderButton` into a raw container, real `<script>`
+  injection) — is not tracked in this worklog. It is the same root as
+  `docs/discussions/0015-home-signin-button-lifecycle`, and the one loose
+  end 0015 did not already name (`App.test.tsx` appending a real `<script
+  src=".../gsi/client">` to `document.head` on every `AuthProvider` render,
+  never removed — flagged out-of-scope in the 0014 proposal) was folded
+  into 0015's "影響範囲（想定）" rather than opened as a new discovery.
 
 - **Load calibration differs from the proposal and matters for anyone
   re-checking this.** The proposal reproduced with one `yes > /dev/null`

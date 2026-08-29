@@ -75,3 +75,10 @@ scope (b) で合意。ルート単位の認証ゲート（`<RequireAuth>` / `<Re
 `/` はリダイレクトのみ、ユーザー名は `NavMenu` へ移す。0004 の2つの決定（`/login` なし／認証済み
 ホームを残す）を覆し、0006 を吸収、0009 を supersede する。0016 より先に着手する。詳細は
 [proposal.md](proposal.md)。
+
+worklog [0007-flaky-auth-test-isolation](../../worklogs/0007-flaky-auth-test-isolation/plan.md)
+の Difficulties が指摘した「`App.test.tsx` が `AuthProvider` 描画のたび実 `<script>` を
+`document.head` に注入し除去しない」件も、独立の discovery を起こさず本スコープに吸収する。
+[0014](../0014-flaky-auth-test-isolation/proposal.md) が「スコープ外」に置いていたが、同じ
+`AuthProvider` の命令的 DOM 操作という根は 0015 と同じため。反映先は proposal の
+「影響範囲（想定）」。
