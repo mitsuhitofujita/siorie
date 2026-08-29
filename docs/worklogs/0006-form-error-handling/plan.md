@@ -1,7 +1,7 @@
 ---
 date: 2026-08-28
 status: merged
-discussions: [0012-form-error-handling, 0014]
+discussions: [0012-form-error-handling, 0014-flaky-auth-test-isolation]
 decisions: [0005-form-and-fetch-error-feedback]
 pr: null
 ---
@@ -133,7 +133,7 @@ infinite loading skeleton).
   `<script>` tag `AuthProvider` injects into `document.head`, not anything
   this worklog touched) — left as is, out of scope here. This looked
   structural rather than a one-off, so it became a new discovery:
-  [0014](../../discussions/0014/discovery.md).
+  [0014-flaky-auth-test-isolation](../../discussions/0014-flaky-auth-test-isolation/discovery.md).
 
 - **Real browser verification was possible this time**, unlike worklogs
   0004-item-groups-crud and 0005-items-crud, which both hit a hard

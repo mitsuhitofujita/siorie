@@ -1,7 +1,7 @@
 ---
 date: 2026-08-28
 tags: [testing, frontend, flaky-test]
-status: open
+status: proposed
 worklogs: [0006-form-error-handling]
 ---
 
