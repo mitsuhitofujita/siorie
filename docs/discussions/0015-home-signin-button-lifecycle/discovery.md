@@ -1,7 +1,7 @@
 ---
 date: 2026-08-28
 tags: [frontend, auth, ui, react]
-status: open
+status: proposed
 worklogs: []
 ---
 
