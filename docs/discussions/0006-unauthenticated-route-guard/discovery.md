@@ -24,3 +24,11 @@ worklogs: [0002-home-login-frontend-structure]
   エラー状態表示トピックに合流させる)。
 - 共通レイアウト自体(ヘッダ・ナビメニュー)を認証必須の入れ物と位置づけ、`AppLayout` 側で
   ガードする。
+
+## 追記 (2026-08-29)
+
+[0015-home-signin-button-lifecycle](../0015-home-signin-button-lifecycle/proposal.md) がこの
+論点を吸収した。上記「検討候補」の3番目(共通レイアウトを認証必須の入れ物とし `AppLayout`
+側でガードする)を `<RequireAuth>` として実装し、未認証アクセスは `/login` に送る。実装は
+worklog [0008-home-signin-button-lifecycle](../../worklogs/0008-home-signin-button-lifecycle/plan.md)。
+0015 が decided になった時点でこの discovery を閉じる。

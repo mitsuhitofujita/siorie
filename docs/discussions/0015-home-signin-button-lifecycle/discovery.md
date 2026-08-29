@@ -2,7 +2,7 @@
 date: 2026-08-28
 tags: [frontend, auth, ui, react]
 status: proposed
-worklogs: []
+worklogs: [0008-home-signin-button-lifecycle]
 ---
 
 ホーム画面でログイン直後（リロードなし）にGoogleのサインインボタンがアバターと

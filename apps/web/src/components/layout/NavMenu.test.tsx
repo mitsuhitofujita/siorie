@@ -21,6 +21,7 @@ describe('NavMenu', () => {
     fireEvent.click(screen.getByRole('button', { name: 'メニューを開く' }))
 
     expect(screen.getByText('メニュー')).toBeInTheDocument()
+    expect(screen.getByText('山田 太郎')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'グループ一覧' })).toHaveAttribute(
       'href',
       '/groups',

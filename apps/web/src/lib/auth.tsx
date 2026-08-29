@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 
-import { AuthContext, type AuthState, type AuthUser } from '@/lib/auth-context'
+import {
+  AuthContext,
+  useAuth,
+  type AuthState,
+  type AuthUser,
+} from '@/lib/auth-context'
 
 const GIS_SCRIPT_SRC = 'https://accounts.google.com/gsi/client'
 
@@ -106,27 +111,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [handleCredentialResponse])
 
-  // Renders Google's own button rather than wiring a plain button to
-  // google.accounts.id.prompt() (One Tap): prompt() is meant to display
-  // automatically on page load, not be triggered by a click, and — unlike
-  // the rendered button — has no fallback to a popup flow if a FedCM
-  // sign-in can't complete, so a button wired to it can fail with no
-  // visible feedback at all.
-  const renderSignInButton = useCallback(
-    (container: HTMLElement) => {
-      if (!gisReady) return
-      window.google!.accounts.id.renderButton(container, {
-        type: 'standard',
-        theme: 'filled_black',
-        size: 'large',
-        text: 'signin_with',
-        shape: 'rectangular',
-        locale: 'ja',
-      })
-    },
-    [gisReady],
-  )
-
   const logout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' })
@@ -136,8 +120,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ state, renderSignInButton, logout }}>
+    <AuthContext.Provider value={{ state, gisReady, logout }}>
       {children}
     </AuthContext.Provider>
   )
+}
+
+// Renders Google's own "Sign in with Google" button into a container this
+// component fully owns. Google's rendered button — unlike a plain button
+// wired to google.accounts.id.prompt() (One Tap), which is meant to display
+// automatically on load, not on a click, and has no popup fallback when a
+// FedCM sign-in can't complete — reliably offers an explicit, user-clicked
+// entry point.
+//
+// The container is this component's alone: Google injects an <iframe> into it
+// outside React's control, and on unmount (the /login -> /groups route
+// change, or a StrictMode double-mount) React removes the <div> itself, so
+// the iframe can never be orphaned into another screen. The cleanup clears
+// only this container, which keeps a StrictMode re-run from stacking a
+// second button.
+export function GoogleSignInButton() {
+  const { gisReady } = useAuth()
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!gisReady || !container) return
+
+    window.google!.accounts.id.renderButton(container, {
+      type: 'standard',
+      theme: 'filled_black',
+      size: 'large',
+      text: 'signin_with',
+      shape: 'rectangular',
+      locale: 'ja',
+    })
+
+    return () => {
+      container.replaceChildren()
+    }
+  }, [gisReady])
+
+  return <div ref={containerRef} data-testid="google-signin-button" />
 }

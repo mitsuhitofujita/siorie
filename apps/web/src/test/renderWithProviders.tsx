@@ -4,21 +4,20 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 import { AuthContext, type AuthState } from '@/lib/auth-context'
 
-const noop = () => {}
 const noopAsync = async () => {}
 
 export function renderWithProviders(
   ui: ReactElement,
   {
     authState = { status: 'unauthenticated' },
-    renderSignInButton = noop,
+    gisReady = false,
     logout = noopAsync,
     route = '/',
     path,
     extraRoutes,
   }: {
     authState?: AuthState
-    renderSignInButton?: (container: HTMLElement) => void
+    gisReady?: boolean
     logout?: () => Promise<void>
     route?: string
     // A route pattern (e.g. '/groups/:groupId') to match `route` against, so
@@ -32,9 +31,7 @@ export function renderWithProviders(
 ) {
   return render(
     <MemoryRouter initialEntries={[route]}>
-      <AuthContext.Provider
-        value={{ state: authState, renderSignInButton, logout }}
-      >
+      <AuthContext.Provider value={{ state: authState, gisReady, logout }}>
         {path ? (
           <Routes>
             <Route path={path} element={ui} />

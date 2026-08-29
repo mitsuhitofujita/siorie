@@ -1,19 +1,11 @@
-import { useEffect, useRef } from 'react'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { useAuth } from '@/lib/auth-context'
-import { AuthProvider } from '@/lib/auth'
+import { AuthProvider, GoogleSignInButton } from '@/lib/auth'
 
 function Probe() {
-  const { state, renderSignInButton, logout } = useAuth()
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (state.status === 'unauthenticated' && containerRef.current) {
-      renderSignInButton(containerRef.current)
-    }
-  }, [state.status, renderSignInButton])
+  const { state, logout } = useAuth()
 
   return (
     <div>
@@ -21,7 +13,7 @@ function Probe() {
       {state.status === 'authenticated' && (
         <span data-testid="name">{state.user.name}</span>
       )}
-      <div ref={containerRef} data-testid="signin-container" />
+      <GoogleSignInButton />
       <button onClick={() => logout()}>logout</button>
     </div>
   )
@@ -35,10 +27,10 @@ function mockGoogleIdentityServices() {
 }
 
 afterEach(async () => {
-  // Flush any pending passive effect (Probe's renderSignInButton) while the
-  // google stub is still installed, so it can't run against a deleted
-  // window.google after teardown. Without this, a congested scheduler can
-  // let that effect flush after this synchronous teardown and throw a
+  // Flush any pending passive effect (GoogleSignInButton's renderButton call)
+  // while the google stub is still installed, so it can't run against a
+  // deleted window.google after teardown. Without this, a congested scheduler
+  // can let that effect flush after this synchronous teardown and throw a
   // TypeError reading window.google.accounts.
   await act(async () => {})
   vi.unstubAllGlobals()
@@ -108,7 +100,7 @@ describe('AuthProvider', () => {
     })
   })
 
-  it('renderSignInButton renders the Google button into the given container once GIS is ready', async () => {
+  it('GoogleSignInButton renders the Google button into its own container once GIS is ready', async () => {
     const { renderButton } = mockGoogleIdentityServices()
     vi.stubGlobal(
       'fetch',
@@ -123,7 +115,7 @@ describe('AuthProvider', () => {
 
     await waitFor(() => expect(renderButton).toHaveBeenCalledOnce())
     expect(renderButton.mock.calls[0][0]).toBe(
-      screen.getByTestId('signin-container'),
+      screen.getByTestId('google-signin-button'),
     )
     expect(renderButton.mock.calls[0][1]).toMatchObject({ locale: 'ja' })
   })

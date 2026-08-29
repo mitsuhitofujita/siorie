@@ -42,6 +42,7 @@ export function NavMenu() {
       <SheetContent>
         <SheetHeader>
           <SheetTitle>メニュー</SheetTitle>
+          {user && <p className="text-sm text-muted-foreground">{user.name}</p>}
         </SheetHeader>
         <nav className="flex flex-col gap-1">
           <SheetClose asChild>

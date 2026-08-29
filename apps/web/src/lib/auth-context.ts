@@ -12,12 +12,9 @@ export type AuthState =
 
 export type AuthContextValue = {
   state: AuthState
-  // Renders Google's own "Sign in with Google" button into `container`.
-  // Google's rendered button (unlike a plain button wired to
-  // google.accounts.id.prompt()) falls back to a popup OAuth flow when the
-  // browser can't complete a FedCM-based sign-in, so it's the reliable way
-  // to offer an explicit, user-clicked sign-in entry point.
-  renderSignInButton: (container: HTMLElement) => void
+  // True once google.accounts.id has loaded and been initialized, so
+  // <GoogleSignInButton> knows when it can render Google's button.
+  gisReady: boolean
   logout: () => Promise<void>
 }
 
