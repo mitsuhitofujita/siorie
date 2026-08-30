@@ -1,0 +1,29 @@
+# The build context for infra/Dockerfile is the repository root. Keep only what
+# the Go build needs; everything below is either irrelevant to the binary or
+# must not end up in a build layer.
+
+# VCS and tooling
+.git
+.claude
+.local
+
+# Node / web (the current image is Go-only; revisit when the SPA is co-served)
+node_modules
+apps/web/node_modules
+apps/web/dist
+
+# Go build output
+apps/api/bin
+
+# Terraform working dirs, state, and plans
+**/.terraform
+*.tfstate
+*.tfstate.*
+*.tfplan
+
+# Docs
+docs
+
+# Local env files (keep .env.example, which does not match these)
+.env
+apps/*/.env

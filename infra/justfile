@@ -1,4 +1,11 @@
 infra_dir := source_directory()
+repo_root := parent_directory(source_directory())
+
+# Artifact Registry Docker path for the deploy image (repository from
+# infra/prod/, image name `app`). Tagged with the short commit SHA at push
+# time; no `:latest`.
+ar_host := "asia-northeast1-docker.pkg.dev"
+image := ar_host / "siorie/siorie/app"
 
 # Terraform layers are root modules under infra/<layer>/ (bootstrap, prod).
 # Recipes take the layer name and are independent of the caller's working
@@ -28,3 +35,42 @@ format:
 # Fail if any Terraform file under infra/ is not canonically formatted.
 format-check:
     terraform fmt -recursive -check {{infra_dir}}
+
+# --- Deploy container image ---------------------------------------------------
+# Build/push run on the operator's local container engine; Cloud Build is not
+# used. The engine is outside mise's version pinning.
+#
+# A Docker-compatible engine is assumed. podman (Docker CLI emulation) works —
+# `build` and `push` behave the same — but its config paths differ:
+#   - `docker-auth` writes a credential helper into ~/.docker/config.json.
+#     podman's native credential store is ~/.config/containers/auth.json; it
+#     does fall back to ~/.docker/config.json and honours credHelpers, and
+#     docker-credential-gcloud ships on PATH with the gcloud SDK, so the helper
+#     should resolve. If a push still fails on auth, log in directly instead:
+#       gcloud auth print-access-token \
+#         | docker login -u oauth2accesstoken --password-stdin {{ar_host}}
+#   - The Dockerfile's builder line `FROM golang:1.27-bookworm` is unqualified.
+#     Docker implies docker.io/library/; podman needs a short-name alias or
+#     unqualified-search entry (a strict `short-name-mode = enforcing` config
+#     would break a non-interactive run).
+
+# Point the engine at the Artifact Registry host using your gcloud user
+# credentials. Run once per machine — it writes ~/.docker/config.json.
+# Deliberately not part of `setup`: it mutates a shared, user-global config
+# file. See the note above if you are on podman.
+docker-auth:
+    gcloud auth configure-docker {{ar_host}}
+
+# Build the deploy image from the repo root and push it to Artifact Registry,
+# tagged with `git rev-parse --short=12 HEAD`. Runs regardless of whether the
+# working tree is dirty (the tag can then disagree with the pushed contents —
+# operator's responsibility). Requires `docker-auth` once and the Artifact
+# Registry repository (`just apply prod`).
+publish-image:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    sha="$(git -C {{repo_root}} rev-parse --short=12 HEAD)"
+    ref="{{image}}:${sha}"
+    echo "publishing ${ref}"
+    docker build -f {{infra_dir}}/Dockerfile -t "${ref}" {{repo_root}}
+    docker push "${ref}"
