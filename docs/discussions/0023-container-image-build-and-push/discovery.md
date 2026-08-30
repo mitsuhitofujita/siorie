@@ -1,8 +1,8 @@
 ---
 date: 2026-08-30
 tags: [infra, iac, deploy, docker, cicd]
-status: proposed
-worklogs: []
+status: worked
+worklogs: [0012-container-image-build-and-push]
 ---
 
 デプロイに向けてDockerイメージを作成しアップロードするIaCの実装。
