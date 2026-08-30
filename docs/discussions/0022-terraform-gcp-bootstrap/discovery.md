@@ -1,7 +1,7 @@
 ---
 date: 2026-08-30
 tags: [infra, iac, terraform, deploy, cicd]
-status: proposed
+status: decided
 worklogs: [0011-terraform-gcp-bootstrap]
 ---
 

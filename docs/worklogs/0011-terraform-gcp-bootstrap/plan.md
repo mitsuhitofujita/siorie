@@ -1,8 +1,8 @@
 ---
 date: 2026-08-30
-status: in-progress
+status: merged
 discussions: [0022-terraform-gcp-bootstrap]
-decisions: []
+decisions: [0011-terraform-iac-layout]
 pr: null
 ---
 

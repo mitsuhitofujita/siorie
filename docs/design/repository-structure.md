@@ -43,6 +43,23 @@ This repository is a monorepo. Runnable applications live under `apps/`: `apps/a
 │   ├── worklogs/
 │   ├── decisions/
 │   └── design/
+├── infra/
+│   ├── bootstrap/           # root module: project API enablement, GCS state bucket, dormant deployer SA
+│   │   ├── versions.tf
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   ├── outputs.tf
+│   │   ├── terraform.tfvars       # project_id, region — committed
+│   │   ├── .terraform.lock.hcl    # committed
+│   │   └── terraform.tfstate      # local state — committed
+│   ├── prod/                # root module: GCS backend, zero managed resources so far
+│   │   ├── versions.tf
+│   │   ├── backend.tf
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   ├── terraform.tfvars
+│   │   └── .terraform.lock.hcl    # committed
+│   └── justfile
 ├── .gitignore
 ├── justfile
 ├── mise.toml
@@ -160,19 +177,53 @@ A Vite + TypeScript + React application managed with pnpm as the only package ma
   auto-cleanup only self-registers when `test.globals` is enabled, which this project does not do).
 - `package.json` scripts: `dev`, `build` (`tsc -b && vite build`), `test` (`vitest run`), `lint`, `format`, `format:check`, `preview`. The `packageManager` field pins the pnpm version used.
 
+## `infra/`
+
+Terraform Infrastructure as Code for Google Cloud, applied from a workstation
+(no CI/CD automation yet), targeting a single production project (`siorie`,
+`asia-northeast1`). Two flat root modules; no `modules/` or `environments/`
+directory. See decision 0011.
+
+- `infra/bootstrap/` — the layer that has to exist before any other. Enables the
+  project's APIs (`google_project_service` over the set that bootstrap, the
+  future prod layer, and the planned GitHub Actions + Workload Identity
+  Federation path all need), creates the Terraform state bucket
+  (`siorie-tfstate`: `asia-northeast1`, versioned, uniform bucket-level access,
+  public access prevention enforced, `prevent_destroy`, 30-day
+  noncurrent-version cleanup), and creates a dormant `deployer` service account
+  with **no** IAM role bindings. Keeps **local state, committed to the repo**
+  (`terraform.tfstate`) — it creates the state bucket, so it cannot back itself
+  with it; its state holds only non-secret facts. This is viable only while a
+  single operator applies locally.
+- `infra/prod/` — a skeleton: a `backend "gcs"` block pointing at
+  `siorie-tfstate` (`prefix = "prod"`), a provider config, and **zero managed
+  resources** so far. Cloud Run, Artifact Registry, the Firestore `(default)`
+  database, a runtime service account, the billing budget, and Cloud Monitoring
+  are added by later worklogs.
+- `infra/justfile` — `init` / `plan` / `apply` / `output` recipes that take the
+  layer name (`just infra/plan bootstrap`), plus `format` / `format-check`.
+  Reachable from the repo root via just's cross-directory resolution.
+- `terraform.tfvars` (`project_id`, `region`) and `.terraform.lock.hcl` are
+  committed for both layers; the `google` provider is pinned `~> 6.50`. Local
+  apply uses the operator's own credentials (Application Default Credentials or
+  an equivalent short-lived user OAuth token); no service-account keys.
+
 ## Root
 
-- `justfile` recipes: `setup`, `dev-api`, `dev-web`, `build`, `test`, `lint`, `format`, `check`. Go tasks are delegated to `apps/api/justfile` via just's cross-directory recipe resolution (e.g. `just apps/api/build`); Web tasks call the `package.json` scripts via `pnpm --dir apps/web`. `check` runs format-checking, lint, test, and build for both apps and does not rewrite files; `format` is the file-rewriting task and is run separately.
-- `mise.toml` pins the development versions of Go, Node.js, pnpm, just, gcloud, Java (for the Firestore emulator), and Terraform.
-- `.gitignore` excludes the generated `apps/api/bin/`, `apps/web/dist/`, `apps/web/node_modules/`, and the local `apps/api/.env` / `apps/web/.env` files.
+- `justfile` recipes: `setup`, `dev-api`, `dev-web`, `build`, `test`, `lint`, `format`, `check`. Go tasks are delegated to `apps/api/justfile` via just's cross-directory recipe resolution (e.g. `just apps/api/build`); Web tasks call the `package.json` scripts via `pnpm --dir apps/web`; `format` / `check` also run `terraform fmt` over `infra/` via `infra/justfile`. `check` runs format-checking, lint, test, and build for both apps and does not rewrite files; `format` is the file-rewriting task and is run separately.
+- `mise.toml` pins the development versions of Go, Node.js, pnpm, just, gcloud, Java (for the Firestore emulator), and Terraform. Terraform is pinned to an exact version (not `latest`) for apply reproducibility.
+- `.gitignore` excludes the generated `apps/api/bin/`, `apps/web/dist/`, `apps/web/node_modules/`, and the local `apps/api/.env` / `apps/web/.env` files, plus Terraform working directories, plan files, `infra/prod/` state, and the bootstrap state backup — `infra/bootstrap/terraform.tfstate` and both `.terraform.lock.hcl` stay tracked.
 - `docs/` holds the discussions/worklogs/decisions/design layout described in `docs/README.md`.
 
 ## Not yet present
 
-Combined serving of the SPA from the Go binary, Docker/Cloud Build/Cloud Run, and Terraform are
-not part of this repository yet. Firestore, Google authentication, Tailwind CSS, the moss
-design-token system, and the group and item entity API endpoints have been introduced by later
-worklogs (see below); the item-list endpoint currently returns every item with no pagination.
+Combined serving of the SPA from the Go binary, a Dockerfile, and Cloud Run are not part of this
+repository yet. Terraform is present but only as the `infra/bootstrap/` layer plus an empty
+`infra/prod/` skeleton (see `infra/`); no application resources (Cloud Run, Artifact Registry,
+Firestore database, runtime IAM, billing budget) are managed yet, and there is no CI/CD
+automation. Firestore, Google authentication, Tailwind CSS, the moss design-token system, and the
+group and item entity API endpoints have been introduced by later worklogs (see below); the
+item-list endpoint currently returns every item with no pagination.
 
 ## Decisions
 
@@ -185,3 +236,4 @@ worklogs (see below); the item-list endpoint currently returns every item with n
 - [0008: Route-level auth split and a self-contained GoogleSignInButton](../decisions/0008-route-level-auth-split.md)
 - [0009: Frontend application structure — SPA routing, common layout, page conventions](../decisions/0009-frontend-app-structure.md)
 - [0010: Style fit-and-finish — one font family, no in-app back links, section-head create actions](../decisions/0010-style-fit-and-finish.md)
+- [0011: Terraform IaC layout — flat bootstrap + prod layers, committed bootstrap state](../decisions/0011-terraform-iac-layout.md)
