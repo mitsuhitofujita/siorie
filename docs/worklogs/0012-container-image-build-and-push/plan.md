@@ -1,8 +1,8 @@
 ---
 date: 2026-08-30
-status: in-progress
+status: merged
 discussions: [0023-container-image-build-and-push]
-decisions: []
+decisions: [0012-container-image-build-and-registry]
 pr: null
 ---
 
@@ -153,6 +153,14 @@ just infra/publish-image
 gcloud artifacts docker images list asia-northeast1-docker.pkg.dev/siorie/siorie
 ```
 
+### Operator-confirmed — connectivity check complete
+
+The operator ran the steps above. `just infra/publish-image` succeeded and the
+image is confirmed present in Artifact Registry (`asia-northeast1-docker.pkg.dev/siorie/siorie/app:<sha>`).
+All of the proposal's connectivity conditions are now met. The podman
+credential path (see Difficulties) therefore worked in practice — no fallback
+`docker login` was needed.
+
 ## What was done
 
 - Added the first real resource to `infra/prod/`: an Artifact Registry Docker
@@ -171,8 +179,9 @@ gcloud artifacts docker images list asia-northeast1-docker.pkg.dev/siorie/siorie
 - Verified locally: `terraform fmt`/`validate`/`plan` for `infra/prod/`, and a
   full `docker build` of `infra/Dockerfile` under podman producing a ~32 MB
   non-root image that runs and fails fast on missing env.
-- `terraform apply` and the image push were **not** performed (see Blocked
-  above); the proposal's connectivity check is pending two operator commands.
+- `terraform apply` and the image push were run by the operator after the code
+  was in place; the image is confirmed in Artifact Registry and every
+  connectivity condition in the proposal is met.
 
 ## Difficulties
 
@@ -226,13 +235,15 @@ podman-untested. See Review.
 auto-mode classifier ("Blocked by classifier"). Not retried, not worked around
 (per the denial guidance). Consequence: the proposal's connectivity check —
 apply succeeds, re-plan clean, image visible in Artifact Registry — is
-unverified and pending the operator. Everything up to `plan` ran clean, so the
-remaining risk is low, but "the AR repository actually exists and accepts a
-push" is still a claim, not an observation, as of this worklog.
+unverified at the time of writing and pending the operator. Everything up to
+`plan` ran clean, so the remaining risk was low. The operator then ran `apply`
+and `publish-image`, and the image is confirmed in Artifact Registry — the check
+is now complete.
 
 This is pure tooling friction (the classifier gates infra mutation), not a
 design or assumption problem — unlike 0011, where the same class of step failed
-for an environmental reason.
+for an environmental reason. The only real cost is a split of the "apply +
+verify" step across the agent (code, `plan`) and the operator (`apply`, push).
 
 ### Preflight held up better than 0011
 
@@ -260,6 +271,16 @@ podman distinction (the checklist assumed "Docker engine present" as a yes/no).
   triple-`siorie` path `asia-northeast1-docker.pkg.dev/siorie/siorie/app`, as
   the proposal anticipated and accepted. Harmless (AR paths always contain the
   project ID).
+- **Repository name reconsidered post-apply, kept.** After seeing it work the
+  operator raised `siorie/web/app` (mirroring the `siorie-web` OAuth client) as
+  an alternative to the doubled `siorie/siorie`. Kept `siorie/siorie/app`: the
+  image is the *unified* SPA+API Cloud Run service (0001), so a `web` namespace
+  would under-describe it and there will never be a matching `siorie/api/...`;
+  `repository_id` is also not updatable in place, so a rename means
+  destroy/recreate. The proposal's round-3 already weighed the generic
+  `containers/app` (option C) against the doubling and chose to accept it. If a
+  rename is ever wanted, `containers/app` or `docker/app` reads better than
+  `web/app`, and it is cheapest to do before more images accumulate.
 
 ## Review
 

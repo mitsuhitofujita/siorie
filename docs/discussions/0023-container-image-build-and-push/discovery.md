@@ -1,7 +1,7 @@
 ---
 date: 2026-08-30
 tags: [infra, iac, deploy, docker, cicd]
-status: worked
+status: decided
 worklogs: [0012-container-image-build-and-push]
 ---
 
