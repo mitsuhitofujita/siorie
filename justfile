@@ -42,15 +42,17 @@ lint:
     just apps/api/lint
     pnpm --dir {{web_dir}} lint
 
-# Format API and Web source files.
+# Format API, Web, and infra source files.
 format:
     just apps/api/format
     pnpm --dir {{web_dir}} format
+    just infra/format
 
-# Run format checking, lint, test, and build for API and Web.
+# Run format checking, lint, test, and build for API and Web, plus infra format checking.
 check:
     just apps/api/check
     pnpm --dir {{web_dir}} format:check
     pnpm --dir {{web_dir}} lint
     pnpm --dir {{web_dir}} test
     pnpm --dir {{web_dir}} build
+    just infra/format-check

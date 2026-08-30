@@ -1,0 +1,30 @@
+infra_dir := source_directory()
+
+# Terraform layers are root modules under infra/<layer>/ (bootstrap, prod).
+# Recipes take the layer name and are independent of the caller's working
+# directory. Local apply uses the operator's Application Default Credentials
+# (`gcloud auth application-default login`); no service-account keys.
+
+# terraform init for a layer, e.g. `just infra/init bootstrap`.
+init layer:
+    terraform -chdir={{infra_dir}}/{{layer}} init
+
+# terraform plan for a layer.
+plan layer:
+    terraform -chdir={{infra_dir}}/{{layer}} plan
+
+# terraform apply for a layer.
+apply layer:
+    terraform -chdir={{infra_dir}}/{{layer}} apply
+
+# terraform output for a layer.
+output layer:
+    terraform -chdir={{infra_dir}}/{{layer}} output
+
+# Rewrite Terraform files under infra/ to canonical format.
+format:
+    terraform fmt -recursive {{infra_dir}}
+
+# Fail if any Terraform file under infra/ is not canonically formatted.
+format-check:
+    terraform fmt -recursive -check {{infra_dir}}
