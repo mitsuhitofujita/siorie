@@ -1,55 +1,63 @@
 ---
 name: decide
-description: worklog を decisions に記録し、design に現況を反映する
-argument-hint: <docs/worklogs/ 以下の相対パス（例: docs/worklogs/0004-item-groups-crud）>
+description: Record a worklog into decisions and reflect the current state in design
+argument-hint: <path under docs/worklogs/ (e.g. docs/worklogs/0004-item-groups-crud), or the sequence number alone (e.g. 0004)>
 disable-model-invocation: true
 ---
 
-`docs/README.md` に従って。
+Follow `docs/README.md`.
 
-$1 はリポジトリルートからの相対パス。ディレクトリでも、その中の任意のファイルでも構わない。
-ファイルが渡されたら、それを含むディレクトリを対象とする。
+`$1` points to the target worklog. It is one of:
 
-対象: $1
+- A path relative to the repository root — a directory under `docs/worklogs/`,
+  or any file inside one. If a file is given, target its containing directory.
+- A bare sequence number, e.g. `4` or `0004`. Zero-pad it to four digits and
+  target the entry under `docs/worklogs/` whose name is exactly that number
+  (`0004`) or begins with `0004-`. If nothing matches, or more than one does,
+  stop and ask me.
 
-## 1. 確認する
+Target: `$1`
 
-worklog の plan.md を読んで。
-起点となった `docs/discussions/` があれば、その `proposal.md` と `minutes.md` も読んで。
+## 1. Check
 
-今は開発初期で、プルリクエストもマージも介さず main に直接コミットする運用のため、
-マージを待つ必要はない。`/decide` が呼ばれたことが反映の起点。
+Read the worklog's `plan.md`.
+If it started from a `docs/discussions/` entry, read that entry's `proposal.md` and `minutes.md` too.
 
-## 2. decision を書く
+We are early in development and commit straight to `main` without going through
+pull requests or merges, so there is nothing to wait for. `/decide` being called
+is what triggers the write-up.
 
-`docs/decisions/NNNN-short-title.md` を英語で作って。
-NNNN は既存ファイルの続きの連番。
+## 2. Write the decision
 
-決定事項とその理由に絞って要約して。
-検討の過程は discussions に、実装の実際は worklog に残っているから、ここで繰り返さないで。
-proposal をそのまま移さないで。短くていい。
+Create `docs/decisions/NNNN-short-title.md` in English.
+`NNNN` is the next sequence number after the existing files.
 
-先頭に、対応する discussions と worklog へのリンクを書いて。
+Summarise it down to the decision and its reasoning.
+The path that led there is in discussions and the actual implementation is in the
+worklog, so do not repeat them here. Do not move the proposal over as is. Short is fine.
 
-判断が過去の decision を覆すものなら、新しい decision を追加した上で、
-古い方の status を変更して相互にリンクして。古い decision の本文は書き換えないで。
+At the top, link to the corresponding discussions and worklog.
 
-## 3. design を更新する
+If the judgement overturns a past decision, add a new decision, then change the
+old one's status and cross-link the two. Do not rewrite the body of the old decision.
 
-この変更で現況が変わったなら、該当する `docs/design/` を英語で書き換えて。
-古い記述は上書きしていい。design は現況だけを持つ。
+## 3. Update design
 
-各文書の末尾に、いま作った decision へのリンクを追加して。
+If this change moved the current state, rewrite the relevant `docs/design/` in English.
+You may overwrite the old text; design holds the current state only.
 
-現況が変わっていないなら、design は触らないで。
+At the end of each document, add a link to the decision you just wrote.
 
-## 4. status を揃える
+If the current state has not changed, do not touch design.
 
-worklog の frontmatter の decisions に、いま作った decision へのリンクを追加。
-worklog の status を `merged` に。
-起点の `discovery.md` の status を `decided` に。本文は変更しないで。
+## 4. Align the statuses
 
-## 5. 最後に
+Add a link to the decision you just wrote to the worklog's frontmatter `decisions`.
+Set the worklog's status to `merged`.
+Set the originating `discovery.md`'s status to `decided`. Do not change its body.
 
-worklog に記録された困難のうち、まだ discovery になっていないものがあれば指摘して。
-`/decide` したからといって、そこで気づいた歪みが解消したわけではない。
+## 5. Finally
+
+If any of the difficulties recorded in the worklog have not become a discovery
+yet, point them out. Running `/decide` does not mean the distortions noticed
+there are resolved.

@@ -1,51 +1,60 @@
 ---
 name: discuss
-description: discovery.md をもとに議論し、合意できたら proposal.md をまとめる
-argument-hint: <docs/discussions/ 以下の相対パス（例: docs/discussions/0010-item-groups。作成直後は連番のみの docs/discussions/0011 でも可）>
+description: Discuss from discovery.md, and once we agree, write up proposal.md
+argument-hint: <path under docs/discussions/ (e.g. docs/discussions/0010-item-groups), or the sequence number alone (e.g. 0022)>
 disable-model-invocation: true
 ---
 
-`docs/README.md` に従って。
+Follow `docs/README.md`.
 
-$1 はリポジトリルートからの相対パス。ディレクトリでも、その中の任意のファイルでも構わない。
-ファイルが渡されたら、それを含むディレクトリを対象とする。
+`$1` points to the target discussion. It is one of:
 
-対象: $1
+- A path relative to the repository root — a directory under `docs/discussions/`,
+  or any file inside one. If a file is given, target its containing directory.
+- A bare sequence number, e.g. `22` or `0022`. Zero-pad it to four digits and
+  target the entry under `docs/discussions/` whose name is exactly that number
+  (`0022`) or begins with `0022-`. If nothing matches, or more than one does,
+  stop and ask me.
 
-## 1. 読む
+Target: `$1`
 
-まず `discovery.md` を読んで。frontmatter が無ければ、内容から判断して補って。
+## 1. Read
 
-ディレクトリ名がまだ連番のみ（例: `0011`）なら、discovery.md の内容から短い説明を考えて
-`NNNN-短い説明` にリネームして。以降はリネーム後のパスを対象とする。
-すでに短い説明が付いているなら、そのままにして。
+Read `discovery.md` first. If it has no frontmatter, infer it from the content and fill it in.
 
-次に、関連する `docs/design/`、`docs/decisions/`、
-frontmatter のタグが重なる過去の `docs/discussions/` を確認して。
+If the directory name is still the sequence number alone (e.g. `0011`), come up
+with a short description from the `discovery.md` content and rename the directory
+to `NNNN-short-description`. Work against the renamed path from then on.
+If it already has a short description, leave it as is.
 
-過去に同じ選択肢を検討して見送っている場合は、その事実を最初に伝えて。
+Next, check the related `docs/design/` and `docs/decisions/`, and any past
+`docs/discussions/` whose frontmatter tags overlap.
 
-## 2. 議論する
+If the same option was considered and set aside before, tell me that first.
 
-この段階では `proposal.md` も `minutes.md` も書かないで。
+## 2. Discuss
 
-私の記述で文脈が足りない箇所を質問して。
-私が挙げていない選択肢があれば提示して。
-私の前提が怪しいと思ったら指摘して。同意を優先しないで。
+Do not write `proposal.md` or `minutes.md` at this stage.
 
-一度に投げる質問は3つまで。
-私の回答が曖昧なら、そのまま進めずにもう一度聞いて。
+Ask about the places where what I wrote lacks context.
+If there are options I did not raise, put them forward.
+If an assumption of mine looks shaky, say so. Do not favour agreement.
 
-私が「提案をまとめて」と言うまで、議論を続けて。
+At most three questions at a time.
+If my answer is vague, ask again instead of moving on.
 
-## 3. まとめる
+Keep the discussion going until I tell you to write up the proposal.
 
-合意できたら、以下を作って。
+## 3. Write up
 
-`minutes.md` を日本語で。逐語ではなく要点だけ。
-特に、あなたが何を質問したかと、検討した上で採用しなかった案とその理由は必ず残して。
+Once we agree, create the following.
 
-`proposal.md` を日本語で。提案時点での検討を書く。決定ではない。
+`minutes.md`, in Japanese. Key points only, not verbatim. Be sure to keep a
+record of what you asked, and of the options that were considered and not taken,
+with the reasons why.
 
-`discovery.md` の frontmatter の status を `proposed` に変えて。
-本文は絶対に変更しないで。
+`proposal.md`, in Japanese. Write the thinking as it stands at proposal time.
+It is not a decision.
+
+Change the `status` in the `discovery.md` frontmatter to `proposed`.
+Never change the body.

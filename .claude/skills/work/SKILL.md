@@ -1,32 +1,41 @@
 ---
 name: work
-description: proposal.md から worklog を起こして実装し、結果と困難を追記する
-argument-hint: <docs/discussions/ 以下の相対パス（例: docs/discussions/0010-item-groups）> または実施内容
+description: Start a worklog from proposal.md, implement it, and append the outcome and the difficulties
+argument-hint: <path under docs/discussions/ (e.g. docs/discussions/0010-item-groups), the sequence number alone (e.g. 0010), or a description of the work>
 disable-model-invocation: true
 ---
 
-`docs/README.md` に従って。
+Follow `docs/README.md`.
 
-対象: $ARGUMENTS
+Target: $ARGUMENTS
 
-## 1. 起点を確認する
+## 1. Identify the starting point
 
-引数が `docs/discussions/` 以下の相対パスなら（ディレクトリでも、その中の任意のファイルでも構わない）、その `proposal.md` を読んで。
-proposal を伴わない小さな作業なら、それでいい。discovery を書かせようとしないで。
+Work out what `$ARGUMENTS` is:
 
-実装に入る前に、関連する `docs/design/` を確認して。
+- A bare sequence number, e.g. `10` or `0010` — zero-pad it to four digits and
+  take the entry under `docs/discussions/` whose name is exactly that number
+  (`0010`) or begins with `0010-`, then read its `proposal.md`. If nothing
+  matches, or more than one does, stop and ask me.
+- A path relative to the repository root under `docs/discussions/` (a directory,
+  or any file inside one) — read its `proposal.md`.
+- Anything else — treat it as a description of the work. That is fine for a small
+  task with no proposal; do not try to make me write a discovery.
 
-## 2. worklog を作る
+Before you start implementing, check the related `docs/design/`.
 
-`docs/worklogs/<NNNN-短い説明>/plan.md` を作って。
-`NNNN` は既存 worklog の続きの4桁連番（`discussions/` や `decisions/` と同じく、ディレクトリを作成した順）。
-短い説明は、既存の worklog にならって英語のケバブケースで。
+## 2. Create the worklog
 
-frontmatter は以下の形で。`date` には proposal の日付ではなく、今日の日付を使って。
+Create `docs/worklogs/<NNNN-short-description>/plan.md`.
+`NNNN` is the next four-digit sequence number after the existing worklogs (in the
+order the directories were created, same as `discussions/` and `decisions/`).
+Write the short description in English kebab-case, following the existing worklogs.
+
+Use this frontmatter. For `date`, use today's date, not the proposal's date.
 
 ```yaml
 ---
-date: <今日の日付>
+date: <today's date>
 status: in-progress
 discussions: []
 decisions: []
@@ -34,29 +43,31 @@ pr: null
 ---
 ```
 
-対応する `discovery.md` の frontmatter にも、この worklog へのリンクを追加して。
-リンクは必ず双方向に張って。
+Add a link to this worklog to the corresponding `discovery.md` frontmatter too.
+Always make links bidirectional.
 
-## 3. 実装する
+## 3. Implement
 
-本文は英語で書いて。
+Write the body in English.
 
-作業しながら plan.md を書き足して。終わってからまとめて書かない。
-proposal の想定と違った点があれば、その場で記録して。
+Add to `plan.md` as you go. Do not write it all up after the fact.
+If anything differs from what the proposal assumed, record it right then.
 
-## 4. 終わったら
+## 4. When done
 
-何をしたかと、どのような困難があったかを英語で追記して。
-worklog はエージェントが読み返す資料なので、困難の節も日本語を混ぜない。
+Append what you did and what difficulties came up, in English.
+The worklog is material an agent reads back later, so keep the difficulties
+section free of Japanese too.
 
-想定と違った点は、最も価値のある記述として扱って。
-うまくいった話より詳しく書いて。
+Treat the points that differed from expectations as the most valuable content.
+Write them up in more detail than the parts that went well.
 
-`proposal.md` には何も書き戻さないで。ずれは worklog 側に置く。
+Do not write anything back into `proposal.md`. The gaps go on the worklog side.
 
-## 5. 困難を見直す
+## 5. Review the difficulties
 
-記録した困難のうち、単発の事故ではなく設計や前提の歪みに見えるものがあれば、
-それを指摘して。新しい `discovery.md` を書くべきかどうか、私に聞いて。
+If any of the recorded difficulties look like a distortion in the design or the
+assumptions rather than a one-off accident, point them out. Ask me whether a new
+`discovery.md` should be written.
 
-勝手に discovery を作らないで。書くのは私の仕事。
+Do not create a discovery on your own. Writing it is my job.
