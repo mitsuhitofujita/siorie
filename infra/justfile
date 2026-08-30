@@ -16,13 +16,15 @@ image := ar_host / "siorie/siorie/app"
 init layer:
     terraform -chdir={{infra_dir}}/{{layer}} init
 
-# terraform plan for a layer.
-plan layer:
-    terraform -chdir={{infra_dir}}/{{layer}} plan
+# terraform plan for a layer. Trailing args pass straight to terraform, e.g.
+# `just infra/plan prod -var image_tag=<sha> -var google_client_id=<id>`.
+plan layer *args:
+    terraform -chdir={{infra_dir}}/{{layer}} plan {{args}}
 
-# terraform apply for a layer.
-apply layer:
-    terraform -chdir={{infra_dir}}/{{layer}} apply
+# terraform apply for a layer. Trailing args pass straight to terraform, e.g.
+# `just infra/apply prod -var image_tag=<sha> -var google_client_id=<id>`.
+apply layer *args:
+    terraform -chdir={{infra_dir}}/{{layer}} apply {{args}}
 
 # terraform output for a layer.
 output layer:
@@ -74,3 +76,12 @@ publish-image:
     echo "publishing ${ref}"
     docker build -f {{infra_dir}}/Dockerfile -t "${ref}" {{repo_root}}
     docker push "${ref}"
+
+# Roll the Cloud Run service (infra/prod/) to a published image:
+#   just infra/apply prod \
+#     -var image_tag=$(git rev-parse --short=12 HEAD) \
+#     -var google_client_id=<oauth-web-client-id>
+# image_tag and google_client_id have no defaults, so every prod plan/apply
+# needs both -var flags (or TF_VAR_image_tag / TF_VAR_google_client_id set in
+# the environment). image_tag must be a tag that exists in Artifact Registry —
+# run publish-image first if you want the current HEAD.
