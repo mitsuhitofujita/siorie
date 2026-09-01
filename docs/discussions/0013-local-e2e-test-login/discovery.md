@@ -1,7 +1,7 @@
 ---
 date: 2026-08-27
 tags: [testing, auth, dev-environment]
-status: worked
+status: decided
 worklogs: [0005-items-crud, 0014-dev-login-path]
 ---
 

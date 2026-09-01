@@ -1,8 +1,8 @@
 ---
 date: 2026-09-01
-status: in-progress
+status: merged
 discussions: [0013-local-e2e-test-login]
-decisions: []
+decisions: [0013-dev-login-path]
 pr: null
 ---
 

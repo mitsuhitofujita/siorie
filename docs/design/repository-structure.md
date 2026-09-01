@@ -73,9 +73,13 @@ This repository is a monorepo. Runnable applications live under `apps/`: `apps/a
 
 A single Go module (`github.com/mitsuhitofujita/siorie/apps/api`) using chi as the router and Huma to produce typed, OpenAPI-reflectable handlers.
 
-- `cmd/server/main.go` reads `PORT` (falling back to `8080` locally), `GOOGLE_CLIENT_ID`, `APP_ORIGIN`, and `FIRESTORE_PROJECT_ID` (all three required, `log.Fatalf` if unset), starts the HTTP server, and shuts it down gracefully on `SIGINT`/`SIGTERM`.
+- `cmd/server/main.go` reads `PORT` (falling back to `8080` locally), `GOOGLE_CLIENT_ID`, `APP_ORIGIN`, and `FIRESTORE_PROJECT_ID` (all three required, `log.Fatalf` if unset), and the optional development-only `AUTH_DEV_LOGIN`, starts the HTTP server, and shuts it down gracefully on `SIGINT`/`SIGTERM`. When `AUTH_DEV_LOGIN=1` it logs a startup `WARNING`, swaps the real Google verifier for a `googleauth.FakeVerifier` returning fixed `dev-test-user` claims, and sets `server.Deps.DevLogin` (so the dev-login route is mounted); anything else leaves both untouched.
 - `internal/server` builds the router: `GET /api/hello` (JSON greeting); the auth endpoints
-  `POST /api/auth/google`, `POST /api/auth/logout`, `GET /api/me`; the group endpoints
+  `POST /api/auth/google`, `POST /api/auth/logout`, `GET /api/me` (and, only when
+  `server.Deps.DevLogin` is set, the development-only `POST /api/auth/dev-login` — a plain chi
+  route, not a `huma.Register` operation, so a JS-free top-level HTML form navigation can submit
+  it; it reuses the real Google route's `Origin` check and session-issuing chain via the shared
+  `establishSession` helper and answers with a `302` to `/`); the group endpoints
   `GET/POST /api/groups`, `GET/PATCH/DELETE /api/groups/{groupId}`; and the item endpoints
   `GET/POST /api/groups/{groupId}/items`,
   `GET/PATCH/DELETE /api/groups/{groupId}/items/{itemId}`, all registered via `huma.Register`
@@ -86,7 +90,7 @@ A single Go module (`github.com/mitsuhitofujita/siorie/apps/api`) using chi as t
   routes. Every item handler first resolves `groupId` through a shared `requireGroup` helper
   (wrapping `GetGroup`), so a missing or foreign `groupId` returns 404 before the item store is
   touched.
-- `internal/googleauth` verifies Google ID Tokens (signature, `aud`, `iss`, `exp`) behind a `Verifier` interface, wrapping `google.golang.org/api/idtoken`.
+- `internal/googleauth` verifies Google ID Tokens (signature, `aud`, `iss`, `exp`) behind a `Verifier` interface, wrapping `google.golang.org/api/idtoken`. `FakeVerifier` (fixed claims, ignores the token) backs the fast handler tests and is also swapped in at runtime when `AUTH_DEV_LOGIN=1`.
 - `internal/store` persists users, sessions, groups, and items in Firestore (`users/{sub}`,
   `sessions/{sha256(sessionId)}`, `users/{sub}/groups/{groupId}`,
   `users/{sub}/groups/{groupId}/items/{itemId}`) behind
@@ -99,7 +103,7 @@ A single Go module (`github.com/mitsuhitofujita/siorie/apps/api`) using chi as t
   listed in creation order. `DeleteGroup` removes the group's `items` subcollection before the
   group document, both steps idempotent so a retried delete is safe; `DeleteItem` is a plain
   idempotent document delete with no cascade.
-- `apps/api/.env` (loaded automatically via `just`'s `dotenv-load`; see `.env.example`) holds the server's local environment variables, including `FIRESTORE_EMULATOR_HOST` to point at the local Firestore emulator.
+- `apps/api/.env` (loaded automatically via `just`'s `dotenv-load`; see `.env.example`) holds the server's local environment variables, including `FIRESTORE_EMULATOR_HOST` to point at the local Firestore emulator and the optional `AUTH_DEV_LOGIN=1` to enable the development-only Dev Login path.
 - `apps/api/justfile` provides `setup`, `dev`, `firestore-emulator` (runs the local Firestore emulator on port 8090), `build`, `test` (starts its own throwaway Firestore emulator on port 8091 for the duration of the run), `lint` (`go vet`), `format` (`gofmt -w`), `format-check`, and `check` (`format-check` → `lint` → `test` → `build`), all independent of the caller's working directory.
 
 ## `apps/web`
@@ -154,6 +158,10 @@ A Vite + TypeScript + React application managed with pnpm as the only package ma
   callback `POST`s to `/api/auth/google`, then re-checks `GET /api/me`; auth state flips to
   `authenticated`, `<RequireGuest>` navigates to `/groups`, and `LoginPage` unmounts (removing the
   button's `<div>` and Google's `<iframe>` with it). `logout()` calls `POST /api/auth/logout`.
+  `LoginPage` additionally renders a plain `<form method="post" action="/api/auth/dev-login">`
+  "Dev Login" button — no JS, no new frontend env var — but only when `import.meta.env.DEV`, so
+  `vite build` strips it. It lets a browser end-to-end check sign in as the fixed dev user when
+  the API runs with `AUTH_DEV_LOGIN=1`; the frontend gate and that server flag are independent.
 - `src/lib/use-fetch.ts` (`useFetch`) and `src/lib/use-submit.ts` (`useSubmit`) are the
   shared data-access hooks every group/item page uses instead of ad-hoc
   `useState`/`useEffect`. `useFetch(fetcher)` returns an explicit
@@ -262,3 +270,4 @@ returns every item with no pagination.
 - [0010: Style fit-and-finish — one font family, no in-app back links, section-head create actions](../decisions/0010-style-fit-and-finish.md)
 - [0011: Terraform IaC layout — flat bootstrap + prod layers, committed bootstrap state](../decisions/0011-terraform-iac-layout.md)
 - [0012: Container images — single Artifact Registry repo, workstation build-and-push](../decisions/0012-container-image-build-and-registry.md)
+- [0013: Development-only Dev Login path](../decisions/0013-dev-login-path.md)
