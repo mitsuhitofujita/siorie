@@ -1,8 +1,8 @@
 ---
 date: 2026-08-30
-status: in-progress
+status: merged
 discussions: [0024-cloud-run-service]
-decisions: []
+decisions: [0015-cloud-run-service]
 pr: null
 ---
 

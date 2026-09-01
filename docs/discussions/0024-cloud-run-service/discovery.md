@@ -1,7 +1,7 @@
 ---
 date: 2026-08-30
 tags: [infra, iac, terraform, deploy, cloud-run, cicd]
-status: worked
+status: decided
 worklogs: [0013-cloud-run-service]
 ---
 
