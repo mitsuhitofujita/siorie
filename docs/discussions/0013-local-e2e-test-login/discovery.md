@@ -1,8 +1,8 @@
 ---
 date: 2026-08-27
 tags: [testing, auth, dev-environment]
-status: proposed
-worklogs: [0005-items-crud]
+status: worked
+worklogs: [0005-items-crud, 0014-dev-login-path]
 ---
 
 worklog [0004-item-groups-crud](../../worklogs/0004-item-groups-crud/README.md) の
