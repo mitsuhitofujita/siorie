@@ -5,7 +5,15 @@ Worklog: [Terraform GCP bootstrap layer](../worklogs/0011-terraform-gcp-bootstra
 
 ## Status
 
-Accepted. Settles the two items the
+Superseded in part by
+[0014](0014-infra-deploy-layers-and-firestore.md) (2026-09-01): the flat
+`bootstrap` + `prod` split and the "factor out only on a second environment or
+real reuse" rule are replaced by a three-layer split by change frequency
+(`bootstrap` / `platform` / `app`). Everything else below — committed bootstrap
+state, the hand-created project, workstation apply, no service-account keys, the
+bootstrap layer's contents — is unchanged and still in force.
+
+Originally: Accepted. Settled the two items the
 [initial tech-stack proposal](../discussions/0001-purpose-and-initial-tech-stack/proposal.md)
 left open — the range of resources Terraform manages and where state lives.
 The CI/CD service selection parked in

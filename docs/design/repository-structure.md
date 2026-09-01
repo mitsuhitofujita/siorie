@@ -52,14 +52,23 @@ This repository is a monorepo. Runnable applications live under `apps/`: `apps/a
 │   │   ├── terraform.tfvars       # project_id, region — committed
 │   │   ├── .terraform.lock.hcl    # committed
 │   │   └── terraform.tfstate      # local state — committed
-│   ├── prod/                # root module: GCS backend + Artifact Registry repository
+│   ├── platform/            # root module: GCS backend; Artifact Registry, Firestore (default), runtime SA + roles/datastore.user
 │   │   ├── versions.tf
-│   │   ├── backend.tf
-│   │   ├── main.tf                 # google_artifact_registry_repository "app"
+│   │   ├── backend.tf              # prefix = "platform"
+│   │   ├── main.tf
 │   │   ├── variables.tf
 │   │   ├── outputs.tf              # artifact_registry_repository path prefix
 │   │   ├── terraform.tfvars
 │   │   └── .terraform.lock.hcl    # committed
+│   ├── app/                 # root module: GCS backend; Cloud Run service + public invoker; reads platform via data sources
+│   │   ├── versions.tf
+│   │   ├── backend.tf              # prefix = "app"
+│   │   ├── main.tf
+│   │   ├── variables.tf            # image_tag, google_client_id — default-less -vars
+│   │   ├── outputs.tf              # cloud_run_url
+│   │   ├── terraform.tfvars
+│   │   └── .terraform.lock.hcl    # committed
+│   ├── prod/                # retired: state migrating to platform/ + app/ by import; directory removed in a follow-up commit
 │   ├── Dockerfile           # multi-stage build of the deploy image (Go binary only for now)
 │   └── justfile
 ├── .dockerignore
@@ -192,13 +201,15 @@ A Vite + TypeScript + React application managed with pnpm as the only package ma
 
 Terraform Infrastructure as Code for Google Cloud, applied from a workstation
 (no CI/CD automation yet), targeting a single production project (`siorie`,
-`asia-northeast1`). Two flat root modules; no `modules/` or `environments/`
-directory. See decisions 0011 and 0012. `infra/` also holds the deploy
-`Dockerfile` (build machinery, not app code).
+`asia-northeast1`). Three root modules, split by how often each changes —
+`bootstrap` (almost never), `platform` (rarely), `app` (every deploy) — with no
+`modules/` or `environments/` directory. See decisions 0011, 0012, 0014, and
+0015. `infra/` also holds the deploy `Dockerfile` (build machinery, not app
+code).
 
 - `infra/bootstrap/` — the layer that has to exist before any other. Enables the
   project's APIs (`google_project_service` over the set that bootstrap, the
-  future prod layer, and the planned GitHub Actions + Workload Identity
+  `platform` / `app` layers, and the planned GitHub Actions + Workload Identity
   Federation path all need), creates the Terraform state bucket
   (`siorie-tfstate`: `asia-northeast1`, versioned, uniform bucket-level access,
   public access prevention enforced, `prevent_destroy`, 30-day
@@ -207,15 +218,38 @@ directory. See decisions 0011 and 0012. `infra/` also holds the deploy
   (`terraform.tfstate`) — it creates the state bucket, so it cannot back itself
   with it; its state holds only non-secret facts. This is viable only while a
   single operator applies locally.
-- `infra/prod/` — a `backend "gcs"` block pointing at `siorie-tfstate`
-  (`prefix = "prod"`), a provider config, and one managed resource: a
-  `google_artifact_registry_repository` (`siorie`, `DOCKER`, `asia-northeast1`)
-  with a KEEP-only cleanup policy (`most_recent_versions`, `keep_count = 2`,
-  `cleanup_policy_dry_run = true` — retention intent only, no deletion yet).
-  `outputs.tf` exposes the Docker path prefix
-  (`asia-northeast1-docker.pkg.dev/siorie/siorie`). Cloud Run, the Firestore
-  `(default)` database, a runtime service account, a DELETE cleanup policy, the
-  billing budget, and Cloud Monitoring are added by later worklogs.
+- `infra/platform/` — `backend "gcs"` (`prefix = "platform"`), a provider
+  config, and the resources that change rarely: the
+  `google_artifact_registry_repository` (`siorie`, `DOCKER`, `asia-northeast1`,
+  KEEP-only cleanup policy — `most_recent_versions`, `keep_count = 2`,
+  `cleanup_policy_dry_run = true`, retention intent only); the Firestore
+  `(default)` database (`FIRESTORE_NATIVE`, `asia-northeast1`, App Engine
+  integration disabled, point-in-time recovery off, guarded by GCP-side
+  `delete_protection_state` **and** Terraform `prevent_destroy`, with the
+  provider's `ABANDON` deletion-policy default on top); the `siorie-run` runtime
+  service account; and `roles/datastore.user` on that SA
+  (`google_project_iam_member`). `outputs.tf` exposes the Docker path prefix
+  (`asia-northeast1-docker.pkg.dev/siorie/siorie`). A DELETE cleanup policy for
+  the repository, the billing budget, and Cloud Monitoring are still deferred to
+  later worklogs.
+- `infra/app/` — `backend "gcs"` (`prefix = "app"`), a provider config, and the
+  one thing that rolls on every deploy: the `google_cloud_run_v2_service`
+  (`siorie`, `INGRESS_TRAFFIC_ALL`, `min 0 / max 1`, one container on `:8080`,
+  env `GOOGLE_CLIENT_ID` / `APP_ORIGIN` / `FIRESTORE_PROJECT_ID`) and its
+  `allUsers` `roles/run.invoker` binding. It reads the Artifact Registry repo,
+  the runtime SA, and the project number back from GCP through `data` sources
+  (not `terraform_remote_state`), so a plan needs only ordinary project read
+  access; there is no cross-module `depends_on`, so when `platform` and `app`
+  both change, `platform` is applied first. `image_tag` and `google_client_id`
+  are default-less `-var`s (non-secret, kept out of the repo), so every `app`
+  plan/apply needs both; `bootstrap` and `platform` take none. `outputs.tf`
+  exposes `cloud_run_url`. `APP_ORIGIN` is still built from the project number
+  and does not match the service's real (legacy-hash) URL — discussion 0025.
+- `infra/prod/` — the former single non-bootstrap layer, being retired: its four
+  live resources (Artifact Registry repo, runtime SA, Cloud Run service,
+  invoker) migrate into `platform` / `app` by `terraform import`, and the
+  directory is deleted in a follow-up commit once the old state is released with
+  `state rm` (never `terraform destroy`).
 - `infra/Dockerfile` — multi-stage: a `golang:1.27-bookworm` builder producing a
   `CGO_ENABLED=0` static binary, and a `gcr.io/distroless/static-debian12:nonroot`
   final stage holding only that binary (`ENTRYPOINT ["/server"]`). Build context
@@ -223,7 +257,7 @@ directory. See decisions 0011 and 0012. `infra/` also holds the deploy
   now — SPA co-serving would add a web build stage. `.dockerignore` at the repo
   root scopes the context.
 - `infra/justfile` — `init` / `plan` / `apply` / `output` recipes that take the
-  layer name (`just infra/plan bootstrap`), plus `format` / `format-check`, plus
+  layer name (`just infra/plan platform`), plus `format` / `format-check`, plus
   container recipes: `docker-auth`
   (`gcloud auth configure-docker asia-northeast1-docker.pkg.dev`, once per
   machine, not in `setup`) and `publish-image` (build from the repo root, push
@@ -232,7 +266,7 @@ directory. See decisions 0011 and 0012. `infra/` also holds the deploy
   resolution. A Docker-compatible engine is assumed but not pinned by `mise`;
   podman works, with credential/short-name caveats noted in the `justfile`.
 - `terraform.tfvars` (`project_id`, `region`) and `.terraform.lock.hcl` are
-  committed for both layers; the `google` provider is pinned `~> 6.50`. Local
+  committed for every layer; the `google` provider is pinned `~> 6.50`. Local
   apply uses the operator's own credentials (Application Default Credentials or
   an equivalent short-lived user OAuth token); no service-account keys. The
   image push uses the same operator credentials.
@@ -241,21 +275,25 @@ directory. See decisions 0011 and 0012. `infra/` also holds the deploy
 
 - `justfile` recipes: `setup`, `dev-api`, `dev-web`, `build`, `test`, `lint`, `format`, `check`. Go tasks are delegated to `apps/api/justfile` via just's cross-directory recipe resolution (e.g. `just apps/api/build`); Web tasks call the `package.json` scripts via `pnpm --dir apps/web`; `format` / `check` also run `terraform fmt` over `infra/` via `infra/justfile`. `check` runs format-checking, lint, test, and build for both apps and does not rewrite files; `format` is the file-rewriting task and is run separately.
 - `mise.toml` pins the development versions of Go, Node.js, pnpm, just, gcloud, Java (for the Firestore emulator), and Terraform. Terraform is pinned to an exact version (not `latest`) for apply reproducibility.
-- `.gitignore` excludes the generated `apps/api/bin/`, `apps/web/dist/`, `apps/web/node_modules/`, and the local `apps/api/.env` / `apps/web/.env` files, plus Terraform working directories, plan files, `infra/prod/` state, and the bootstrap state backup — `infra/bootstrap/terraform.tfstate` and both `.terraform.lock.hcl` stay tracked.
+- `.gitignore` excludes the generated `apps/api/bin/`, `apps/web/dist/`, `apps/web/node_modules/`, and the local `apps/api/.env` / `apps/web/.env` files, plus Terraform working directories, plan files, local state under the GCS-backed layers (`infra/prod/`, `infra/platform/`, `infra/app/`), and the bootstrap state backup — `infra/bootstrap/terraform.tfstate` and every `.terraform.lock.hcl` stay tracked.
 - `.dockerignore` scopes the `infra/Dockerfile` build context (the repository root) down to what the Go build needs: it drops `.git`, `.claude`, node/web/Go build output, Terraform working dirs and state, `docs/`, and env files.
 - `docs/` holds the discussions/worklogs/decisions/design layout described in `docs/README.md`.
 
 ## Not yet present
 
-Combined serving of the SPA from the Go binary and Cloud Run itself are not part of this
-repository yet. Terraform manages the `infra/bootstrap/` layer plus one resource in `infra/prod/`
-(the Artifact Registry repository — see `infra/`); Cloud Run, the Firestore database, runtime IAM,
-a DELETE cleanup policy, and the billing budget are not managed yet, and there is no CI/CD
-automation. The deploy image (`infra/Dockerfile`) is built and pushed by hand from a workstation
-(`just infra/publish-image`) and currently contains the Go binary only. Firestore, Google
-authentication, Tailwind CSS, the moss design-token system, and the group and item entity API
-endpoints have been introduced by later worklogs (see below); the item-list endpoint currently
-returns every item with no pagination.
+Combined serving of the SPA from the Go binary is not part of this repository
+yet. Terraform manages `infra/bootstrap/`, `infra/platform/` (Artifact Registry,
+Firestore `(default)`, the runtime SA and its `roles/datastore.user`), and
+`infra/app/` (the Cloud Run service and its public invoker); the migration of
+the live `infra/prod/` resources into `platform` / `app` by `import` is applied
+by an operator and its follow-up cleanup commit is pending (see `infra/`). A
+DELETE cleanup policy for the image repository, the billing budget, and Cloud
+Monitoring are not managed yet, and there is no CI/CD automation. The deploy
+image (`infra/Dockerfile`) is built and pushed by hand from a workstation
+(`just infra/publish-image`) and currently contains the Go binary only. Google
+authentication, Tailwind CSS, the moss design-token system, and the group and
+item entity API endpoints have been introduced by later worklogs (see below);
+the item-list endpoint currently returns every item with no pagination.
 
 ## Decisions
 
@@ -268,6 +306,8 @@ returns every item with no pagination.
 - [0008: Route-level auth split and a self-contained GoogleSignInButton](../decisions/0008-route-level-auth-split.md)
 - [0009: Frontend application structure — SPA routing, common layout, page conventions](../decisions/0009-frontend-app-structure.md)
 - [0010: Style fit-and-finish — one font family, no in-app back links, section-head create actions](../decisions/0010-style-fit-and-finish.md)
-- [0011: Terraform IaC layout — flat bootstrap + prod layers, committed bootstrap state](../decisions/0011-terraform-iac-layout.md)
+- [0011: Terraform IaC layout — flat bootstrap + prod layers, committed bootstrap state](../decisions/0011-terraform-iac-layout.md) (superseded in part by 0014)
 - [0012: Container images — single Artifact Registry repo, workstation build-and-push](../decisions/0012-container-image-build-and-registry.md)
 - [0013: Development-only Dev Login path](../decisions/0013-dev-login-path.md)
+- [0014: Infra deploy layers by change frequency, and the Firestore (default) database](../decisions/0014-infra-deploy-layers-and-firestore.md)
+- [0015: Cloud Run service, public invoker, and a dormant runtime SA](../decisions/0015-cloud-run-service.md)
