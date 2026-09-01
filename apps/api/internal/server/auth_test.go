@@ -48,6 +48,23 @@ func sessionCookieFrom(t *testing.T, rec *httptest.ResponseRecorder) *http.Cooki
 	return nil
 }
 
+func newDevLoginRouter(t *testing.T) (http.Handler, *store.MemoryStore) {
+	t.Helper()
+	mem := store.NewMemoryStore()
+	router := NewRouter(Deps{
+		Verifier: &googleauth.FakeVerifier{Claims: &googleauth.Claims{
+			Sub: "dev-test-user", Email: "dev-test-user@example.com", Name: "Dev Test User",
+		}},
+		Users:     mem,
+		Sessions:  mem,
+		Groups:    mem,
+		Items:     mem,
+		AppOrigin: testOrigin,
+		DevLogin:  true,
+	})
+	return router, mem
+}
+
 func TestPostAuthGoogle_CreatesUserAndSession(t *testing.T) {
 	verifier := &googleauth.FakeVerifier{Claims: &googleauth.Claims{
 		Sub: "sub-123", Email: "user@example.com", Name: "Test User", PictureURL: "https://example.com/pic.png",
@@ -164,6 +181,70 @@ func TestLoginThenMeThenLogout(t *testing.T) {
 	router.ServeHTTP(meAfterLogoutRec, meAfterLogoutReq)
 	if meAfterLogoutRec.Code != http.StatusUnauthorized {
 		t.Fatalf("GET /api/me after logout status = %d, want %d", meAfterLogoutRec.Code, http.StatusUnauthorized)
+	}
+}
+
+func TestPostAuthDevLogin_CreatesSessionAndRedirects(t *testing.T) {
+	router, _ := newDevLoginRouter(t)
+
+	req := httptest.NewRequest(http.MethodPost, "/api/auth/dev-login", nil)
+	req.Header.Set("Origin", testOrigin)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusFound {
+		t.Fatalf("status = %d, want %d, body = %s", rec.Code, http.StatusFound, rec.Body.String())
+	}
+	if loc := rec.Header().Get("Location"); loc != "/" {
+		t.Fatalf("Location = %q, want %q", loc, "/")
+	}
+
+	cookie := sessionCookieFrom(t, rec)
+	if cookie.Value == "" {
+		t.Fatal("session cookie value is empty")
+	}
+	if !cookie.Secure || !cookie.HttpOnly || cookie.SameSite != http.SameSiteLaxMode || cookie.Path != "/" {
+		t.Fatalf("cookie attributes = %+v, want Secure+HttpOnly+SameSite=Lax+Path=/", cookie)
+	}
+
+	// The fixed dev user was persisted through the same chain as the real
+	// route, so a follow-up GET /api/me with the cookie succeeds.
+	meReq := httptest.NewRequest(http.MethodGet, "/api/me", nil)
+	meReq.AddCookie(&http.Cookie{Name: sessionCookieName, Value: cookie.Value})
+	meRec := httptest.NewRecorder()
+	router.ServeHTTP(meRec, meReq)
+	if meRec.Code != http.StatusOK {
+		t.Fatalf("GET /api/me status = %d, want %d, body = %s", meRec.Code, http.StatusOK, meRec.Body.String())
+	}
+	if body := decodeUserBody(t, meRec); body.Name != "Dev Test User" {
+		t.Fatalf("GET /api/me body = %+v, want name Dev Test User", body)
+	}
+}
+
+func TestPostAuthDevLogin_RejectsWrongOrigin(t *testing.T) {
+	router, _ := newDevLoginRouter(t)
+
+	req := httptest.NewRequest(http.MethodPost, "/api/auth/dev-login", nil)
+	req.Header.Set("Origin", "https://evil.example.com")
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusForbidden)
+	}
+}
+
+func TestPostAuthDevLogin_AbsentWithoutDevLogin(t *testing.T) {
+	verifier := &googleauth.FakeVerifier{Claims: &googleauth.Claims{Sub: "sub-123"}}
+	router, _ := newTestRouter(t, verifier)
+
+	req := httptest.NewRequest(http.MethodPost, "/api/auth/dev-login", nil)
+	req.Header.Set("Origin", testOrigin)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want %d (route must not exist unless DevLogin is set)", rec.Code, http.StatusNotFound)
 	}
 }
 

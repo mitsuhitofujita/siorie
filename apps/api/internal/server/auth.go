@@ -56,29 +56,15 @@ func registerAuthRoutes(api huma.API, deps authDeps) {
 			return nil, huma.Error403Forbidden(err.Error())
 		}
 
-		claims, err := deps.verifier.Verify(ctx, input.Body.Credential)
-		if err != nil {
+		cookie, user, err := establishSession(ctx, deps, input.Body.Credential)
+		if errors.Is(err, errInvalidCredential) {
 			return nil, huma.Error401Unauthorized("invalid Google ID token")
-		}
-
-		user, err := deps.users.Upsert(ctx, claims.Sub, claims.Email, claims.Name, claims.PictureURL)
-		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to save user")
-		}
-
-		// Also clear the same user's already-expired sessions from other
-		// devices, per the proposal's session cleanup policy.
-		if err := deps.sessions.DeleteExpiredForUser(ctx, user.Sub); err != nil {
-			return nil, huma.Error500InternalServerError("failed to clean up sessions")
-		}
-
-		rawSessionID, err := deps.sessions.Create(ctx, user.Sub, sessionTTL)
-		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to create session")
+		} else if err != nil {
+			return nil, huma.Error500InternalServerError("failed to sign in")
 		}
 
 		resp := &PostAuthGoogleOutput{}
-		resp.SetCookie = newSessionCookie(rawSessionID).String()
+		resp.SetCookie = cookie.String()
 		resp.Body = userBody{Name: user.DisplayName, PictureURL: user.PictureURL}
 		return resp, nil
 	})
@@ -141,6 +127,71 @@ func registerAuthRoutes(api huma.API, deps authDeps) {
 		resp.Body = userBody{Name: user.DisplayName, PictureURL: user.PictureURL}
 		return resp, nil
 	})
+}
+
+// errInvalidCredential marks an establishSession failure caused by the
+// credential itself (a missing or rejected token) rather than by a storage
+// error, so the Google ID Token route can map it to 401 while every other
+// failure becomes 500.
+var errInvalidCredential = errors.New("server: invalid credential")
+
+// establishSession runs the sign-in chain shared by the Google ID Token
+// route (POST /api/auth/google) and the development-only dev-login route:
+// verify the credential, upsert the user, drop that user's already-expired
+// sessions, create a fresh session, and build the __Host-session cookie. On
+// a nil error the returned cookie and user are both non-nil. A verify
+// failure is wrapped as errInvalidCredential.
+func establishSession(ctx context.Context, deps authDeps, credential string) (*http.Cookie, *store.User, error) {
+	claims, err := deps.verifier.Verify(ctx, credential)
+	if err != nil {
+		return nil, nil, fmt.Errorf("%w: %v", errInvalidCredential, err)
+	}
+
+	user, err := deps.users.Upsert(ctx, claims.Sub, claims.Email, claims.Name, claims.PictureURL)
+	if err != nil {
+		return nil, nil, fmt.Errorf("upsert user: %w", err)
+	}
+
+	// Clear the same user's already-expired sessions from other devices,
+	// per the proposal's session cleanup policy.
+	if err := deps.sessions.DeleteExpiredForUser(ctx, user.Sub); err != nil {
+		return nil, nil, fmt.Errorf("delete expired sessions: %w", err)
+	}
+
+	rawSessionID, err := deps.sessions.Create(ctx, user.Sub, sessionTTL)
+	if err != nil {
+		return nil, nil, fmt.Errorf("create session: %w", err)
+	}
+
+	return newSessionCookie(rawSessionID), user, nil
+}
+
+// devLoginHandler backs POST /api/auth/dev-login, a development-only sign-in
+// that a plain HTML form can submit. The Huma /api/auth/google route only
+// accepts a JSON body, which a top-level form navigation cannot send, so
+// this is a separate plain route rather than the same URL. It is mounted
+// only when AUTH_DEV_LOGIN=1 (see cmd/server/main.go), which also swaps the
+// real Google verifier for a FakeVerifier returning fixed claims — so the
+// empty credential passed here is ignored. The Origin check and the whole
+// session-creation chain are the exact same code as the real route; only
+// the URL and request format differ, and the response is a 302 to "/" for
+// the form navigation instead of a JSON body.
+func devLoginHandler(deps authDeps) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := validateOrigin(r.Header.Get("Origin"), deps.appOrigin); err != nil {
+			http.Error(w, err.Error(), http.StatusForbidden)
+			return
+		}
+
+		cookie, _, err := establishSession(r.Context(), deps, "")
+		if err != nil {
+			http.Error(w, "dev login failed", http.StatusInternalServerError)
+			return
+		}
+
+		http.SetCookie(w, cookie)
+		http.Redirect(w, r, "/", http.StatusFound)
+	}
 }
 
 // authenticateSession resolves a raw session cookie value to the signed-in

@@ -28,6 +28,12 @@ type Deps struct {
 	Groups    store.GroupStore
 	Items     store.ItemStore
 	AppOrigin string
+
+	// DevLogin mounts POST /api/auth/dev-login, a development-only sign-in
+	// for browser end-to-end checks. Set from AUTH_DEV_LOGIN=1 in
+	// cmd/server, which also swaps in a fake verifier. Never true in
+	// production.
+	DevLogin bool
 }
 
 // NewRouter builds the router with all API routes registered.
@@ -35,12 +41,19 @@ func NewRouter(deps Deps) http.Handler {
 	router := chi.NewMux()
 	api := humachi.New(router, huma.DefaultConfig("siorie API", "0.1.0"))
 
-	registerAuthRoutes(api, authDeps{
+	aDeps := authDeps{
 		verifier:  deps.Verifier,
 		users:     deps.Users,
 		sessions:  deps.Sessions,
 		appOrigin: deps.AppOrigin,
-	})
+	}
+	registerAuthRoutes(api, aDeps)
+
+	// Development-only: a plain chi route (not a Huma operation) so a plain
+	// HTML form navigation can submit it. Absent unless explicitly enabled.
+	if deps.DevLogin {
+		router.Post("/api/auth/dev-login", devLoginHandler(aDeps))
+	}
 
 	registerGroupRoutes(api, groupsDeps{
 		sessions:  deps.Sessions,

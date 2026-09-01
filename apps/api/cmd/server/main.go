@@ -30,6 +30,22 @@ func main() {
 	appOrigin := requireEnv("APP_ORIGIN")
 	projectID := requireEnv("FIRESTORE_PROJECT_ID")
 
+	// Development-only sign-in bypass for browser end-to-end checks that
+	// cannot complete a real Google sign-in. When enabled, the real ID
+	// Token verifier is replaced with one returning fixed claims, and
+	// server.Deps.DevLogin mounts POST /api/auth/dev-login. Never set
+	// AUTH_DEV_LOGIN in production.
+	var verifier googleauth.Verifier = &googleauth.GoogleVerifier{ClientID: clientID}
+	devLogin := os.Getenv("AUTH_DEV_LOGIN") == "1"
+	if devLogin {
+		log.Printf("WARNING: AUTH_DEV_LOGIN=1 — development-only sign-in bypass is active; never set this in production")
+		verifier = &googleauth.FakeVerifier{Claims: &googleauth.Claims{
+			Sub:   "dev-test-user",
+			Email: "dev-test-user@example.com",
+			Name:  "Dev Test User",
+		}}
+	}
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -44,12 +60,13 @@ func main() {
 	httpServer := &http.Server{
 		Addr: ":" + port,
 		Handler: server.NewRouter(server.Deps{
-			Verifier:  &googleauth.GoogleVerifier{ClientID: clientID},
+			Verifier:  verifier,
 			Users:     firestoreStore,
 			Sessions:  firestoreStore,
 			Groups:    firestoreStore,
 			Items:     firestoreStore,
 			AppOrigin: appOrigin,
+			DevLogin:  devLogin,
 		}),
 	}
 

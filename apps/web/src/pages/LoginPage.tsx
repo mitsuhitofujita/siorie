@@ -32,6 +32,20 @@ export function LoginPage() {
           Rendered by Google Identity Services — the one control not restyled.
         </span>
       </div>
+      {import.meta.env.DEV && (
+        // Development only: a plain HTML form (no JS) that a browser E2E
+        // check can submit to sign in as a fixed test user. Vite strips this
+        // from `vite build`; the backend route it posts to exists only when
+        // AUTH_DEV_LOGIN=1. See docs/worklogs/0014-dev-login-path.
+        <form className="signin" method="post" action="/api/auth/dev-login">
+          <button type="submit" className="btn btn-outline btn-sm">
+            Dev Login
+          </button>
+          <span className="caption">
+            Development only — signs in as a fixed test user.
+          </span>
+        </form>
+      )}
     </main>
   )
 }
