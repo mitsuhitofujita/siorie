@@ -1,8 +1,8 @@
 ---
 date: 2026-08-30
 tags: [infra, iac, terraform, deploy, cloud-run, cicd]
-status: proposed
-worklogs: []
+status: worked
+worklogs: [0013-cloud-run-service]
 ---
 
 ARへのイメージアップロードが完了した。インフラリソースをTerraformで用意する。
