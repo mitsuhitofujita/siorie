@@ -1,8 +1,8 @@
 ---
 date: 2026-09-01
 tags: [infra, iac, terraform, deploy, firestore]
-status: proposed
-worklogs: []
+status: decided
+worklogs: [0015-firestore-and-infra-deploy-layers]
 ---
 
 インフラでfirestoreを用意して。インフラのデプロイ単位を頻度で分けて。
