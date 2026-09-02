@@ -77,21 +77,31 @@ docker-auth:
 # working tree is dirty (the tag can then disagree with the pushed contents —
 # operator's responsibility). Requires `docker-auth` once and the Artifact
 # Registry repository (`just infra/apply platform`).
-publish-image:
+#
+# google_client_id is the OAuth Web client ID, inlined into the SPA bundle by
+# `vite build` (--build-arg VITE_GOOGLE_CLIENT_ID). It must be the same value
+# later passed to `just infra/apply app -var google_client_id=…`; a mismatch is
+# a silent sign-in 401 (proposal 0028).
+publish-image google_client_id:
     #!/usr/bin/env bash
     set -euo pipefail
     sha="$(git -C {{repo_root}} rev-parse --short=12 HEAD)"
     ref="{{image}}:${sha}"
     echo "publishing ${ref}"
-    docker build -f {{infra_dir}}/Dockerfile -t "${ref}" {{repo_root}}
+    docker build -f {{infra_dir}}/Dockerfile \
+      --build-arg VITE_GOOGLE_CLIENT_ID={{google_client_id}} \
+      -t "${ref}" {{repo_root}}
     docker push "${ref}"
 
 # Roll the Cloud Run service (infra/app/) to a published image:
+#   just infra/publish-image <oauth-web-client-id>
 #   just infra/apply app \
 #     -var image_tag=$(git rev-parse --short=12 HEAD) \
-#     -var google_client_id=<oauth-web-client-id>
-# image_tag and google_client_id have no defaults, so every app plan/apply
-# needs both -var flags (or TF_VAR_image_tag / TF_VAR_google_client_id set in
-# the environment). image_tag must be a tag that exists in Artifact Registry —
-# run publish-image first if you want the current HEAD. The platform and
+#     -var google_client_id=<oauth-web-client-id> \
+#     -var app_origin=<cloud-run-url>
+# image_tag, google_client_id, and app_origin have no defaults, so every app
+# plan/apply needs all three -var flags (or the matching TF_VAR_* set in the
+# environment). image_tag must be a tag that exists in Artifact Registry — run
+# publish-image first if you want the current HEAD. app_origin is the service's
+# real public URL (`just infra/output app` → cloud_run_url). The platform and
 # bootstrap layers take no -var flags.

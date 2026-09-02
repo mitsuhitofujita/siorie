@@ -26,11 +26,6 @@ import {
 # needs only ordinary project read access (discussion 0027). There is no
 # cross-module depends_on: when both layers change, apply platform first.
 
-# Project number, used only to build the service's own run.app origin below.
-data "google_project" "this" {
-  project_id = var.project_id
-}
-
 # Artifact Registry repository (managed by infra/platform/). Supplies the image
 # path prefix; location and repository_id are the lookup keys, .project is read
 # back.
@@ -45,8 +40,7 @@ data "google_service_account" "runtime" {
 }
 
 # The Cloud Run service. Runs the image pushed by `just infra/publish-image`
-# (Go binary only for now; the SPA is co-served in a later round without
-# changing this image reference).
+# (Go binary + the built SPA, co-served from the same origin).
 resource "google_cloud_run_v2_service" "app" {
   name     = "siorie"
   project  = var.project_id
@@ -85,21 +79,28 @@ resource "google_cloud_run_v2_service" "app" {
         value = var.google_client_id
       }
 
-      # The service's own URL, built from the project number: Cloud Run assigns
-      # https://<name>-<project number>.<region>.run.app on newer projects, and
-      # a resource cannot reference its own .uri here. This project actually
-      # gets the legacy hash form (https://siorie-u6y3wdsaua-an.a.run.app), so
-      # this built value is WRONG in production — discussion 0025 owns the fix.
-      # It only becomes load-bearing once a state-changing /api/* route (the
-      # Origin check) is exercised. outputs.cloud_run_url exposes the real .uri.
+      # The service's own public URL, checked against the Origin header on
+      # state-changing /api/* requests. A resource cannot reference its own
+      # .uri, and building it from the project number produced the wrong value
+      # on this project (legacy hash form — discussion 0025), so the operator
+      # passes the real URL (`terraform output cloud_run_url`) as a -var.
       env {
         name  = "APP_ORIGIN"
-        value = "https://siorie-${data.google_project.this.number}.${var.region}.run.app"
+        value = var.app_origin
       }
 
       env {
         name  = "FIRESTORE_PROJECT_ID"
         value = var.project_id
+      }
+
+      # Where the deploy image bakes the built SPA (infra/Dockerfile's
+      # `COPY --from=web /web/dist /web`). Fixed by the image layout, so a
+      # literal, not a -var. Presence-triggered: the Go server co-serves the
+      # SPA only when this is set.
+      env {
+        name  = "WEB_ROOT"
+        value = "/web"
       }
     }
   }

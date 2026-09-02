@@ -30,6 +30,11 @@ func main() {
 	appOrigin := requireEnv("APP_ORIGIN")
 	projectID := requireEnv("FIRESTORE_PROJECT_ID")
 
+	// Presence-triggered like AUTH_DEV_LOGIN, not required: set in the
+	// deploy image (where the SPA is baked in at /web) and left unset in
+	// local dev, where Vite serves the frontend.
+	webRoot := os.Getenv("WEB_ROOT")
+
 	// Development-only sign-in bypass for browser end-to-end checks that
 	// cannot complete a real Google sign-in. When enabled, the real ID
 	// Token verifier is replaced with one returning fixed claims, and
@@ -66,6 +71,7 @@ func main() {
 			Groups:    firestoreStore,
 			Items:     firestoreStore,
 			AppOrigin: appOrigin,
+			WebRoot:   webRoot,
 			DevLogin:  devLogin,
 		}),
 	}

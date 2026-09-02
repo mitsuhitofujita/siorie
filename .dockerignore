@@ -1,5 +1,5 @@
 # The build context for infra/Dockerfile is the repository root. Keep only what
-# the Go build needs; everything below is either irrelevant to the binary or
+# the Go and web builds need; everything below is either irrelevant to them or
 # must not end up in a build layer.
 
 # VCS and tooling
@@ -7,7 +7,8 @@
 .claude
 .local
 
-# Node / web (the current image is Go-only; revisit when the SPA is co-served)
+# Node / web. The web stage always installs and builds from source inside the
+# image, so a stale local node_modules or dist must never leak into the context.
 node_modules
 apps/web/node_modules
 apps/web/dist

@@ -29,6 +29,12 @@ type Deps struct {
 	Items     store.ItemStore
 	AppOrigin string
 
+	// WebRoot is the directory holding the built SPA (apps/web/dist inside
+	// the deploy image). Empty in local dev, where Vite serves the frontend
+	// and proxies /api/* here; when set, non-/api/* paths get static files
+	// with an index.html SPA fallback.
+	WebRoot string
+
 	// DevLogin mounts POST /api/auth/dev-login, a development-only sign-in
 	// for browser end-to-end checks. Set from AUTH_DEV_LOGIN=1 in
 	// cmd/server, which also swaps in a fake verifier. Never true in
@@ -78,6 +84,10 @@ func NewRouter(deps Deps) http.Handler {
 		resp.Body.Message = "Hello, World!"
 		return resp, nil
 	})
+
+	if deps.WebRoot != "" {
+		router.NotFound(spaHandler(deps.WebRoot))
+	}
 
 	return router
 }

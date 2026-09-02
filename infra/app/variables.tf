@@ -18,3 +18,8 @@ variable "google_client_id" {
   description = "OAuth Web client ID for the GOOGLE_CLIENT_ID env var. Non-secret but kept out of the repo; pass -var google_client_id=<id> (or TF_VAR_google_client_id) at plan/apply time (discussions 0024, 0026)."
   type        = string
 }
+
+variable "app_origin" {
+  description = "The Cloud Run service's real public origin (from `terraform output cloud_run_url`), used as the Go server's APP_ORIGIN. No default; pass -var app_origin=<url> (or TF_VAR_app_origin) at plan/apply time (discussions 0025, 0026)."
+  type        = string
+}
