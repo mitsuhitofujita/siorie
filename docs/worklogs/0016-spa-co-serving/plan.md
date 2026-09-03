@@ -121,4 +121,57 @@ criteria need a real Google sign-in in a browser).
   you get a second, earlier traversal guard whose observable status differs
   from the handler's own.
 
-(operator steps — publish, apply, browser 導通確認 — appended below when run)
+- **The first production apply ran before `publish-image` and failed with
+  "Image … app:dee0c8b9243d not found".** The operator went straight to
+  `just infra/apply app` with `image_tag=$(git rev-parse --short=12 HEAD)`;
+  Artifact Registry still held only the old `e28e643b6768` (worklog 0012).
+  The failure mode is worth recording: Cloud Run's *spec* had already been
+  updated (the new `WEB_ROOT` / real `APP_ORIGIN` env were visible on the
+  service) but the new revision could not pull the image, so the service sat
+  at `Ready: False` while the previous revision kept serving traffic — a
+  half-applied state Terraform reports as an error, not a rollback. The
+  deploy sequence in infra/justfile's comment (publish first, then apply) is
+  load-bearing, and nothing enforces it; this is more fuel for discussion
+  0026's per-deploy-inputs friction (a wrong/missing tag is only caught at
+  apply time, inside the Cloud Run update).
+- Recovery: committed the implementation first (so the image tag matches the
+  tree it was built from — the tree had been dirty, and a
+  `dee0c8b9243d`-tagged image with uncommitted contents would have lied),
+  then `just infra/publish-image <client-id>` pushed `app:29025c3a738b`. The
+  OAuth client ID was recovered from the live service's `GOOGLE_CLIENT_ID`
+  env rather than asked for. The re-apply with the new tag is the operator's
+  step (the auto-mode classifier blocks `terraform apply` for non-bootstrap
+  layers, as in worklogs 0012/0013/0015).
+
+## Operator steps
+
+- `just infra/apply app -var image_tag=dee0c8b9243d …` — **failed**, image
+  never published (see Difficulties). Service spec updated, revision failed,
+  old revision kept serving.
+- `just infra/publish-image <client-id>` → `app:29025c3a738b` pushed.
+- Re-apply with `image_tag=29025c3a738b` succeeded (operator). Serving-side
+  checks from the proposal all pass (`curl -I` against the live service):
+  `/` and `/groups/<id>` → 200 `text/html` with `no-cache`; a live hashed
+  asset → 200 with `public, max-age=31536000, immutable`; a missing
+  `/assets/*` → 404; an unregistered `/api/*` → 404.
+- **Sign-in failed in production: the OAuth-origin preflight had not taken
+  effect.** After deploy, completing the Google flow always bounced back to
+  `/login`. Cloud Run logs showed `GET /api/me` → 401 and *zero*
+  `POST /api/auth/google` — the failure was entirely client-side, before any
+  credential reached the server. Browser network capture pinned it: the GIS
+  button iframe request (`accounts.google.com/gsi/button?...client_id=…`)
+  returns **403**, i.e. the production origin
+  `https://siorie-u6y3wdsaua-an.a.run.app` is not (effectively) registered
+  as an authorized JavaScript origin for the OAuth Web client. The proposal
+  listed this Console registration as preflight; it is manual (decision
+  0022) and nothing in the deploy chain verifies it. Note the failure is
+  silent in the UI — the button renders normally and the SPA shows no
+  error. Fix: add the origin in Google Cloud Console (APIs & Services →
+  Credentials → the Web client → Authorized JavaScript origins); Google
+  documents propagation as 5 minutes to a few hours. Retest afterwards.
+- After the operator registered the origin in the Console, the full flow
+  passed (2026-09-03): real Google sign-in from the production origin,
+  navigation to `/groups`, and group creation (the `POST /api/groups`
+  Origin check against the now-correct `APP_ORIGIN`). With the earlier
+  `curl -I` serving checks, every completion criterion in proposal 0028 is
+  met. This round is done; `/decide` is the next step.
