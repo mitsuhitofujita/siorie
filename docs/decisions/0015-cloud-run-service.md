@@ -13,6 +13,10 @@ by [0014](0014-infra-deploy-layers-and-firestore.md): the service and its
 invoker now belong in `infra/app/`, the runtime SA in `infra/platform/`. The
 resource shapes below are unchanged by that move.
 
+The **`APP_ORIGIN` construction** decided here (built from the project number)
+is superseded by [0016](0016-spa-co-serving.md): the operator now passes the
+service's real URL as a default-less `app_origin` variable.
+
 ## Decision
 
 - **`google_cloud_run_v2_service`** (the v2 resource, not v1

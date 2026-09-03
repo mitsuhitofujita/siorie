@@ -1,7 +1,7 @@
 ---
 date: 2026-09-01
 tags: [infra, deploy, cloud-run, docker, spa, auth]
-status: proposed
+status: decided
 worklogs: [0016-spa-co-serving]
 ---
 

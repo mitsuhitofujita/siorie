@@ -1,8 +1,8 @@
 ---
 date: 2026-08-30
 tags: [infra, iac, terraform, cloud-run, auth]
-status: proposed
-worklogs: [0013-cloud-run-service]
+status: decided
+worklogs: [0013-cloud-run-service, 0016-spa-co-serving]
 ---
 
 worklog [0013-cloud-run-service](../../worklogs/0013-cloud-run-service/plan.md)

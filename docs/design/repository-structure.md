@@ -11,7 +11,7 @@ This repository is a monorepo. Runnable applications live under `apps/`: `apps/a
 │   │   ├── cmd/server/main.go
 │   │   ├── internal/
 │   │   │   ├── googleauth/       # Google ID Token verification
-│   │   │   ├── server/           # router, hello + auth + group + item handlers
+│   │   │   ├── server/           # router, hello + auth + group + item handlers, SPA static serving
 │   │   │   └── store/            # Firestore-backed users/sessions/groups/items
 │   │   ├── .env.example
 │   │   ├── go.mod
@@ -64,12 +64,12 @@ This repository is a monorepo. Runnable applications live under `apps/`: `apps/a
 │   │   ├── versions.tf
 │   │   ├── backend.tf              # prefix = "app"
 │   │   ├── main.tf
-│   │   ├── variables.tf            # image_tag, google_client_id — default-less -vars
+│   │   ├── variables.tf            # image_tag, google_client_id, app_origin — default-less -vars
 │   │   ├── outputs.tf              # cloud_run_url
 │   │   ├── terraform.tfvars
 │   │   └── .terraform.lock.hcl    # committed
 │   ├── prod/                # retired: state migrating to platform/ + app/ by import; directory removed in a follow-up commit
-│   ├── Dockerfile           # multi-stage build of the deploy image (Go binary only for now)
+│   ├── Dockerfile           # multi-stage build of the deploy image (Go binary + built SPA)
 │   └── justfile
 ├── .dockerignore
 ├── .gitignore
@@ -82,7 +82,7 @@ This repository is a monorepo. Runnable applications live under `apps/`: `apps/a
 
 A single Go module (`github.com/mitsuhitofujita/siorie/apps/api`) using chi as the router and Huma to produce typed, OpenAPI-reflectable handlers.
 
-- `cmd/server/main.go` reads `PORT` (falling back to `8080` locally), `GOOGLE_CLIENT_ID`, `APP_ORIGIN`, and `FIRESTORE_PROJECT_ID` (all three required, `log.Fatalf` if unset), and the optional development-only `AUTH_DEV_LOGIN`, starts the HTTP server, and shuts it down gracefully on `SIGINT`/`SIGTERM`. When `AUTH_DEV_LOGIN=1` it logs a startup `WARNING`, swaps the real Google verifier for a `googleauth.FakeVerifier` returning fixed `dev-test-user` claims, and sets `server.Deps.DevLogin` (so the dev-login route is mounted); anything else leaves both untouched.
+- `cmd/server/main.go` reads `PORT` (falling back to `8080` locally), `GOOGLE_CLIENT_ID`, `APP_ORIGIN`, and `FIRESTORE_PROJECT_ID` (all three required, `log.Fatalf` if unset), and the optional `AUTH_DEV_LOGIN` (development-only) and `WEB_ROOT` (production-only, presence-triggered), starts the HTTP server, and shuts it down gracefully on `SIGINT`/`SIGTERM`. When `AUTH_DEV_LOGIN=1` it logs a startup `WARNING`, swaps the real Google verifier for a `googleauth.FakeVerifier` returning fixed `dev-test-user` claims, and sets `server.Deps.DevLogin` (so the dev-login route is mounted); anything else leaves both untouched.
 - `internal/server` builds the router: `GET /api/hello` (JSON greeting); the auth endpoints
   `POST /api/auth/google`, `POST /api/auth/logout`, `GET /api/me` (and, only when
   `server.Deps.DevLogin` is set, the development-only `POST /api/auth/dev-login` — a plain chi
@@ -98,7 +98,14 @@ A single Go module (`github.com/mitsuhitofujita/siorie/apps/api`) using chi as t
   Firestore path to that ID; state-changing group and item routes validate `Origin` like the auth
   routes. Every item handler first resolves `groupId` through a shared `requireGroup` helper
   (wrapping `GetGroup`), so a missing or foreign `groupId` returns 404 before the item store is
-  touched.
+  touched. When `Deps.WebRoot` is set (production: `/web`, where the deploy image bakes
+  `apps/web/dist`), `internal/server/static.go` registers the router's NotFound fallback:
+  unmatched `/api/*` stays a plain 404; existing files are served with
+  `Cache-Control: public, max-age=31536000, immutable` under `/assets/` (content-hashed) and
+  `no-cache` elsewhere; a missing `/assets/*` file is 404 (never index.html); any other
+  unmatched GET/HEAD gets `index.html` for BrowserRouter deep links. Unset in local dev
+  (Vite serves the frontend), and there is no startup existence check — a broken `WEB_ROOT`
+  just 404s per request.
 - `internal/googleauth` verifies Google ID Tokens (signature, `aud`, `iss`, `exp`) behind a `Verifier` interface, wrapping `google.golang.org/api/idtoken`. `FakeVerifier` (fixed claims, ignores the token) backs the fast handler tests and is also swapped in at runtime when `AUTH_DEV_LOGIN=1`.
 - `internal/store` persists users, sessions, groups, and items in Firestore (`users/{sub}`,
   `sessions/{sha256(sessionId)}`, `users/{sub}/groups/{groupId}`,
@@ -235,34 +242,41 @@ code).
 - `infra/app/` — `backend "gcs"` (`prefix = "app"`), a provider config, and the
   one thing that rolls on every deploy: the `google_cloud_run_v2_service`
   (`siorie`, `INGRESS_TRAFFIC_ALL`, `min 0 / max 1`, one container on `:8080`,
-  env `GOOGLE_CLIENT_ID` / `APP_ORIGIN` / `FIRESTORE_PROJECT_ID`) and its
-  `allUsers` `roles/run.invoker` binding. It reads the Artifact Registry repo,
-  the runtime SA, and the project number back from GCP through `data` sources
-  (not `terraform_remote_state`), so a plan needs only ordinary project read
+  env `GOOGLE_CLIENT_ID` / `APP_ORIGIN` / `FIRESTORE_PROJECT_ID` /
+  `WEB_ROOT=/web`, the last a fixed literal matching the image layout) and its
+  `allUsers` `roles/run.invoker` binding. It reads the Artifact Registry repo
+  and the runtime SA back from GCP through `data` sources (not
+  `terraform_remote_state`), so a plan needs only ordinary project read
   access; there is no cross-module `depends_on`, so when `platform` and `app`
-  both change, `platform` is applied first. `image_tag` and `google_client_id`
-  are default-less `-var`s (non-secret, kept out of the repo), so every `app`
-  plan/apply needs both; `bootstrap` and `platform` take none. `outputs.tf`
-  exposes `cloud_run_url`. `APP_ORIGIN` is still built from the project number
-  and does not match the service's real (legacy-hash) URL — discussion 0025.
+  both change, `platform` is applied first. `image_tag`, `google_client_id`,
+  and `app_origin` are default-less `-var`s (non-secret, kept out of the
+  repo), so every `app` plan/apply needs all three; `bootstrap` and `platform`
+  take none. `outputs.tf` exposes `cloud_run_url`, whose value is what the
+  operator passes back in as `app_origin` (the service's real, legacy-hash
+  URL; it cannot self-reference its own `.uri` — decision 0016).
 - `infra/prod/` — the former single non-bootstrap layer, being retired: its four
   live resources (Artifact Registry repo, runtime SA, Cloud Run service,
   invoker) migrate into `platform` / `app` by `terraform import`, and the
   directory is deleted in a follow-up commit once the old state is released with
   `state rm` (never `terraform destroy`).
 - `infra/Dockerfile` — multi-stage: a `golang:1.27-bookworm` builder producing a
-  `CGO_ENABLED=0` static binary, and a `gcr.io/distroless/static-debian12:nonroot`
-  final stage holding only that binary (`ENTRYPOINT ["/server"]`). Build context
-  is the repository root; `-f infra/Dockerfile` is mandatory. Go binary only for
-  now — SPA co-serving would add a web build stage. `.dockerignore` at the repo
-  root scopes the context.
+  `CGO_ENABLED=0` static binary; a `node:24-bookworm` web stage (corepack +
+  the `packageManager`-pinned pnpm, `pnpm install --frozen-lockfile` cached on
+  the manifest/lockfile, `ARG VITE_GOOGLE_CLIENT_ID` inlined into the bundle
+  by `vite build`); and a `gcr.io/distroless/static-debian12:nonroot` final
+  stage holding the binary (`ENTRYPOINT ["/server"]`) plus the built SPA at
+  `/web`. Build context is the repository root; `-f infra/Dockerfile` is
+  mandatory. `.dockerignore` at the repo root scopes the context.
 - `infra/justfile` — `init` / `plan` / `apply` / `output` recipes that take the
   layer name (`just infra/plan platform`), plus `format` / `format-check`, plus
   container recipes: `docker-auth`
   (`gcloud auth configure-docker asia-northeast1-docker.pkg.dev`, once per
-  machine, not in `setup`) and `publish-image` (build from the repo root, push
-  to Artifact Registry, tag = `git rev-parse --short=12 HEAD`, no `:latest`, no
-  dirty-tree guard). All reachable from the repo root via just's cross-directory
+  machine, not in `setup`) and `publish-image <google_client_id>` (build from
+  the repo root with `--build-arg VITE_GOOGLE_CLIENT_ID`, push to Artifact
+  Registry, tag = `git rev-parse --short=12 HEAD`, no `:latest`, no dirty-tree
+  guard). The same client ID is entered again at apply time; a mismatch is a
+  silent sign-in 401. Publish before apply — nothing enforces the order, and a
+  missing tag fails only inside the Cloud Run update. All reachable from the repo root via just's cross-directory
   resolution. A Docker-compatible engine is assumed but not pinned by `mise`;
   podman works, with credential/short-name caveats noted in the `justfile`.
 - `terraform.tfvars` (`project_id`, `region`) and `.terraform.lock.hcl` are
@@ -276,21 +290,25 @@ code).
 - `justfile` recipes: `setup`, `dev-api`, `dev-web`, `build`, `test`, `lint`, `format`, `check`. Go tasks are delegated to `apps/api/justfile` via just's cross-directory recipe resolution (e.g. `just apps/api/build`); Web tasks call the `package.json` scripts via `pnpm --dir apps/web`; `format` / `check` also run `terraform fmt` over `infra/` via `infra/justfile`. `check` runs format-checking, lint, test, and build for both apps and does not rewrite files; `format` is the file-rewriting task and is run separately.
 - `mise.toml` pins the development versions of Go, Node.js, pnpm, just, gcloud, Java (for the Firestore emulator), and Terraform. Terraform is pinned to an exact version (not `latest`) for apply reproducibility.
 - `.gitignore` excludes the generated `apps/api/bin/`, `apps/web/dist/`, `apps/web/node_modules/`, and the local `apps/api/.env` / `apps/web/.env` files, plus Terraform working directories, plan files, local state under the GCS-backed layers (`infra/prod/`, `infra/platform/`, `infra/app/`), and the bootstrap state backup — `infra/bootstrap/terraform.tfstate` and every `.terraform.lock.hcl` stay tracked.
-- `.dockerignore` scopes the `infra/Dockerfile` build context (the repository root) down to what the Go build needs: it drops `.git`, `.claude`, node/web/Go build output, Terraform working dirs and state, `docs/`, and env files.
+- `.dockerignore` scopes the `infra/Dockerfile` build context (the repository root) down to what the Go and web builds need: it drops `.git`, `.claude`, node/web/Go build output (the web stage always installs and builds from source), Terraform working dirs and state, `docs/`, and env files.
 - `docs/` holds the discussions/worklogs/decisions/design layout described in `docs/README.md`.
 
 ## Not yet present
 
-Combined serving of the SPA from the Go binary is not part of this repository
-yet. Terraform manages `infra/bootstrap/`, `infra/platform/` (Artifact Registry,
+Terraform manages `infra/bootstrap/`, `infra/platform/` (Artifact Registry,
 Firestore `(default)`, the runtime SA and its `roles/datastore.user`), and
 `infra/app/` (the Cloud Run service and its public invoker); the migration of
 the live `infra/prod/` resources into `platform` / `app` by `import` is applied
 by an operator and its follow-up cleanup commit is pending (see `infra/`). A
 DELETE cleanup policy for the image repository, the billing budget, and Cloud
 Monitoring are not managed yet, and there is no CI/CD automation. The deploy
-image (`infra/Dockerfile`) is built and pushed by hand from a workstation
-(`just infra/publish-image`) and currently contains the Go binary only. Google
+image (`infra/Dockerfile`, Go binary + built SPA) is built and pushed by hand
+from a workstation (`just infra/publish-image <client-id>`); there is no
+recipe yet to `docker run` the combined image locally, so the co-serving path
+is exercised only by unit tests and the production deploy. The OAuth Web
+client is operated manually in the Google Cloud Console; the production origin
+must be registered there as an authorized JavaScript origin, and nothing
+verifies it (an unregistered origin fails silently in the UI). Google
 authentication, Tailwind CSS, the moss design-token system, and the group and
 item entity API endpoints have been introduced by later worklogs (see below);
 the item-list endpoint currently returns every item with no pagination.
@@ -310,4 +328,5 @@ the item-list endpoint currently returns every item with no pagination.
 - [0012: Container images — single Artifact Registry repo, workstation build-and-push](../decisions/0012-container-image-build-and-registry.md)
 - [0013: Development-only Dev Login path](../decisions/0013-dev-login-path.md)
 - [0014: Infra deploy layers by change frequency, and the Firestore (default) database](../decisions/0014-infra-deploy-layers-and-firestore.md)
-- [0015: Cloud Run service, public invoker, and a dormant runtime SA](../decisions/0015-cloud-run-service.md)
+- [0015: Cloud Run service, public invoker, and a dormant runtime SA](../decisions/0015-cloud-run-service.md) (superseded in part by 0016)
+- [0016: SPA co-served from the Go binary, and an operator-passed APP_ORIGIN](../decisions/0016-spa-co-serving.md)

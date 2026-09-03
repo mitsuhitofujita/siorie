@@ -1,8 +1,8 @@
 ---
 date: 2026-09-03
-status: in-progress
+status: merged
 discussions: [0028-spa-co-serving]
-decisions: []
+decisions: [0016-spa-co-serving]
 pr: null
 ---
 
