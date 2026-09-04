@@ -42,6 +42,11 @@ worklog [0017-github-actions-manual-deploy](../../worklogs/0017-github-actions-m
   - 残らなかった例: worklog 0015 には rollout の追記がない。その結果、proposal 0029 は
     「`infra/prod` の `state rm` は未完」という前提で書かれたが、実際にはバケットの `prod/`
     prefix ごと消えていた（0017 の Preflight）。
+- 同じセッションでの追記（2026-09-04 15:39Z〜）: エージェントの bootstrap apply が終わった 8 秒後に
+  operator が dispatch し、platform apply（deployer のロール付与）はその 2 分後だった。run は
+  push まで通ったが、`artifactregistry.repositories.get` が binding 作成の 78 秒後にまだ拒否されて
+  apply で落ちた（IAM の伝播遅延）。apply と dispatch が別の主体に割れているので、
+  「両方 apply して、伝播を待って、dispatch」という順序を誰も持っていなかった。
 - 0017 では apply の後の権限確認も詰まった。deployer の impersonation は Owner に
   `iam.serviceAccounts.getAccessToken` がなくて不可、Policy Troubleshooter API は未有効化。
   どちらも有効化・付与すれば通るが、それ自体がスコープ外の変更。結局「初回 dispatch で

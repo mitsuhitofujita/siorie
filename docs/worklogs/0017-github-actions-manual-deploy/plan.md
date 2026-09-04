@@ -214,13 +214,41 @@ on `storage.objects.list`, the reasoning in Difficulties is wrong.
 - `actionlint` (v1.7.12, via `go run`) reports no findings. `just check` is
   green locally on this tree, i.e. the gate the workflow runs passes here.
 
-### Step 6 — push, dispatch, verify (**not done — operator**)
+### Step 6 — push, dispatch, verify (operator; first dispatch failed on IAM propagation)
 
-- Not pushed: `.claude/settings.json` denies `git push *` for the agent, and
-  local `main` is 19 commits ahead of `origin/main` (the operator pushes in
-  batches). The workflow can only be dispatched once it exists on the remote
-  `main`; push, dispatch, and the post-deploy checks are operator steps. The
-  operator's go-ahead covered apply, not the production dispatch.
+- The agent did not push (`.claude/settings.json` denies `git push *`). The
+  operator pushed `main` up to `745c118` during the session and dispatched
+  the workflow themselves at 15:39:25Z — 8 s after the bootstrap apply had
+  written its last binding (15:39:17Z) and about two minutes **before** the
+  platform apply set the deployer's roles (15:41:20–23Z).
+- Run 33890726359 (`main` @ `745c1188aa32`), 3m17s, `failure` at the last
+  step. Everything else passed, which retires most of the proposal's open
+  risks:
+
+  | Step | Duration | Outcome |
+  | --- | --- | --- |
+  | `actions/checkout@v7` | 1 s | ok |
+  | `jdx/mise-action@v4` | 19 s | ok — all `mise.toml` tools installed (go 1.27.1, gcloud 583.0.0, temurin-25, node, pnpm, just, terraform 1.15.9) |
+  | `just setup` | 32 s | ok — `gcloud components install cloud-firestore-emulator` downloaded 66.9 MiB; harmless "other instances of Google Cloud tools on your PATH" warning |
+  | `just check` | 45 s | ok — Go tests against the emulator, web lint (0 errors, 1 pre-existing `react-hooks/exhaustive-deps` warning), vitest, `vite build`, `terraform fmt -check` |
+  | `google-github-actions/auth@v3` | 1 s | ok — OIDC → WIF → `deployer`; credential file written into the checkout (proposal's WIF path works; the `ref == refs/heads/main` condition admitted a `workflow_dispatch` job bound to an Environment) |
+  | `just infra/docker-auth` | 1 s | ok — "Docker configuration file updated", no prompt (`CLOUDSDK_CORE_DISABLE_PROMPTS`) |
+  | `just infra/publish-image` | 74 s | ok — built all three stages and pushed `app:745c1188aa32` through `docker-credential-gcloud` with the federated credential file (proposal risk 5 closed; no `docker login` fallback needed) |
+  | `just infra/init app` | 5 s | ok — "Successfully configured the backend gcs": `storage.objects.list` via `legacyBucketReader` + get under `app/` via the conditional `objectUser` are sufficient (proposal risk 1 closed as decided in Difficulties) |
+  | `just infra/apply app` | 6 s | **failed** — `data.google_artifact_registry_repository.app`: 403 `artifactregistry.repositories.get` denied on `projects/siorie/locations/asia-northeast1/repositories/siorie` |
+
+- The 403 is not a missing role. `roles/artifactregistry.writer` carries
+  `artifactregistry.repositories.get` (checked with `gcloud iam roles
+  describe`), and the same binding had just authorised the image push. The
+  binding was created at 15:41:20Z; the push succeeded at 15:42:17–27Z; the
+  `get` was refused at 15:42:38Z, 78 s after the binding — IAM propagation
+  lag between Artifact Registry's data plane (upload) and its control plane
+  (`GetRepository`). `data.google_service_account.runtime` (its binding set
+  at 15:41:21Z) read fine two seconds earlier. Nothing to change; a
+  re-dispatch after propagation is the fix. Note that Artifact Registry
+  data-access audit logs are off by default, so neither the push nor the
+  denied `get` appears in Cloud Logging — the timeline above comes from the
+  Admin Activity `SetIamPolicy` entries plus the run log.
 
 ### Step 7 — docs (done)
 
@@ -244,8 +272,8 @@ on `storage.objects.list`, the reasoning in Difficulties is wrong.
 - `feat(infra): deploy infra/app from GitHub Actions via Workload Identity Federation`
 - `docs: record the GitHub Actions manual deploy worklog (worklog 0017)`
 - `chore(infra): record the bootstrap apply for worklog 0017`
-- `docs: record the applies and open discovery 0030 (worklog 0017)` — this
-  worklog's update plus the new discovery
+- `docs: record the applies and open discovery 0030 (worklog 0017)`
+- `docs: record the first dispatch of worklog 0017` — the run above
 
 ## Difficulties
 
@@ -320,11 +348,16 @@ on `storage.objects.list`, the reasoning in Difficulties is wrong.
   was done. Same root as the first item: rollout facts live only with the
   operator unless a worklog append is a standard step.
 
-- **Not pushed.** `git push *` is on the deny list in `.claude/settings.json`,
-  and local `main` is 19 commits ahead of `origin/main`. The workflow can only
-  be dispatched once it exists on the remote `main`, so the operator's push
-  (which carries the whole batch, not just this worklog's commits) is a
-  precondition of the dispatch.
+- **The first dispatch raced the platform apply.** With apply and dispatch
+  split between agent and operator, the operator dispatched 8 s after the
+  bootstrap apply finished and before the platform apply had run; the run
+  then outpaced IAM propagation of the roles created mid-run and failed on
+  `artifactregistry.repositories.get` 78 s after the binding existed. Not a
+  code problem, but a direct consequence of the handoff (see discovery
+  0030): nothing in the process says "both applies, then wait for
+  propagation, then dispatch". The `git push *` deny in
+  `.claude/settings.json` keeps push and dispatch on the operator's side by
+  design.
 
 - **Deviations from the proposal, all small.** No `data.google_project` in
   bootstrap — the pool's `.name` already contains the project number.
@@ -360,11 +393,11 @@ on `storage.objects.list`, the reasoning in Difficulties is wrong.
 
 ## Left to the operator
 
-The applies are done. What remains needs `git push` (denied for the agent by
-`.claude/settings.json`) and a production dispatch.
+The applies are done and have propagated. What remains needs `git push`
+(denied for the agent by `.claude/settings.json`) and a production dispatch.
 
 ```sh
-# 1. publish the workflow and dispatch it
+# 1. push the remaining docs commits and re-dispatch (no code change needed)
 git push origin main
 gh workflow run deploy.yml --ref main
 gh run watch
@@ -373,7 +406,7 @@ gh run watch
 gcloud run services describe siorie --region asia-northeast1 \
   --format='value(status.latestReadyRevisionName,spec.template.spec.containers[0].image)'   # tag = git rev-parse --short=12 origin/main
 # browser: sign in at https://siorie-u6y3wdsaua-an.a.run.app and create a group (exercises the Origin check)
-just infra/plan bootstrap && just infra/plan platform        # both "No changes"
+just infra/plan bootstrap && just infra/plan platform        # both "No changes" (already confirmed once after the applies)
 
 # 3. optional — proves the Environment branch policy, not the WIF condition
 git switch -c wif-negative-test && git push -u origin wif-negative-test
@@ -381,12 +414,7 @@ gh workflow run deploy.yml --ref wif-negative-test            # expect: refused 
 git switch main && git push origin --delete wif-negative-test && git branch -D wif-negative-test
 ```
 
-Things to watch in the first run, because they could not be verified here:
-whether `just infra/init app` gets through the state-bucket bindings
-(`storage.objects.list` via `legacyBucketReader`, get / create under `app/`
-via the conditional `objectUser`); whether `docker push` authenticates
-through `docker-credential-gcloud` with the federated credential file
-(fallback: `docker login -u oauth2accesstoken`, see `infra/justfile`); how
-long `jdx/mise-action` takes to install the gcloud SDK and the emulator; the
-total run time. Then append the rollout to this worklog, set `status`, and
+If the re-dispatch fails on the same `artifactregistry.repositories.get`
+403, the propagation explanation is wrong and the platform bindings need a
+second look. Otherwise: append the result to this worklog, set `status`, and
 run `/decide` (which should also flip discussion 0003 to `decided`).
