@@ -1,8 +1,8 @@
 ---
 date: 2026-08-23
 tags: [cicd, infra]
-status: proposed
-worklogs: []
+status: decided
+worklogs: [0017-github-actions-manual-deploy]
 ---
 
 [purpose and initial tech stack](../0001-purpose-and-initial-tech-stack/proposal.md) の CI/CD について、`Cloud Build` となっているが、クラウドプラットフォームのサービスはイケてる度合いがわからない。

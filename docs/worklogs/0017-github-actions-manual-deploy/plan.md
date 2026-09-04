@@ -1,8 +1,8 @@
 ---
 date: 2026-09-05
-status: in-progress
-discussions: [0029-github-actions-manual-deploy]
-decisions: []
+status: merged
+discussions: [0029-github-actions-manual-deploy, 0003-cicd-service-selection]
+decisions: [0017-github-actions-manual-deploy]
 pr: null
 ---
 

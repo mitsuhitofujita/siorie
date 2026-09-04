@@ -13,6 +13,13 @@ real reuse" rule are replaced by a three-layer split by change frequency
 state, the hand-created project, workstation apply, no service-account keys, the
 bootstrap layer's contents — is unchanged and still in force.
 
+Superseded in part by
+[0017](0017-github-actions-manual-deploy.md) (2026-09-04): the "CI/CD
+direction (not a decision)" below is now decided — GitHub Actions + Workload
+Identity Federation — and the `deployer` service account is no longer dormant:
+`bootstrap` holds its WIF pool / provider and state-bucket bindings,
+`platform` its roles. `app` is applied from CI as well as from a workstation.
+
 Originally: Accepted. Settled the two items the
 [initial tech-stack proposal](../discussions/0001-purpose-and-initial-tech-stack/proposal.md)
 left open — the range of resources Terraform manages and where state lives.

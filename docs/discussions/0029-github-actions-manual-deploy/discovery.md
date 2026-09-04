@@ -1,7 +1,7 @@
 ---
 date: 2026-09-04
 tags: [infra, iac, terraform, deploy, cicd, github-actions]
-status: worked
+status: decided
 worklogs: [0017-github-actions-manual-deploy]
 ---
 

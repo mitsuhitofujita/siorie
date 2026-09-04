@@ -13,6 +13,13 @@ left open for getting a deployable container into Artifact Registry. It does
 adds no runtime — Cloud Run, runtime IAM, the Firestore database, the budget,
 and Cloud Monitoring stay in later topics.
 
+Superseded in part by [0017](0017-github-actions-manual-deploy.md)
+(2026-09-04): the CI/CD selection this decision left open is settled (GitHub
+Actions + WIF), and workstation build-and-push is no longer the normal path —
+the deploy workflow builds and pushes on the runner as `deployer`, with the
+workstation path kept for rollback. The repository, image name, tagging rule
+(short commit SHA, no `:latest`), and the Dockerfile layout are unchanged.
+
 ## Decision
 
 - **One Artifact Registry Docker repository**, `siorie`, in `asia-northeast1`,

@@ -215,9 +215,9 @@ how often each changes — `bootstrap` (almost never), `platform` (rarely), `app
 and `platform` are applied from a workstation with the operator's own
 credentials; `app` is applied by the manual GitHub Actions deploy workflow
 (`.github/workflows/deploy.yml`, see Root) as the `deployer` service account,
-or from a workstation for rollbacks. See decisions 0011, 0012, 0014, and 0015,
-and discussion 0029. `infra/` also holds the deploy `Dockerfile` (build
-machinery, not app code).
+or from a workstation for rollbacks. See decisions 0011, 0012, 0014, 0015,
+and 0017. `infra/` also holds the deploy `Dockerfile` (build machinery, not
+app code).
 
 - `infra/bootstrap/` — the layer that has to exist before any other. Enables the
   project's APIs (`google_project_service` over the set that bootstrap, the
@@ -376,9 +376,10 @@ currently returns every item with no pagination.
 - [0008: Route-level auth split and a self-contained GoogleSignInButton](../decisions/0008-route-level-auth-split.md)
 - [0009: Frontend application structure — SPA routing, common layout, page conventions](../decisions/0009-frontend-app-structure.md)
 - [0010: Style fit-and-finish — one font family, no in-app back links, section-head create actions](../decisions/0010-style-fit-and-finish.md)
-- [0011: Terraform IaC layout — flat bootstrap + prod layers, committed bootstrap state](../decisions/0011-terraform-iac-layout.md) (superseded in part by 0014)
-- [0012: Container images — single Artifact Registry repo, workstation build-and-push](../decisions/0012-container-image-build-and-registry.md)
+- [0011: Terraform IaC layout — flat bootstrap + prod layers, committed bootstrap state](../decisions/0011-terraform-iac-layout.md) (superseded in part by 0014 and 0017)
+- [0012: Container images — single Artifact Registry repo, workstation build-and-push](../decisions/0012-container-image-build-and-registry.md) (superseded in part by 0017)
 - [0013: Development-only Dev Login path](../decisions/0013-dev-login-path.md)
 - [0014: Infra deploy layers by change frequency, and the Firestore (default) database](../decisions/0014-infra-deploy-layers-and-firestore.md)
 - [0015: Cloud Run service, public invoker, and a dormant runtime SA](../decisions/0015-cloud-run-service.md) (superseded in part by 0016)
 - [0016: SPA co-served from the Go binary, and an operator-passed APP_ORIGIN](../decisions/0016-spa-co-serving.md)
+- [0017: Manual production deploy from GitHub Actions via Workload Identity Federation](../decisions/0017-github-actions-manual-deploy.md)
