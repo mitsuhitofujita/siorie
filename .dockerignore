@@ -28,3 +28,8 @@ docs
 # Local env files (keep .env.example, which does not match these)
 .env
 apps/*/.env
+
+# Credential file google-github-actions/auth writes into the checkout on the
+# Actions runner (deleted again at job end). The build context is that
+# checkout, so keep it out of every layer.
+gha-creds-*.json

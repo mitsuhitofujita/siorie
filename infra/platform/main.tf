@@ -76,6 +76,44 @@ resource "google_project_iam_member" "runtime_datastore" {
   member  = "serviceAccount:${google_service_account.runtime.email}"
 }
 
+# --- deployer roles (discussion 0029) ----------------------------------------
+# What the GitHub Actions deploy identity may do. The service account itself,
+# and who may impersonate it, live in infra/bootstrap/; it is read back here
+# through a data source, like the other cross-layer references. The set is
+# exactly what `just infra/publish-image` and `just infra/apply app` need:
+#   - push the image (and let infra/app's data source read the repository);
+#   - actAs the runtime SA so a new Cloud Run revision may run as it (and let
+#     infra/app's data source read it);
+#   - manage the Cloud Run service. roles/run.admin rather than run.developer
+#     because infra/app also owns the allUsers invoker binding (setIamPolicy),
+#     and project-level rather than per-service because granting on the
+#     service from infra/app would have deployer grant itself.
+# Terraform state access (the app/ prefix of the state bucket) is granted in
+# infra/bootstrap/ next to the bucket. platform and bootstrap stay human-only.
+data "google_service_account" "deployer" {
+  account_id = "deployer"
+}
+
+resource "google_artifact_registry_repository_iam_member" "deployer_writer" {
+  project    = google_artifact_registry_repository.app.project
+  location   = google_artifact_registry_repository.app.location
+  repository = google_artifact_registry_repository.app.name
+  role       = "roles/artifactregistry.writer"
+  member     = "serviceAccount:${data.google_service_account.deployer.email}"
+}
+
+resource "google_service_account_iam_member" "deployer_acts_as_runtime" {
+  service_account_id = google_service_account.runtime.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${data.google_service_account.deployer.email}"
+}
+
+resource "google_project_iam_member" "deployer_run_admin" {
+  project = var.project_id
+  role    = "roles/run.admin"
+  member  = "serviceAccount:${data.google_service_account.deployer.email}"
+}
+
 # Deferred to this layer (0024's follow-ups): a DELETE cleanup policy for the
 # repository above (and cleanup_policy_dry_run = false); the billing budget +
 # alert; Cloud Monitoring.

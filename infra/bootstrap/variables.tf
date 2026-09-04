@@ -8,3 +8,8 @@ variable "region" {
   type        = string
   default     = "asia-northeast1"
 }
+
+variable "github_repository" {
+  description = "GitHub repository (owner/name) whose Actions runs on main may impersonate the deployer service account through Workload Identity Federation (discussion 0029)."
+  type        = string
+}

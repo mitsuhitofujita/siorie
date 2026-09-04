@@ -1,0 +1,106 @@
+# Manual production deploy (discussion 0029).
+#
+# Dispatched by hand from `main` only — there is no push trigger yet. One job:
+# gate on `just check`, build and push the deploy image, apply infra/app. Every
+# deploy step is the same `just` recipe an operator runs from a workstation;
+# this file only supplies the runner, the credentials, and the three
+# per-deploy inputs.
+#
+# Auth: the run's GitHub OIDC token is exchanged at the Workload Identity
+# Federation pool in infra/bootstrap/ for the `deployer` service account (no
+# key). The pool provider's attribute condition admits only this repository on
+# refs/heads/main, so a dispatch from any other branch fails at the auth step.
+# The `production` Environment holds GOOGLE_CLIENT_ID and APP_ORIGIN as
+# secrets — this repository is public and its run logs are world-readable;
+# secrets are masked in logs, repository variables are not — and its
+# deployment-branch policy allows `main` only.
+#
+# image_tag is `git rev-parse --short=12 HEAD` of the checked-out commit, the
+# same expression `just infra/publish-image` tags with, so the pushed tag and
+# the applied tag cannot disagree. Re-dispatching the same commit is
+# idempotent (same tag pushed again, no Terraform diff). Rollbacks stay on the
+# workstation path (`just infra/apply app -var image_tag=<older sha> …`), or
+# are a revert commit dispatched from here.
+name: deploy
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+# Never let two applies race on the app state. The GCS backend also locks, but
+# a queued run is friendlier than a lock error.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  # Non-secret identifiers, from `just infra/output bootstrap`.
+  WORKLOAD_IDENTITY_PROVIDER: projects/618741051931/locations/global/workloadIdentityPools/github/providers/github-actions
+  DEPLOYER_SERVICE_ACCOUNT: deployer@siorie.iam.gserviceaccount.com
+  # No TTY on the runner: never let gcloud or terraform wait on a prompt.
+  CLOUDSDK_CORE_DISABLE_PROMPTS: "1"
+  TF_IN_AUTOMATION: "1"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      # Must precede google-github-actions/auth, which writes its credential
+      # file into $GITHUB_WORKSPACE.
+      - uses: actions/checkout@v7
+
+      # Installs everything mise.toml pins (go, node, pnpm, java, gcloud, just,
+      # terraform) and puts each tool's bin directory on PATH — which is also
+      # what makes docker-credential-gcloud (shipped with the gcloud SDK)
+      # resolvable for `docker push` below.
+      - uses: jdx/mise-action@v4
+
+      - name: Setup
+        run: just setup
+
+      # The gate. Same as on a workstation: format-check, lint, test, build for
+      # API and Web, plus terraform fmt -check. Runs before any credential is
+      # minted, so a red check never touches Google Cloud.
+      - name: Check
+        run: just check
+
+      # Writes a credential file and exports GOOGLE_APPLICATION_CREDENTIALS +
+      # CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE, so gcloud, the Docker credential
+      # helper, and the Terraform google provider / GCS backend all pick it up.
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.DEPLOYER_SERVICE_ACCOUNT }}
+
+      - name: Configure Docker for Artifact Registry
+        run: just infra/docker-auth
+
+      - name: Resolve image tag
+        id: image
+        run: echo "tag=$(git rev-parse --short=12 HEAD)" >> "$GITHUB_OUTPUT"
+
+      # Secrets are passed through the step environment and expanded by the
+      # shell, never interpolated into the script text.
+      - name: Build and push image
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        run: just infra/publish-image "$GOOGLE_CLIENT_ID"
+
+      - name: Terraform init (app)
+        run: just infra/init app
+
+      - name: Terraform apply (app)
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          APP_ORIGIN: ${{ secrets.APP_ORIGIN }}
+        run: >-
+          just infra/apply app -input=false -auto-approve
+          -var "image_tag=$IMAGE_TAG"
+          -var "google_client_id=$GOOGLE_CLIENT_ID"
+          -var "app_origin=$APP_ORIGIN"
