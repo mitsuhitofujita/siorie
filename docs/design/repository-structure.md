@@ -44,15 +44,15 @@ This repository is a monorepo. Runnable applications live under `apps/`: `apps/a
 │   ├── decisions/
 │   └── design/
 ├── infra/
-│   ├── bootstrap/           # root module: project API enablement, GCS state bucket, dormant deployer SA
+│   ├── bootstrap/           # root module: project API enablement, GCS state bucket, deployer SA + its WIF pool/provider and state-prefix binding
 │   │   ├── versions.tf
 │   │   ├── main.tf
 │   │   ├── variables.tf
-│   │   ├── outputs.tf
-│   │   ├── terraform.tfvars       # project_id, region — committed
+│   │   ├── outputs.tf              # state_bucket_name, deployer_service_account_email, workload_identity_provider, enabled_services
+│   │   ├── terraform.tfvars       # project_id, region, github_repository — committed
 │   │   ├── .terraform.lock.hcl    # committed
 │   │   └── terraform.tfstate      # local state — committed
-│   ├── platform/            # root module: GCS backend; Artifact Registry, Firestore (default), runtime SA + roles/datastore.user
+│   ├── platform/            # root module: GCS backend; Artifact Registry, Firestore (default), runtime SA + roles/datastore.user, deployer roles
 │   │   ├── versions.tf
 │   │   ├── backend.tf              # prefix = "platform"
 │   │   ├── main.tf
@@ -68,9 +68,11 @@ This repository is a monorepo. Runnable applications live under `apps/`: `apps/a
 │   │   ├── outputs.tf              # cloud_run_url
 │   │   ├── terraform.tfvars
 │   │   └── .terraform.lock.hcl    # committed
-│   ├── prod/                # retired: state migrating to platform/ + app/ by import; directory removed in a follow-up commit
 │   ├── Dockerfile           # multi-stage build of the deploy image (Go binary + built SPA)
 │   └── justfile
+├── .github/
+│   └── workflows/
+│       └── deploy.yml       # manual (workflow_dispatch, main only) production deploy: just check → publish-image → apply app
 ├── .dockerignore
 ├── .gitignore
 ├── justfile
@@ -206,25 +208,46 @@ A Vite + TypeScript + React application managed with pnpm as the only package ma
 
 ## `infra/`
 
-Terraform Infrastructure as Code for Google Cloud, applied from a workstation
-(no CI/CD automation yet), targeting a single production project (`siorie`,
-`asia-northeast1`). Three root modules, split by how often each changes —
-`bootstrap` (almost never), `platform` (rarely), `app` (every deploy) — with no
-`modules/` or `environments/` directory. See decisions 0011, 0012, 0014, and
-0015. `infra/` also holds the deploy `Dockerfile` (build machinery, not app
-code).
+Terraform Infrastructure as Code for Google Cloud, targeting a single
+production project (`siorie`, `asia-northeast1`). Three root modules, split by
+how often each changes — `bootstrap` (almost never), `platform` (rarely), `app`
+(every deploy) — with no `modules/` or `environments/` directory. `bootstrap`
+and `platform` are applied from a workstation with the operator's own
+credentials; `app` is applied by the manual GitHub Actions deploy workflow
+(`.github/workflows/deploy.yml`, see Root) as the `deployer` service account,
+or from a workstation for rollbacks. See decisions 0011, 0012, 0014, and 0015,
+and discussion 0029. `infra/` also holds the deploy `Dockerfile` (build
+machinery, not app code).
 
 - `infra/bootstrap/` — the layer that has to exist before any other. Enables the
   project's APIs (`google_project_service` over the set that bootstrap, the
-  `platform` / `app` layers, and the planned GitHub Actions + Workload Identity
+  `platform` / `app` layers, and the GitHub Actions + Workload Identity
   Federation path all need), creates the Terraform state bucket
   (`siorie-tfstate`: `asia-northeast1`, versioned, uniform bucket-level access,
   public access prevention enforced, `prevent_destroy`, 30-day
-  noncurrent-version cleanup), and creates a dormant `deployer` service account
-  with **no** IAM role bindings. Keeps **local state, committed to the repo**
-  (`terraform.tfstate`) — it creates the state bucket, so it cannot back itself
-  with it; its state holds only non-secret facts. This is viable only while a
-  single operator applies locally.
+  noncurrent-version cleanup), and owns the `deployer` service account together
+  with *who may become it* and *which state it may touch*: a Workload Identity
+  pool `github` with an OIDC provider `github-actions` (issuer
+  `token.actions.githubusercontent.com`; mapping `google.subject` /
+  `attribute.repository` / `attribute.ref`; attribute condition
+  `repository == var.github_repository && ref == "refs/heads/main"`, so forks
+  and non-`main` refs are rejected at the STS exchange), a
+  `roles/iam.workloadIdentityUser` binding on `deployer` for the pool's
+  `attribute.repository/mitsuhitofujita/siorie` principal set, a
+  `roles/storage.objectUser` binding on the state bucket conditioned on
+  `resource.name.startsWith(".../objects/app/")` so `deployer` can read and
+  write only the `app` state prefix, plus an unconditional
+  `roles/storage.legacyBucketReader` on the bucket (`storage.objects.list`
+  is a bucket-level permission an object-name condition cannot grant, and
+  `terraform init` lists the bucket to enumerate workspaces — so `deployer`
+  can see every object *name*, but not read `platform/`'s contents). What
+  `deployer` may *do* is granted in `platform`.
+  No key is issued for it. `outputs.tf` exposes `workload_identity_provider`
+  and `deployer_service_account_email`, copied verbatim into the workflow.
+  Keeps **local state, committed to the repo** (`terraform.tfstate`) — it
+  creates the state bucket, so it cannot back itself with it; its state holds
+  only non-secret facts (the project number appears in the pool name). This is
+  viable only while a single operator applies locally.
 - `infra/platform/` — `backend "gcs"` (`prefix = "platform"`), a provider
   config, and the resources that change rarely: the
   `google_artifact_registry_repository` (`siorie`, `DOCKER`, `asia-northeast1`,
@@ -234,11 +257,18 @@ code).
   integration disabled, point-in-time recovery off, guarded by GCP-side
   `delete_protection_state` **and** Terraform `prevent_destroy`, with the
   provider's `ABANDON` deletion-policy default on top); the `siorie-run` runtime
-  service account; and `roles/datastore.user` on that SA
-  (`google_project_iam_member`). `outputs.tf` exposes the Docker path prefix
-  (`asia-northeast1-docker.pkg.dev/siorie/siorie`). A DELETE cleanup policy for
-  the repository, the billing budget, and Cloud Monitoring are still deferred to
-  later worklogs.
+  service account; `roles/datastore.user` on that SA
+  (`google_project_iam_member`); and the `deployer` service account's roles
+  (read back from bootstrap through `data.google_service_account`):
+  `roles/artifactregistry.writer` on the repository (image push, and the `app`
+  data-source read), `roles/iam.serviceAccountUser` on `siorie-run` (so a new
+  revision may run as it), and project-level `roles/run.admin` (`app` also
+  manages the `allUsers` invoker binding, and a per-service grant made from
+  `app` would have `deployer` grant itself). `platform` and `bootstrap` state
+  stay out of `deployer`'s reach — those layers are human-only. `outputs.tf`
+  exposes the Docker path prefix (`asia-northeast1-docker.pkg.dev/siorie/siorie`).
+  A DELETE cleanup policy for the repository, the billing budget, and Cloud
+  Monitoring are still deferred to later worklogs.
 - `infra/app/` — `backend "gcs"` (`prefix = "app"`), a provider config, and the
   one thing that rolls on every deploy: the `google_cloud_run_v2_service`
   (`siorie`, `INGRESS_TRAFFIC_ALL`, `min 0 / max 1`, one container on `:8080`,
@@ -254,11 +284,6 @@ code).
   take none. `outputs.tf` exposes `cloud_run_url`, whose value is what the
   operator passes back in as `app_origin` (the service's real, legacy-hash
   URL; it cannot self-reference its own `.uri` — decision 0016).
-- `infra/prod/` — the former single non-bootstrap layer, being retired: its four
-  live resources (Artifact Registry repo, runtime SA, Cloud Run service,
-  invoker) migrate into `platform` / `app` by `terraform import`, and the
-  directory is deleted in a follow-up commit once the old state is released with
-  `state rm` (never `terraform destroy`).
 - `infra/Dockerfile` — multi-stage: a `golang:1.27-bookworm` builder producing a
   `CGO_ENABLED=0` static binary; a `node:24-bookworm` web stage (corepack +
   the `packageManager`-pinned pnpm, `pnpm install --frozen-lockfile` cached on
@@ -279,39 +304,66 @@ code).
   missing tag fails only inside the Cloud Run update. All reachable from the repo root via just's cross-directory
   resolution. A Docker-compatible engine is assumed but not pinned by `mise`;
   podman works, with credential/short-name caveats noted in the `justfile`.
-- `terraform.tfvars` (`project_id`, `region`) and `.terraform.lock.hcl` are
-  committed for every layer; the `google` provider is pinned `~> 6.50`. Local
-  apply uses the operator's own credentials (Application Default Credentials or
-  an equivalent short-lived user OAuth token); no service-account keys. The
-  image push uses the same operator credentials.
+- `terraform.tfvars` (`project_id`, `region`; bootstrap also
+  `github_repository`) and `.terraform.lock.hcl` are committed for every layer;
+  the `google` provider is pinned `~> 6.50`. Local apply uses the operator's own
+  credentials (Application Default Credentials or an equivalent short-lived
+  user OAuth token); the Actions runner uses the federated `deployer` identity.
+  No service-account keys exist anywhere. A workstation image push uses the
+  operator credentials; the runner's uses `deployer`.
 
 ## Root
 
-- `justfile` recipes: `setup`, `dev-api`, `dev-web`, `build`, `test`, `lint`, `format`, `check`. Go tasks are delegated to `apps/api/justfile` via just's cross-directory recipe resolution (e.g. `just apps/api/build`); Web tasks call the `package.json` scripts via `pnpm --dir apps/web`; `format` / `check` also run `terraform fmt` over `infra/` via `infra/justfile`. `check` runs format-checking, lint, test, and build for both apps and does not rewrite files; `format` is the file-rewriting task and is run separately.
+- `justfile` recipes: `setup`, `dev-api`, `dev-web`, `dev-firestore`, `preview-web`, `build`, `test`, `lint`, `format`, `check`. Go tasks are delegated to `apps/api/justfile` via just's cross-directory recipe resolution (e.g. `just apps/api/build`); Web tasks call the `package.json` scripts via `pnpm --dir apps/web`; `format` / `check` also run `terraform fmt` over `infra/` via `infra/justfile`. `check` runs format-checking, lint, test, and build for both apps and does not rewrite files; `format` is the file-rewriting task and is run separately.
 - `mise.toml` pins the development versions of Go, Node.js, pnpm, just, gcloud, Java (for the Firestore emulator), and Terraform. Terraform is pinned to an exact version (not `latest`) for apply reproducibility.
-- `.gitignore` excludes the generated `apps/api/bin/`, `apps/web/dist/`, `apps/web/node_modules/`, and the local `apps/api/.env` / `apps/web/.env` files, plus Terraform working directories, plan files, local state under the GCS-backed layers (`infra/prod/`, `infra/platform/`, `infra/app/`), and the bootstrap state backup — `infra/bootstrap/terraform.tfstate` and every `.terraform.lock.hcl` stay tracked.
-- `.dockerignore` scopes the `infra/Dockerfile` build context (the repository root) down to what the Go and web builds need: it drops `.git`, `.claude`, node/web/Go build output (the web stage always installs and builds from source), Terraform working dirs and state, `docs/`, and env files.
+- `.gitignore` excludes the generated `apps/api/bin/`, `apps/web/dist/`, `apps/web/node_modules/`, and the local `apps/api/.env` / `apps/web/.env` files, plus Terraform working directories, plan files, local state under the GCS-backed layers (`infra/platform/`, `infra/app/`), and the bootstrap state backup — `infra/bootstrap/terraform.tfstate` and every `.terraform.lock.hcl` stay tracked.
+- `.dockerignore` scopes the `infra/Dockerfile` build context (the repository root) down to what the Go and web builds need: it drops `.git`, `.claude`, node/web/Go build output (the web stage always installs and builds from source), Terraform working dirs and state, `docs/`, env files, and the `gha-creds-*.json` credential file `google-github-actions/auth` writes into the checkout on the Actions runner.
+- `.github/workflows/deploy.yml` — the only workflow. `on: workflow_dispatch`
+  (no push trigger, no push / PR CI yet), `permissions: contents: read,
+  id-token: write`, `concurrency: deploy` (queued, never cancelled), one job on
+  `ubuntu-latest` bound to the GitHub Environment `production` (deployment
+  branch policy: `main` only; secrets `GOOGLE_CLIENT_ID` and `APP_ORIGIN` —
+  secrets rather than variables because the repository is public and run logs
+  are world-readable; only secrets are masked). Steps: `actions/checkout` →
+  `jdx/mise-action` (installs every `mise.toml` tool and puts each bin dir on
+  PATH, which is what makes `docker-credential-gcloud` resolvable) →
+  `just setup` → `just check` (the gate, before any credential is minted) →
+  `google-github-actions/auth` (OIDC → WIF provider → impersonate `deployer`;
+  writes a credential file and exports `GOOGLE_APPLICATION_CREDENTIALS` /
+  `CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE`, which gcloud, the Docker credential
+  helper, and Terraform all honour) → `just infra/docker-auth` →
+  `just infra/publish-image "$GOOGLE_CLIENT_ID"` → `just infra/init app` →
+  `just infra/apply app -input=false -auto-approve -var …`. `image_tag` is
+  `git rev-parse --short=12 HEAD` of the checked-out commit — the same
+  expression `publish-image` tags with — so the pushed and applied tags cannot
+  diverge, and the one `GOOGLE_CLIENT_ID` secret feeds both the build arg and
+  the Terraform var, so the double entry cannot mismatch on this path. The
+  WIF provider name and deployer email are non-secret literals in `env:`;
+  secrets reach scripts only through step `env:` and shell expansion.
+  Re-dispatching the same commit is idempotent. Rollback is the workstation
+  path with an older `image_tag`, or a revert commit dispatched from here.
 - `docs/` holds the discussions/worklogs/decisions/design layout described in `docs/README.md`.
 
 ## Not yet present
 
 Terraform manages `infra/bootstrap/`, `infra/platform/` (Artifact Registry,
-Firestore `(default)`, the runtime SA and its `roles/datastore.user`), and
-`infra/app/` (the Cloud Run service and its public invoker); the migration of
-the live `infra/prod/` resources into `platform` / `app` by `import` is applied
-by an operator and its follow-up cleanup commit is pending (see `infra/`). A
-DELETE cleanup policy for the image repository, the billing budget, and Cloud
-Monitoring are not managed yet, and there is no CI/CD automation. The deploy
-image (`infra/Dockerfile`, Go binary + built SPA) is built and pushed by hand
-from a workstation (`just infra/publish-image <client-id>`); there is no
-recipe yet to `docker run` the combined image locally, so the co-serving path
-is exercised only by unit tests and the production deploy. The OAuth Web
-client is operated manually in the Google Cloud Console; the production origin
-must be registered there as an authorized JavaScript origin, and nothing
-verifies it (an unregistered origin fails silently in the UI). Google
-authentication, Tailwind CSS, the moss design-token system, and the group and
-item entity API endpoints have been introduced by later worklogs (see below);
-the item-list endpoint currently returns every item with no pagination.
+Firestore `(default)`, the runtime SA and its `roles/datastore.user`, the
+deployer's roles), and `infra/app/` (the Cloud Run service and its public
+invoker). A DELETE cleanup policy for the image repository, the billing
+budget, and Cloud Monitoring are not managed yet. CI/CD is limited to the
+manual `deploy` workflow: there is no push-triggered deploy and no push / PR
+CI (`just check` runs only inside a dispatched deploy or on a workstation);
+`mise.toml`'s `latest` pins mean the gate resolves Go / Node / pnpm afresh on
+every run. `APP_ORIGIN` is a hand-maintained Environment secret that goes
+stale if the Cloud Run URL changes. There is no recipe to `docker run` the
+combined image locally, so the co-serving path is exercised only by unit
+tests and the production deploy. The OAuth Web client is operated manually in
+the Google Cloud Console; the production origin must be registered there as
+an authorized JavaScript origin, and nothing verifies it (an unregistered
+origin fails silently in the UI). Google authentication, Tailwind CSS, the
+moss design-token system, and the group and item entity API endpoints have
+been introduced by later worklogs (see below); the item-list endpoint
+currently returns every item with no pagination.
 
 ## Decisions
 

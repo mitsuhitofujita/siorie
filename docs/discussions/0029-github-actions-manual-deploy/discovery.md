@@ -1,8 +1,8 @@
 ---
 date: 2026-09-04
 tags: [infra, iac, terraform, deploy, cicd, github-actions]
-status: proposed
-worklogs: []
+status: worked
+worklogs: [0017-github-actions-manual-deploy]
 ---
 
 GitHub Actionsによるデプロイの実装。まずは手動でActionを実行するようにして。
