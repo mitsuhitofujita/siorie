@@ -427,3 +427,16 @@ The deploy path is live: `main` → `gh workflow run deploy.yml --ref main`
 - `/decide` — also flip discussion 0003 to `decided` and link it, as the
   proposal says. Discussion 0026 stays `open` (the workstation path still
   needs its three `-var`s).
+
+## Discoveries raised from the difficulties
+
+- [0030-infra-apply-handoff](../../discussions/0030-infra-apply-handoff/discovery.md)
+  — the agent / operator split on `terraform apply` and the dispatch race.
+- [0031-cloud-run-scaling-perpetual-diff](../../discussions/0031-cloud-run-scaling-perpetual-diff/discovery.md)
+  — the perpetual `scaling {}` no-op diff on `infra/app`.
+- [0032-app-origin-second-url](../../discussions/0032-app-origin-second-url/discovery.md)
+  — `APP_ORIGIN` as a hand-maintained secret, and the service's second live
+  URL on which every state-changing call is refused.
+- [0033-deploy-supply-chain-pinning](../../discussions/0033-deploy-supply-chain-pinning/discovery.md)
+  — floating tags on the actions, mise tools, and base images behind the
+  deploy identity.
