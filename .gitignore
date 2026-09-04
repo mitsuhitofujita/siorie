@@ -16,11 +16,8 @@
 **/.terraform/*
 *.tfplan
 /infra/bootstrap/terraform.tfstate.backup
-# prod, platform and app are GCS-backed and must never write local state; ignore
-# it defensively if a misconfigured init ever does. (infra/prod/ is retired by
-# discussion 0027 and removed in a follow-up commit once its state is migrated.)
-/infra/prod/*.tfstate
-/infra/prod/*.tfstate.*
+# platform and app are GCS-backed and must never write local state; ignore it
+# defensively if a misconfigured init ever does.
 /infra/platform/*.tfstate
 /infra/platform/*.tfstate.*
 /infra/app/*.tfstate

@@ -3,23 +3,6 @@ provider "google" {
   region  = var.region
 }
 
-# --- 0027 migration -----------------------------------------------------------
-# The Cloud Run service and its public invoker binding already exist; they were
-# previously managed by infra/prod/. These import blocks move them into this
-# layer's state without destroy/recreate. After the first `terraform apply` here
-# and the retirement of infra/prod/ (`state rm`, not `destroy`), delete both
-# blocks in a follow-up commit.
-import {
-  to = google_cloud_run_v2_service.app
-  id = "projects/siorie/locations/asia-northeast1/services/siorie"
-}
-
-import {
-  to = google_cloud_run_v2_service_iam_member.public
-  id = "projects/siorie/locations/asia-northeast1/services/siorie roles/run.invoker allUsers"
-}
-# --- end 0027 migration -----------------------------------------------------
-
 # This layer holds only what changes on every deploy (the Cloud Run service).
 # Everything it depends on lives in infra/platform/ and is read back from GCP
 # directly through data sources — no terraform_remote_state, so a plan here

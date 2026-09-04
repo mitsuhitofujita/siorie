@@ -3,23 +3,6 @@ provider "google" {
   region  = var.region
 }
 
-# --- 0027 migration -----------------------------------------------------------
-# The Artifact Registry repository and the runtime service account already exist
-# in the project; they were previously managed by infra/prod/. These two import
-# blocks move them into this layer's state without destroy/recreate. After the
-# first `terraform apply` here has run and `infra/prod/` has been retired
-# (`state rm`, not `destroy`), delete both blocks in a follow-up commit.
-import {
-  to = google_artifact_registry_repository.app
-  id = "projects/siorie/locations/asia-northeast1/repositories/siorie"
-}
-
-import {
-  to = google_service_account.runtime
-  id = "projects/siorie/serviceAccounts/siorie-run@siorie.iam.gserviceaccount.com"
-}
-# --- end 0027 migration -----------------------------------------------------
-
 # Container images for the Cloud Run service are pushed here by
 # `just infra/publish-image`; the canonical reference is
 # asia-northeast1-docker.pkg.dev/<project>/siorie/app:<git-sha>.
