@@ -237,7 +237,25 @@ on `storage.objects.list`, the reasoning in Difficulties is wrong.
   | `just infra/init app` | 5 s | ok — "Successfully configured the backend gcs": `storage.objects.list` via `legacyBucketReader` + get under `app/` via the conditional `objectUser` are sufficient (proposal risk 1 closed as decided in Difficulties) |
   | `just infra/apply app` | 6 s | **failed** — `data.google_artifact_registry_repository.app`: 403 `artifactregistry.repositories.get` denied on `projects/siorie/locations/asia-northeast1/repositories/siorie` |
 
-- The 403 is not a missing role. `roles/artifactregistry.writer` carries
+- Second dispatch (operator, after pushing the remaining docs commits):
+  run 33891738701 on `main` @ `cc2089b125c3`, **success**, 3m49s
+  (15:50:03Z → 15:53:52Z). mise-action 11 s (cache hit), setup 34 s, check
+  67 s, auth 0 s, docker-auth 1 s, build + push 79 s, init 3 s, apply 21 s.
+  The apply's plan was `0 to add, 1 to change, 0 to destroy` — the image tag
+  plus the perpetual `scaling {}` no-op — and `cloud_run_url` printed as
+  `***` because its value equals the `APP_ORIGIN` secret (expected; the
+  masking works on outputs too).
+- Verified afterwards from the workstation: Cloud Run's latest ready revision
+  is `siorie-00004-mv5` (created 15:53:36Z, Ready) on
+  `asia-northeast1-docker.pkg.dev/siorie/siorie/app:cc2089b125c3`, the tag
+  being exactly `git rev-parse --short=12 origin/main`. Serving checks
+  against `https://siorie-u6y3wdsaua-an.a.run.app`: `/` and `/groups/abc` →
+  200 `text/html` `no-cache`; `/api/hello` → 200 JSON; `/api/nope` and
+  `/assets/missing.js` → 404. `just infra/plan bootstrap` / `platform` →
+  "No changes" (checked once after the applies). `infra/app` re-planned with
+  the deployed values still shows the `scaling {}` diff (see Difficulties),
+  so that one is confirmed perpetual, not cleared by the CI apply either.
+- The 403 in the first run is not a missing role. `roles/artifactregistry.writer` carries
   `artifactregistry.repositories.get` (checked with `gcloud iam roles
   describe`), and the same binding had just authorised the image push. The
   binding was created at 15:41:20Z; the push succeeded at 15:42:17–27Z; the
@@ -273,7 +291,9 @@ on `storage.objects.list`, the reasoning in Difficulties is wrong.
 - `docs: record the GitHub Actions manual deploy worklog (worklog 0017)`
 - `chore(infra): record the bootstrap apply for worklog 0017`
 - `docs: record the applies and open discovery 0030 (worklog 0017)`
-- `docs: record the first dispatch of worklog 0017` — the run above
+- `docs: record the first dispatch of worklog 0017` — the failed run
+- `docs: record the successful deploy of worklog 0017` — the second run and
+  the checks above
 
 ## Difficulties
 
@@ -393,28 +413,17 @@ on `storage.objects.list`, the reasoning in Difficulties is wrong.
 
 ## Left to the operator
 
-The applies are done and have propagated. What remains needs `git push`
-(denied for the agent by `.claude/settings.json`) and a production dispatch.
+The deploy path is live: `main` → `gh workflow run deploy.yml --ref main`
+→ new Cloud Run revision on the commit's SHA. What the agent cannot do:
 
-```sh
-# 1. push the remaining docs commits and re-dispatch (no code change needed)
-git push origin main
-gh workflow run deploy.yml --ref main
-gh run watch
-
-# 2. verify
-gcloud run services describe siorie --region asia-northeast1 \
-  --format='value(status.latestReadyRevisionName,spec.template.spec.containers[0].image)'   # tag = git rev-parse --short=12 origin/main
-# browser: sign in at https://siorie-u6y3wdsaua-an.a.run.app and create a group (exercises the Origin check)
-just infra/plan bootstrap && just infra/plan platform        # both "No changes" (already confirmed once after the applies)
-
-# 3. optional — proves the Environment branch policy, not the WIF condition
-git switch -c wif-negative-test && git push -u origin wif-negative-test
-gh workflow run deploy.yml --ref wif-negative-test            # expect: refused by environment protection rules
-git switch main && git push origin --delete wif-negative-test && git branch -D wif-negative-test
-```
-
-If the re-dispatch fails on the same `artifactregistry.repositories.get`
-403, the propagation explanation is wrong and the platform bindings need a
-second look. Otherwise: append the result to this worklog, set `status`, and
-run `/decide` (which should also flip discussion 0003 to `decided`).
+- A real Google sign-in from a browser at
+  `https://siorie-u6y3wdsaua-an.a.run.app`, then create a group — the
+  proposal's last completion criterion (exercises `GOOGLE_CLIENT_ID` from
+  the secret at both build and apply time, and the `Origin` check against
+  `APP_ORIGIN`). The image was built from the same client ID that was
+  already live, so a regression is unlikely, but it is unverified.
+- Optional: the non-`main` dispatch (`gh workflow run deploy.yml --ref
+  <branch>`), expected to be refused by the Environment's branch policy.
+- `/decide` — also flip discussion 0003 to `decided` and link it, as the
+  proposal says. Discussion 0026 stays `open` (the workstation path still
+  needs its three `-var`s).
