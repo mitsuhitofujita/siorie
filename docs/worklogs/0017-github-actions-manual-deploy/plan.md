@@ -115,7 +115,7 @@ parked in [discussion 0003](../../discussions/0003-cicd-service-selection/propos
 - Stale "prod layer" comments in `infra/bootstrap/main.tf` / `outputs.tf`
   refreshed while editing that layer in step 1.
 
-### Steps 1–2 — bootstrap and platform Terraform (written, planned, **apply blocked**)
+### Steps 1–2 — bootstrap and platform Terraform (written, planned, applied after the operator's go-ahead)
 
 - `infra/bootstrap/`: `google_iam_workload_identity_pool.github`,
   `google_iam_workload_identity_pool_provider.github_actions` (OIDC issuer
@@ -147,20 +147,42 @@ parked in [discussion 0003](../../discussions/0003-cicd-service-selection/propos
   deployer `display_name`; output `workload_identity_provider` known after
   apply. `plan` platform: `3 to add, 0 to change, 0 to destroy`. No replace
   anywhere.
-- **`terraform apply` for both layers was denied by the auto-mode
+- **`terraform apply` for both layers was first denied by the auto-mode
   classifier**, exactly as in worklogs 0012 / 0013 / 0015 / 0016 (this time
-  including `bootstrap`, which worklog 0011 had been allowed to apply). Both
-  applies, the updated `infra/bootstrap/terraform.tfstate` commit, and
-  everything downstream of them are operator steps — see "Left to the
-  operator". The Terraform config is committed ahead of the apply, as 0015
-  did.
+  including `bootstrap`, which worklog 0011 had been allowed to apply). The
+  Terraform config was committed ahead of the apply, as 0015 did, and the
+  handoff was written up. The operator then said in chat that the agent may
+  go through apply; a retry via the `just` recipes passed with no change to
+  `.claude/settings.json`:
+  - `just infra/apply bootstrap -input=false -auto-approve` →
+    `5 added, 1 changed, 0 destroyed`. `workload_identity_provider` =
+    `projects/618741051931/locations/global/workloadIdentityPools/github/providers/github-actions`,
+    identical to the literal in the workflow. State serial 20 → 27,
+    committed (`chore(infra): record the bootstrap apply for worklog 0017`).
+  - `just infra/apply platform -input=false -auto-approve` →
+    `3 added, 0 changed, 0 destroyed`.
+  - `gcloud iam workload-identity-pools providers describe` shows the
+    provider `ACTIVE` with the intended attribute condition.
 
-### Step 3 — GCS backend vs. the prefix condition (resolved by reading; empirical check deferred)
+### Step 3 — GCS backend vs. the prefix condition (resolved by reading; empirical check not possible locally)
 
 Resolved from the Terraform source and IAM semantics instead of a live
-check — see Difficulties. The bootstrap layer now grants list unconditionally
-(`legacyBucketReader`) next to the prefix-conditioned `objectUser`. The
-confirming impersonation commands are under "Left to the operator".
+check — see Difficulties. The bootstrap layer grants list unconditionally
+(`legacyBucketReader`) next to the prefix-conditioned `objectUser`. Two
+attempts at a local confirmation after the apply both failed for reasons
+outside this worklog's scope:
+
+- `gcloud storage ls/cat … --impersonate-service-account=deployer@…` →
+  `iam.serviceAccounts.getAccessToken` denied: the basic Owner role does
+  **not** carry token-creator on service accounts, and granting the operator
+  `roles/iam.serviceAccountTokenCreator` on `deployer` would contradict
+  0022's "no local impersonation".
+- `gcloud policy-troubleshoot iam …` → the Policy Troubleshooter API is not
+  enabled in the project; enabling an API is a project mutation outside the
+  proposal.
+
+So the first dispatch's `terraform init` is the test. If it fails with a 403
+on `storage.objects.list`, the reasoning in Difficulties is wrong.
 
 ### Step 4 — GitHub Environment and secrets (done)
 
@@ -192,11 +214,13 @@ confirming impersonation commands are under "Left to the operator".
 - `actionlint` (v1.7.12, via `go run`) reports no findings. `just check` is
   green locally on this tree, i.e. the gate the workflow runs passes here.
 
-### Step 6 — push, dispatch, verify (**not done**)
+### Step 6 — push, dispatch, verify (**not done — operator**)
 
-- Not pushed: local `main` is 15 commits ahead of `origin/main` (the
-  operator pushes in batches), and the dispatch cannot succeed before the
-  bootstrap / platform applies anyway. Push + dispatch are operator steps.
+- Not pushed: `.claude/settings.json` denies `git push *` for the agent, and
+  local `main` is 19 commits ahead of `origin/main` (the operator pushes in
+  batches). The workflow can only be dispatched once it exists on the remote
+  `main`; push, dispatch, and the post-deploy checks are operator steps. The
+  operator's go-ahead covered apply, not the production dispatch.
 
 ### Step 7 — docs (done)
 
@@ -218,7 +242,10 @@ confirming impersonation commands are under "Left to the operator".
 
 - `chore(infra): retire infra/prod and drop the 0027 import blocks`
 - `feat(infra): deploy infra/app from GitHub Actions via Workload Identity Federation`
-- (this worklog + README + design doc: the docs commit that follows)
+- `docs: record the GitHub Actions manual deploy worklog (worklog 0017)`
+- `chore(infra): record the bootstrap apply for worklog 0017`
+- `docs: record the applies and open discovery 0030 (worklog 0017)` — this
+  worklog's update plus the new discovery
 
 ## Difficulties
 
@@ -241,11 +268,14 @@ confirming impersonation commands are under "Left to the operator".
   working (then proposals and `/work` should be written for it, with an
   explicit operator checklist and a rollout append as a standard section),
   or a permission rule for `just infra/apply <layer>` should exist.
-  Candidate for a new discovery.
+  Outcome in this session: the operator authorised apply in chat, the retry
+  passed, and asked for the discovery to be written —
+  [0030-infra-apply-handoff](../../discussions/0030-infra-apply-handoff/discovery.md).
 
 - **Open risk 1 (GCS backend vs. the prefix-conditioned binding) was decided
   by reading, not by running, and the answer is "the condition alone is not
-  enough".** In Terraform's GCS backend, `Workspaces()` lists the bucket
+  enough".** (A local confirmation turned out to be impossible without
+  out-of-scope changes — see Step 3.) In Terraform's GCS backend, `Workspaces()` lists the bucket
   (`storage.Query{Prefix: b.prefix, Delimiter: "/"}`, i.e. prefix `app`) and
   is called from `selectWorkspace`, which `meta_backend.go` invokes only
   under `opts.Init`. So `terraform init` needs `storage.objects.list`;
@@ -290,11 +320,11 @@ confirming impersonation commands are under "Left to the operator".
   was done. Same root as the first item: rollout facts live only with the
   operator unless a worklog append is a standard step.
 
-- **Not pushed.** Local `main` is 15 commits ahead of `origin/main`. The
-  workflow can only be dispatched once it exists on the remote `main`, so the
-  operator's push (which carries those 15 commits, not just this worklog's)
-  is a precondition of step 6. The agent did not push a batch of the
-  operator's unpublished commits on its own.
+- **Not pushed.** `git push *` is on the deny list in `.claude/settings.json`,
+  and local `main` is 19 commits ahead of `origin/main`. The workflow can only
+  be dispatched once it exists on the remote `main`, so the operator's push
+  (which carries the whole batch, not just this worklog's commits) is a
+  precondition of the dispatch.
 
 - **Deviations from the proposal, all small.** No `data.google_project` in
   bootstrap — the pool's `.name` already contains the project number.
@@ -330,46 +360,33 @@ confirming impersonation commands are under "Left to the operator".
 
 ## Left to the operator
 
-Everything below the classifier line, in order. Expect the plan counts shown;
-stop on any `-/+` (replace) or on a `destroy`.
+The applies are done. What remains needs `git push` (denied for the agent by
+`.claude/settings.json`) and a production dispatch.
 
 ```sh
-# 1. bootstrap — WIF pool + provider, deployer bindings. Expect 5 add / 1 change / 0 destroy.
-just infra/apply bootstrap
-just infra/output bootstrap   # workload_identity_provider must equal the literal in .github/workflows/deploy.yml
-git add infra/bootstrap/terraform.tfstate
-git commit -m "chore(infra): record the bootstrap apply for worklog 0017"
-
-# 2. platform — deployer roles. Expect 3 add / 0 change / 0 destroy.
-just infra/apply platform
-
-# 3. one-off, read-only check of the state-bucket bindings (impersonation from the
-#    workstation, for verification only — not a deploy path; needs
-#    iam.serviceAccounts.getAccessToken on deployer, which project Owner carries)
-SA=deployer@siorie.iam.gserviceaccount.com
-gcloud storage ls gs://siorie-tfstate/app/ --impersonate-service-account=$SA                          # expect: app/default.tfstate
-gcloud storage cat gs://siorie-tfstate/app/default.tfstate --impersonate-service-account=$SA | head -c 80   # expect: JSON
-gcloud storage cat gs://siorie-tfstate/platform/default.tfstate --impersonate-service-account=$SA     # expect: 403 (name listable, content not)
-
-# 4. publish the workflow and dispatch it
+# 1. publish the workflow and dispatch it
 git push origin main
 gh workflow run deploy.yml --ref main
 gh run watch
 
-# 5. verify
+# 2. verify
 gcloud run services describe siorie --region asia-northeast1 \
   --format='value(status.latestReadyRevisionName,spec.template.spec.containers[0].image)'   # tag = git rev-parse --short=12 origin/main
 # browser: sign in at https://siorie-u6y3wdsaua-an.a.run.app and create a group (exercises the Origin check)
 just infra/plan bootstrap && just infra/plan platform        # both "No changes"
 
-# 6. optional — proves the Environment branch policy, not the WIF condition
+# 3. optional — proves the Environment branch policy, not the WIF condition
 git switch -c wif-negative-test && git push -u origin wif-negative-test
 gh workflow run deploy.yml --ref wif-negative-test            # expect: refused by environment protection rules
 git switch main && git push origin --delete wif-negative-test && git branch -D wif-negative-test
 ```
 
-Then append the rollout to this worklog (run duration, which steps needed a
-retry, anything that broke — especially the credential helper, mise on the
-runner, and whether `init` succeeded with the bucket bindings as declared),
-set `status`, and run `/decide`. `/decide` should also flip discussion 0003
-to `decided` and link it, as the proposal says.
+Things to watch in the first run, because they could not be verified here:
+whether `just infra/init app` gets through the state-bucket bindings
+(`storage.objects.list` via `legacyBucketReader`, get / create under `app/`
+via the conditional `objectUser`); whether `docker push` authenticates
+through `docker-credential-gcloud` with the federated credential file
+(fallback: `docker login -u oauth2accesstoken`, see `infra/justfile`); how
+long `jdx/mise-action` takes to install the gcloud SDK and the emulator; the
+total run time. Then append the rollout to this worklog, set `status`, and
+run `/decide` (which should also flip discussion 0003 to `decided`).
