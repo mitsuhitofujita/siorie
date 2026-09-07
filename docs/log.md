@@ -272,3 +272,18 @@ and `docs/archive/decisions/`. One section per unit of work.
 - Per-deploy inputs on the CI path come from GitHub Environment `production`
   secrets (`GOOGLE_CLIENT_ID`, `APP_ORIGIN`), branch policy `main` only. The
   workstation path remains for rollback; `infra/prod/` is removed for good.
+
+## Delayed skeletons to stop the page-transition flicker (2026-09-07)
+
+- On a fast API response the loading skeleton painted for only a few frames
+  before the data landed, reading as a flicker right after a page transition.
+- `useFetch` now derives a `showSkeleton` flag from a two-timer gate: nothing
+  is shown for the first 150 ms of a load, then the skeleton appears and is
+  held for at least 300 ms so it can't flash out; a slower load keeps it up
+  until it resolves. Chose "blank then content" over an instant skeleton
+  because a sub-150 ms blank beat is less noticeable than a skeleton that
+  paints and is immediately replaced.
+- Every `useFetch` page (`GroupsListPage`, `GroupDetailPage` group + item
+  sections, `GroupEditPage`, `ItemDetailPage`, `ItemEditPage`) branches on
+  `showSkeleton` first, then renders `null` while `status` is still `loading`
+  in the pre-delay window.

@@ -84,9 +84,17 @@ component-only-export rule holds) throws if used outside `AuthProvider`.
   `listGroups`, `getGroup`, `createGroup`, `updateGroup`, `deleteGroup`,
   `listItems`, `getItem`, `createItem`, `updateItem`, `deleteItem`.
 - `lib/use-fetch.ts` — `useFetch(fetcher)` returns
-  `{ status: 'loading' | 'success' | 'error', data?, refetch }`. A `requestId`
-  ref discards a stale in-flight response and suppresses updates after unmount.
-  Every list/detail page uses it instead of ad-hoc `useState`/`useEffect`.
+  `{ status: 'loading' | 'success' | 'error', data?, refetch, showSkeleton }`. A
+  `requestId` ref discards a stale in-flight response and suppresses updates
+  after unmount. `showSkeleton` is a delayed, debounced loading flag that keeps
+  the skeleton from flashing on a page transition: it stays `false` for the
+  first 150 ms of a load (a response that beats that swaps straight from blank
+  to content, no skeleton), then turns `true` and holds for at least 300 ms so
+  the skeleton can't itself flicker out; a load slower than the sum keeps it
+  `true` until the load resolves. Every list/detail page branches on it —
+  skeleton while `showSkeleton`, nothing while `status` is still `loading` but
+  `showSkeleton` is `false` (the pre-delay window), otherwise the result. Pages
+  use `useFetch` instead of ad-hoc `useState`/`useEffect`.
 - `lib/use-submit.ts` — `useSubmit(action, errorMessage)` returns
   `{ isSubmitting, error, submit }`. `submit(...)` resolves to a discriminated
   `{ ok: true; value } | { ok: false }` (so a void-returning delete can't be
@@ -95,8 +103,9 @@ component-only-export rule holds) throws if used outside `AuthProvider`.
 
 ## Pages
 
-- **`GroupsListPage`** — `useFetch(api.listGroups)`. Loading → skeletons; error →
-  `ErrorState`. A section head with "Groups" and a small "New group" button
+- **`GroupsListPage`** — `useFetch(api.listGroups)`. Loading → a delayed skeleton
+  (see `use-fetch.ts`); error → `ErrorState`. A section head with "Groups" and a
+  small "New group" button
   (always shown once settled). Empty → `EmptyState` "No groups yet."; otherwise a
   card list of rows linking to `/groups/:groupId`.
 - **`GroupDetailPage`** — two independent `useFetch` calls (the group, its item
