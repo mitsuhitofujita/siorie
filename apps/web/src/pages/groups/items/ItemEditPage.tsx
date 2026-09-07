@@ -47,7 +47,7 @@ export function ItemEditPage() {
     submit: submitDelete,
   } = useSubmit(api.deleteItem, "Couldn't delete. Please try again.")
 
-  if (item.status === 'loading') {
+  if (item.showSkeleton) {
     return (
       <div className="stack-3">
         <Skeleton className="h-7 w-40" />
@@ -55,6 +55,10 @@ export function ItemEditPage() {
         <Skeleton className="h-11 w-full" />
       </div>
     )
+  }
+
+  if (item.status === 'loading') {
+    return null
   }
 
   if (item.status === 'error') {

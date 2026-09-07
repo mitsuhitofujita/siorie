@@ -24,7 +24,7 @@ export function GroupDetailPage() {
   }, [groupId])
   const items = useFetch(fetchItems)
 
-  if (group.status === 'loading') {
+  if (group.showSkeleton) {
     return (
       <div className="stack-3">
         <Skeleton className="h-7 w-40" />
@@ -32,6 +32,10 @@ export function GroupDetailPage() {
         <Skeleton className="h-12 w-full" />
       </div>
     )
+  }
+
+  if (group.status === 'loading') {
+    return null
   }
 
   if (group.status === 'error') {
@@ -60,13 +64,13 @@ export function GroupDetailPage() {
         </Button>
       </div>
 
-      {items.status === 'loading' ? (
+      {items.showSkeleton ? (
         <div className="stack-2">
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-12 w-full" />
         </div>
-      ) : items.status === 'error' ? (
+      ) : items.status === 'loading' ? null : items.status === 'error' ? (
         <ErrorState onRetry={items.refetch} />
       ) : items.data.length === 0 ? (
         <EmptyState icon={BookOpen} message="No items yet." />

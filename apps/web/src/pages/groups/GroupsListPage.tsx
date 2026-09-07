@@ -11,7 +11,7 @@ import { useFetch } from '@/lib/use-fetch'
 export function GroupsListPage() {
   const groups = useFetch(api.listGroups)
 
-  if (groups.status === 'loading') {
+  if (groups.showSkeleton) {
     return (
       <div className="stack-2">
         <Skeleton className="h-12 w-full" />
@@ -19,6 +19,10 @@ export function GroupsListPage() {
         <Skeleton className="h-12 w-full" />
       </div>
     )
+  }
+
+  if (groups.status === 'loading') {
+    return null
   }
 
   if (groups.status === 'error') {

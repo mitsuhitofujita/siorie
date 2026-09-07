@@ -48,13 +48,17 @@ export function GroupEditPage() {
     submit: submitDelete,
   } = useSubmit(api.deleteGroup, "Couldn't delete. Please try again.")
 
-  if (group.status === 'loading') {
+  if (group.showSkeleton) {
     return (
       <div className="stack-3">
         <Skeleton className="h-7 w-40" />
         <Skeleton className="h-11 w-full" />
       </div>
     )
+  }
+
+  if (group.status === 'loading') {
+    return null
   }
 
   if (group.status === 'error') {

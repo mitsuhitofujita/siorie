@@ -31,13 +31,17 @@ export function ItemDetailPage() {
     "Couldn't update. Please try again.",
   )
 
-  if (item.status === 'loading') {
+  if (item.showSkeleton) {
     return (
       <div className="stack-3">
         <Skeleton className="h-7 w-40" />
         <Skeleton className="h-24 w-full" />
       </div>
     )
+  }
+
+  if (item.status === 'loading') {
+    return null
   }
 
   if (item.status === 'error') {
