@@ -53,11 +53,14 @@ jobs:
       # file into $GITHUB_WORKSPACE.
       - uses: actions/checkout@v7
 
-      # Installs everything mise.toml pins (go, node, pnpm, java, gcloud, just,
-      # terraform) and puts each tool's bin directory on PATH — which is also
-      # what makes docker-credential-gcloud (shipped with the gcloud SDK)
-      # resolvable for `docker push` below.
+      # Installs everything mise.toml pins (go, node, pnpm, java, gcloud,
+      # terraform), plus the latest just (a global tool, not a repository pin),
+      # and puts each tool's bin directory on PATH — which is also what makes
+      # docker-credential-gcloud (shipped with the gcloud SDK) resolvable for
+      # `docker push` below.
       - uses: jdx/mise-action@v4
+        with:
+          install_args: "just@latest"
 
       - name: Setup
         run: just setup
