@@ -326,3 +326,14 @@ and `docs/archive/decisions/`. One section per unit of work.
 - Chose `concurrently` (a Web devDependency) over separate terminals because
   the three processes are only useful together and the startup order was the
   part that was easy to get wrong.
+
+## Prompt reference under docs (2026-11-03)
+
+- Moved the prompt-authoring reference into `docs/prompts/README.md`; `/think`,
+  the `implementation-prompts` skill, and `docs/README.md` now point at
+  `docs/prompts/`.
+- Replaced the reference's Spring Boot "jobboard" boilerplate and current-state
+  snapshot with this repository's Go + React stack. The old text described a
+  different repository and would have been false as tracked documentation.
+- Kept the authoring rules (template, scope, acceptance criteria, doc-update
+  mapping) unchanged in substance.
