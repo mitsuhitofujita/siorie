@@ -37,13 +37,19 @@ export function DeleteConfirmDialog({
         <div className="actions">
           <Button
             variant="outline"
+            size="sm"
             disabled={isDeleting}
             onClick={() => onOpenChange(false)}
           >
             <X strokeWidth={1.75} />
             Cancel
           </Button>
-          <Button variant="danger" disabled={isDeleting} onClick={onConfirm}>
+          <Button
+            variant="danger"
+            size="sm"
+            disabled={isDeleting}
+            onClick={onConfirm}
+          >
             <Trash2 strokeWidth={1.75} />
             {isDeleting ? 'Deleting…' : 'Delete'}
           </Button>

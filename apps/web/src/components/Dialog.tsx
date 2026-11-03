@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 
 // Confirm dialog hand-built on the Radix Dialog primitive (focus trap, Esc,
-// scrim, portal) with the moss skin from index.css (`.dialog` / `.overlay-scrim`).
+// scrim, portal) with the app skin from index.css (`.dialog` / `.overlay-scrim`).
 // The browser-native confirm() is never used (0004 / decision 0005).
 const Dialog = DialogPrimitive.Root
 

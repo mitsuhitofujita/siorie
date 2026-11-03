@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 
 // Right-side nav sheet, hand-built on the Radix Dialog primitive (focus trap,
-// Esc, scrim, portal) with the moss skin from index.css (`.nav-sheet` /
+// Esc, scrim, portal) with the app skin from index.css (`.nav-sheet` /
 // `.overlay-scrim`). Slides in from the right.
 const Sheet = DialogPrimitive.Root
 const SheetTrigger = DialogPrimitive.Trigger

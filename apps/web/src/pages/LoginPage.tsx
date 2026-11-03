@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth-context'
 // account before sign-in. A successful sign-in flips auth state to
 // `authenticated`, and <RequireGuest> — not this page — sends the user on to
 // /groups. The Google-rendered button is the one control not restyled to the
-// moss palette (per 0004).
+// app palette (per 0004).
 export function LoginPage() {
   const { state } = useAuth()
 
@@ -20,7 +20,7 @@ export function LoginPage() {
       <p className="tagline">
         Keep track of which manga you've read, and how far.
       </p>
-      <div className="signin">
+      <div className="home-card">
         <GoogleSignInButton />
         <span className="caption">
           Rendered by Google Identity Services — the one control not restyled.
@@ -31,7 +31,7 @@ export function LoginPage() {
         // check can submit to sign in as a fixed test user. Vite strips this
         // from `vite build`; the backend route it posts to exists only when
         // AUTH_DEV_LOGIN=1. See docs/worklogs/0014-dev-login-path.
-        <form className="signin" method="post" action="/api/auth/dev-login">
+        <form className="dev-block" method="post" action="/api/auth/dev-login">
           <button type="submit" className="btn btn-outline btn-sm">
             Dev Login
           </button>

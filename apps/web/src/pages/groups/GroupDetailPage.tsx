@@ -33,19 +33,22 @@ export function GroupDetailPage() {
 
   return (
     <>
-      <div className="sectionhead">
-        <h1>{group.data.name}</h1>
-        <Button asChild variant="outline" size="xs">
-          <Link to={`/groups/${group.data.id}/edit`}>
-            <Pencil strokeWidth={1.75} />
-            Edit
-          </Link>
-        </Button>
+      <div className="page-head">
+        <div className="eyebrow-row">
+          <span className="eyebrow">Group</span>
+          <Button asChild variant="ghost" size="xs">
+            <Link to={`/groups/${group.data.id}/edit`}>
+              <Pencil strokeWidth={1.75} />
+              Edit
+            </Link>
+          </Button>
+        </div>
+        <h1 className="group-title">{group.data.name}</h1>
       </div>
 
       <div className="sectionhead">
         <h2>Items</h2>
-        <Button asChild size="xs">
+        <Button asChild size="sm">
           <Link to={`/groups/${group.data.id}/items/new`}>
             <Plus strokeWidth={1.75} />
             Add item
@@ -58,11 +61,11 @@ export function GroupDetailPage() {
       ) : items.data.length === 0 ? (
         <EmptyState icon={BookOpen} message="No items yet." />
       ) : (
-        <ul className="list">
+        <ul className="item-list">
           {items.data.map((item) => (
             <li key={item.id}>
               <Link
-                className="row card"
+                className="item-row"
                 to={`/groups/${group.data.id}/items/${item.id}`}
               >
                 <span className="title">{item.title}</span>

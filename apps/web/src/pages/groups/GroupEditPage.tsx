@@ -69,7 +69,7 @@ export function GroupEditPage() {
   return (
     <>
       <h1 className="pagetitle">Edit group</h1>
-      <form className="form" onSubmit={handleSubmit}>
+      <form className="form form-card" onSubmit={handleSubmit}>
         <TextField
           id="group-name"
           label="Name"
@@ -81,7 +81,7 @@ export function GroupEditPage() {
         />
         {submitError && <p className="error-text">{submitError}</p>}
         <div className="toolbar">
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" className="btn-block" disabled={isSubmitting}>
             <Check strokeWidth={1.75} />
             {isSubmitting ? 'Saving…' : 'Save'}
           </Button>
@@ -89,7 +89,8 @@ export function GroupEditPage() {
         <div className="form-danger">
           <Button
             type="button"
-            variant="danger"
+            variant="danger-ghost"
+            size="sm"
             onClick={() => setIsDeleteOpen(true)}
           >
             <Trash2 strokeWidth={1.75} />

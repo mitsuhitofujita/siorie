@@ -27,7 +27,7 @@ export function ItemNewPage() {
   return (
     <>
       <h1 className="pagetitle">New item</h1>
-      <form className="form" onSubmit={handleSubmit}>
+      <form className="form form-card" onSubmit={handleSubmit}>
         <TextField
           id="item-title"
           label="Title"
@@ -49,7 +49,7 @@ export function ItemNewPage() {
         />
         {error && <p className="error-text">{error}</p>}
         <div className="toolbar">
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" className="btn-block" disabled={isSubmitting}>
             <Check strokeWidth={1.75} />
             {isSubmitting ? 'Creating…' : 'Create'}
           </Button>

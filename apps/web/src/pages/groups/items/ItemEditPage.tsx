@@ -75,7 +75,7 @@ export function ItemEditPage() {
   return (
     <>
       <h1 className="pagetitle">Edit item</h1>
-      <form className="form" onSubmit={handleSubmit}>
+      <form className="form form-card" onSubmit={handleSubmit}>
         <TextField
           id="item-title"
           label="Title"
@@ -97,7 +97,7 @@ export function ItemEditPage() {
         />
         {submitError && <p className="error-text">{submitError}</p>}
         <div className="toolbar">
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" className="btn-block" disabled={isSubmitting}>
             <Check strokeWidth={1.75} />
             {isSubmitting ? 'Saving…' : 'Save'}
           </Button>
@@ -105,7 +105,8 @@ export function ItemEditPage() {
         <div className="form-danger">
           <Button
             type="button"
-            variant="danger"
+            variant="danger-ghost"
+            size="sm"
             onClick={() => setIsDeleteOpen(true)}
           >
             <Trash2 strokeWidth={1.75} />

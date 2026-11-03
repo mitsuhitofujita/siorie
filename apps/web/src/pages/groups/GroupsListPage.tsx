@@ -22,7 +22,7 @@ export function GroupsListPage() {
     <>
       <div className="sectionhead">
         <h1>Groups</h1>
-        <Button asChild size="xs">
+        <Button asChild size="sm">
           <Link to="/groups/new">
             <Plus strokeWidth={1.75} />
             New group
@@ -35,7 +35,7 @@ export function GroupsListPage() {
         <ul className="list">
           {groups.data.map((group) => (
             <li key={group.id}>
-              <Link className="row card" to={`/groups/${group.id}`}>
+              <Link className="group-card" to={`/groups/${group.id}`}>
                 <span className="title">{group.name}</span>
                 <ChevronRight className="chev" strokeWidth={1.75} />
               </Link>

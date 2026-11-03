@@ -49,14 +49,17 @@ export function ItemDetailPage() {
 
   return (
     <>
-      <div className="sectionhead oneline">
-        <h1>{item.data.title}</h1>
-        <Button asChild variant="outline" size="xs">
-          <Link to={`/groups/${groupId}/items/${item.data.id}/edit`}>
-            <Pencil strokeWidth={1.75} />
-            Edit
-          </Link>
-        </Button>
+      <div className="page-head">
+        <div className="eyebrow-row">
+          <span className="eyebrow">Item</span>
+          <Button asChild variant="ghost" size="xs">
+            <Link to={`/groups/${groupId}/items/${item.data.id}/edit`}>
+              <Pencil strokeWidth={1.75} />
+              Edit
+            </Link>
+          </Button>
+        </div>
+        <h1 className="item-title">{item.data.title}</h1>
       </div>
 
       <section className="volume card">
@@ -66,7 +69,7 @@ export function ItemDetailPage() {
 
       {error && <p className="error-text">{error}</p>}
 
-      <div className="toolbar">
+      <div className="item-actions">
         <Button type="button" onClick={handleIncrement} disabled={isSubmitting}>
           <Plus strokeWidth={1.75} />
           Add a volume

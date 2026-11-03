@@ -3,7 +3,7 @@ import * as LabelPrimitive from '@radix-ui/react-label'
 
 import { cn } from '@/lib/utils'
 
-// Label + input + optional hint, on the moss tokens (see index.css `.field` /
+// Label + input + optional hint, on the app tokens (see index.css `.field` /
 // `.label` / `.input` / `.hint`). Everything renders in the one OS-gothic
 // `--font` (chrome and user content share a family since 0021). Form-level
 // submit errors are rendered by the page as a sibling

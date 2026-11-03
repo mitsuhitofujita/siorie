@@ -1,31 +1,36 @@
 @import 'tailwindcss';
 
 /* ============================================================
-   siorie design tokens — moss × rounded gothic
+   siorie design tokens — blue × charcoal
    mobile-only · light-only · one column · English UI copy
    Every button carries a leading single-colour line icon.
    (The sole exception is the Google-rendered Sign in button.)
-   Ported from docs/discussions/0016-visual-style-overhaul/*.html
+   Ported from docs/design/index.html and docs/design/styles.css
    ============================================================ */
 :root {
   color-scheme: light;
 
-  /* palette: moss, plus roles derived from it (all functional pairs clear AA) */
-  --bg-1: #ffffff; /* cards, inputs, sheets, dialogs */
-  --bg-2: #f2ede0; /* page ground, desktop gutter, row hover */
-  --primary: #48624f; /* moss — primary action, active, focus ring */
-  --primary-hover: #3c5343;
-  --secondary: #e3c25c; /* wheat — pure accent only (badge, rule). Never a CTA. */
-  --text: #2a332c; /* dark moss — body + headings */
-  --text-muted: #5c6a5f; /* secondary text, placeholder, footer */
-  --border: #bdb5a0; /* warm grey — dividers, input border, card outline */
-  --error: #a9473e; /* muted brick — error text + destructive action */
-  --error-hover: #8f3c34;
+  /* palette: blue / grey / charcoal, plus roles derived from it */
+  --bg-1: #ffffff; /* cards, inputs, header, sheets, dialogs */
+  --bg-2: #e9e9e9; /* page ground, desktop gutter */
+  --primary: #3148f6; /* primary action, link, focus ring, brand dot */
+  --primary-hover: #1c4b8f; /* primary hover/pressed, eyebrow, accents */
+  --primary-soft: rgba(28, 75, 143, 0.07); /* deep-blue hover ground */
+  --text: #1c2127; /* body, headings, item titles, figures */
+  --text-muted: #5e6673; /* hints, captions, footer, secondary labels */
+  --text-subtle: #6f7683; /* placeholders only */
+  --border: #c9ccd2; /* card outlines, form rules, row dividers */
+  --border-strong: #767d89; /* input border, flat list top/bottom */
+  --error: #a33a32; /* error text, destructive action */
+  --error-hover: #8f312b;
+  --error-soft: rgba(163, 58, 50, 0.08); /* danger ghost hover */
   --on-primary: #ffffff;
-  --ring: rgba(72, 98, 79, 0.38);
+  --ring: rgba(49, 72, 246, 0.3);
+  --scrim: rgba(28, 33, 39, 0.46); /* sheet / dialog backdrop */
+  --shadow-soft: 0 18px 48px rgba(28, 33, 39, 0.18); /* overlays only */
 
-  /* type scale: 16 · φ (10 / 16 / 26 / 42 / 68), √φ half-steps at 13 / 20 */
-  --fs-2xs: 10px;
+  /* type scale: 16 · φ (11 / 16 / 26 / 42 / 68), √φ half-steps at 13 / 20 */
+  --fs-2xs: 11px;
   --fs-xs: 13px;
   --fs-base: 16px;
   --fs-md: 20px;
@@ -43,13 +48,12 @@
   --space-5: 32px;
   --space-6: 52px;
 
-  /* radius: 8 · φⁿ (8 / 13 / 21); buttons are full pills */
-  --radius-sm: 8px;
-  --radius: 13px;
-  --radius-lg: 21px;
-  --radius-pill: 999px;
+  /* radius: restrained, no pill buttons; avatars alone are circles */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
 
-  --shadow-soft: 0 4px 20px rgba(47, 58, 49, 0.1);
   --content-max: 430px;
 
   /* One family for chrome and user content alike: whatever rounded gothic the
@@ -69,10 +73,11 @@
   --color-bg-2: var(--bg-2);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
-  --color-secondary: var(--secondary);
   --color-text: var(--text);
   --color-text-muted: var(--text-muted);
+  --color-text-subtle: var(--text-subtle);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-error: var(--error);
   --color-on-primary: var(--on-primary);
 }
@@ -91,6 +96,12 @@
     font-size: var(--fs-base);
     line-height: var(--leading-body);
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  button,
+  input {
+    font: inherit;
   }
 }
 
@@ -102,22 +113,25 @@
     justify-content: center;
     gap: var(--space-2);
     min-height: 44px;
-    padding: var(--space-3) var(--space-4);
-    border-radius: var(--radius-pill);
-    border: 1.5px solid transparent;
+    padding: 0 var(--space-4);
+    border-radius: var(--radius);
+    border: 1px solid transparent;
     font: inherit;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 600;
     line-height: 1;
+    letter-spacing: -0.005em;
     cursor: pointer;
     text-decoration: none;
     transition:
       background-color 0.15s,
       border-color 0.15s,
-      color 0.15s;
+      color 0.15s,
+      box-shadow 0.15s;
   }
   .btn svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     flex: none;
   }
   .btn-primary {
@@ -133,25 +147,32 @@
     color: var(--primary);
   }
   .btn-outline:hover {
-    background: rgba(72, 98, 79, 0.12);
+    background: var(--primary-soft);
   }
   .btn-ghost {
     background: transparent;
-    color: var(--text);
+    color: var(--primary-hover);
   }
   .btn-ghost:hover {
-    background: rgba(47, 58, 49, 0.06);
+    background: var(--primary-soft);
   }
   .btn-danger {
     background: var(--error);
-    color: #fff;
+    color: var(--on-primary);
   }
   .btn-danger:hover {
     background: var(--error-hover);
   }
+  .btn-danger-ghost {
+    background: transparent;
+    color: var(--error);
+  }
+  .btn-danger-ghost:hover {
+    background: var(--error-soft);
+  }
   .btn:disabled,
   .btn[aria-disabled='true'] {
-    opacity: 0.5;
+    opacity: 0.45;
     cursor: not-allowed;
   }
   .btn:focus-visible {
@@ -163,27 +184,23 @@
   }
   .btn-sm {
     min-height: 36px;
-    padding: var(--space-2) var(--space-3);
+    padding: 0 var(--space-3);
     font-size: var(--fs-xs);
   }
   .btn-sm svg {
     width: 16px;
     height: 16px;
   }
-  /* heading-mini: sits inside a `.sectionhead` next to an h1 / h2. Height is
-     ~the h1 ink height (cap-to-descender ≈ 26px at --fs-lg), and `.sectionhead`
-     baseline-aligns it, so the button's cap and foot track the heading's.
-     Tap target drops below the .btn-sm 36px — accepted per proposal 0021
-     (every heading action is reachable another way). */
+  /* heading-mini: sits inside an `.eyebrow-row` next to the eyebrow. */
   .btn-xs {
-    min-height: 26px;
+    min-height: 30px;
     padding: 0 var(--space-2);
     font-size: var(--fs-xs);
-    gap: var(--space-1);
+    gap: 6px;
   }
   .btn-xs svg {
-    width: 15px;
-    height: 15px;
+    width: 14px;
+    height: 14px;
   }
 
   /* ---------- vertical stacks ---------- */
@@ -205,26 +222,35 @@
   }
 
   /* ---------- form ---------- */
+  .form-card {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+  }
   .field {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
   }
   .label {
-    font-weight: 500;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--text);
   }
   .input {
     height: 44px;
     width: 100%;
     padding: 0 var(--space-3);
-    border: 1.5px solid var(--border);
+    border: 1px solid var(--border-strong);
     border-radius: var(--radius);
     background: var(--bg-1);
     color: var(--text);
     font: inherit;
+    font-size: var(--fs-base);
   }
   .input::placeholder {
-    color: var(--text-muted);
+    color: var(--text-subtle);
   }
   .input:focus {
     outline: none;
@@ -233,10 +259,10 @@
   }
   .input[aria-invalid='true'] {
     border-color: var(--error);
-    box-shadow: 0 0 0 3px rgba(169, 71, 62, 0.28);
+    box-shadow: 0 0 0 3px rgba(163, 58, 50, 0.22);
   }
   .hint {
-    font-size: var(--fs-xs);
+    font-size: var(--fs-2xs);
     color: var(--text-muted);
   }
   .error-text {
@@ -248,45 +274,95 @@
   .card {
     background: var(--bg-1);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-md);
   }
-  /* a stack of separate cards: each `.row` is its own `.card` link */
+  /* a stack of separate group cards: each `.group-card` is its own link */
   .list {
     list-style: none;
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: var(--space-3);
   }
-  .row {
+  .group-card {
     display: flex;
     align-items: center;
     gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
+    min-height: 58px;
+    padding: 14px 16px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
     color: var(--text);
     text-decoration: none;
+    transition:
+      border-color 0.15s,
+      background-color 0.15s;
   }
-  .row:hover {
-    background: var(--bg-2);
+  .group-card:hover {
+    border-color: var(--primary-hover);
+    background: var(--primary-soft);
   }
-  .row .chev {
-    margin-left: auto;
-    color: var(--text-muted);
-    width: 20px;
-    height: 20px;
-    flex: none;
+  .group-card:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
   }
-  .row .title {
+  .group-card .title {
+    flex: 1;
     min-width: 0;
+    font-weight: 600;
     overflow-wrap: anywhere;
   }
-  /* completed-volume figure: plain body-size number, not a shrunken badge.
-     Fixed to a three-digit column (`vol.` unit + three tabular digits) and
-     right-aligned, so the ones digit lines up down the list regardless of
-     magnitude; four digits or more (never seen in practice) overflow. */
+  .group-card .chev {
+    color: var(--text-muted);
+    width: 18px;
+    height: 18px;
+    flex: none;
+  }
+
+  /* The item list is a flat white band: no card radius, no side border.
+     The white fill gives the rows a readable ground; the 1px top/bottom
+     rules and the row dividers are the only boundaries. */
+  .item-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background: var(--bg-1);
+    border-top: 1px solid var(--border-strong);
+    border-bottom: 1px solid var(--border-strong);
+  }
+  .item-list li + li .item-row {
+    border-top: 1px solid var(--border);
+  }
+  .item-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 56px;
+    padding: 12px 16px;
+    color: var(--text);
+    text-decoration: none;
+    transition: background-color 0.15s;
+  }
+  .item-row:hover {
+    background: var(--primary-soft);
+  }
+  .item-row:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+  }
+  .item-row .title {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* completed-volume figure: fixed to a three-digit column (`vol.` unit +
+     three tabular digits) and right-aligned, so the ones digit lines up down
+     the list regardless of magnitude. */
   .vol {
-    margin-left: auto;
     flex: none;
     white-space: nowrap;
     min-width: 3.25em;
@@ -298,35 +374,16 @@
   }
   .vol .unit {
     font-size: var(--fs-2xs);
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text-muted);
     margin-right: 3px;
     letter-spacing: 0.03em;
   }
-  .row .vol {
-    margin-left: auto;
-  }
-  .row .title + .vol {
-    margin-left: auto;
-  }
-  /* pull the chevron in toward the figure — the `.row` gap is tuned for
-     title-to-control spacing, too wide between the number and the chevron */
-  .row .vol + .chev {
-    margin-left: calc(var(--space-2) * -1);
-  }
-
-  /* ---------- badge (secondary accent) — kept in the system, currently
-     unused since the plain volume figure replaced it (0016 proposal). ---------- */
-  .badge {
-    display: inline-block;
-    font-size: var(--fs-2xs);
-    font-weight: 700;
-    padding: 2px var(--space-2);
-    border-radius: var(--radius-pill);
-    background: var(--secondary);
-    color: #3f3308;
-    letter-spacing: 0.02em;
-    line-height: 1.4;
+  .item-row .chev {
+    color: var(--text-muted);
+    width: 16px;
+    height: 16px;
+    flex: none;
   }
 
   /* ---------- empty / error state ---------- */
@@ -340,9 +397,13 @@
     color: var(--text-muted);
   }
   .state svg {
-    width: 40px;
-    height: 40px;
-    stroke: var(--text-muted);
+    width: 36px;
+    height: 36px;
+    stroke: var(--text-subtle);
+  }
+  .state p {
+    margin: 0;
+    font-size: 14px;
   }
 
   /* ---------- app shell (every page except the home screen) ---------- */
@@ -354,7 +415,7 @@
     display: flex;
     flex-direction: column;
   }
-  @media (min-width: 460px) {
+  @media (min-width: 470px) {
     .app-shell {
       border-inline: 1px solid var(--border);
     }
@@ -363,15 +424,27 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--space-3) var(--space-4);
+    padding: 14px 24px;
+    background: var(--bg-1);
     border-bottom: 1px solid var(--border);
   }
   .wordmark {
     font-size: var(--fs-md);
     font-weight: 700;
-    letter-spacing: 0.01em;
-    color: inherit;
+    line-height: 1;
+    letter-spacing: -0.015em;
+    color: var(--text);
     text-decoration: none;
+  }
+  .wordmark::after {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin-left: 4px;
+    border-radius: 50%;
+    background: var(--primary);
+    vertical-align: 0.5em;
   }
   .wordmark:focus-visible {
     outline: none;
@@ -379,9 +452,9 @@
     box-shadow: 0 0 0 3px var(--ring);
   }
   .avatar-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-pill);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
     border: 1px solid var(--border);
     background: var(--bg-1);
     display: grid;
@@ -390,6 +463,12 @@
     overflow: hidden;
     padding: 0;
     color: var(--text-muted);
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
+  }
+  .avatar-btn:hover {
+    border-color: var(--primary);
   }
   .avatar-btn:focus-visible {
     outline: none;
@@ -414,18 +493,18 @@
     color: var(--text-muted);
   }
   .avatar-fallback svg {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
   }
   .app-main {
     flex: 1;
-    padding: var(--space-4);
+    padding: 24px;
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: 24px;
   }
   .app-footer {
-    padding: var(--space-4);
+    padding: 24px;
     text-align: center;
     font-size: var(--fs-2xs);
     color: var(--text-muted);
@@ -449,42 +528,75 @@
   .pagetitle {
     font-size: var(--fs-lg);
     line-height: var(--leading-tight);
+    font-weight: 700;
+    letter-spacing: -0.02em;
     margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
   .sectionhead {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
   }
   .sectionhead h1 {
     font-size: var(--fs-lg);
-    line-height: 1.3;
+    line-height: var(--leading-tight);
+    font-weight: 700;
+    letter-spacing: -0.02em;
     margin: 0;
     min-width: 0;
     overflow-wrap: anywhere;
   }
   .sectionhead h2 {
     font-size: var(--fs-md);
-    margin: 0;
     line-height: var(--leading-tight);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0;
   }
   .sectionhead .btn {
     flex: none;
   }
-  /* item detail: title stays on one line, clipped at the column edge */
-  .sectionhead.oneline h1 {
-    white-space: nowrap;
-    overflow: hidden;
-    overflow-wrap: normal;
+  .page-head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+  .eyebrow-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+  .eyebrow {
+    font-size: var(--fs-2xs);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--primary-hover);
+  }
+  .group-title,
+  .item-title {
+    font-size: var(--fs-lg);
+    line-height: var(--leading-tight);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0;
+    overflow-wrap: anywhere;
   }
 
   /* item detail: completed-volume panel */
   .volume {
     padding: var(--space-4);
+    text-align: center;
   }
   .volume-label {
-    font-size: var(--fs-xs);
+    font-size: var(--fs-2xs);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: var(--text-muted);
   }
   .volume-num {
@@ -493,8 +605,15 @@
     font-size: var(--fs-xl);
     font-weight: 700;
     line-height: 1;
+    letter-spacing: -0.03em;
     color: var(--text);
     font-variant-numeric: tabular-nums;
+  }
+  .item-actions {
+    display: flex;
+  }
+  .item-actions .btn {
+    flex: 1;
   }
 
   /* ---------- overlays: nav sheet + confirm dialog ---------- */
@@ -502,7 +621,7 @@
     position: fixed;
     inset: 0;
     z-index: 50;
-    background: rgba(30, 40, 32, 0.55);
+    background: var(--scrim);
   }
   .overlay-scrim[data-state='open'] {
     animation: overlay-in 0.18s ease;
@@ -516,8 +635,8 @@
     inset-block: 0;
     right: 0;
     z-index: 51;
-    width: 78%;
-    max-width: 300px;
+    width: 82%;
+    max-width: 320px;
     background: var(--bg-1);
     box-shadow: var(--shadow-soft);
     border-left: 1px solid var(--border);
@@ -542,6 +661,7 @@
   .nav-sheet-head h2 {
     font-size: var(--fs-md);
     margin: 0;
+    letter-spacing: -0.01em;
   }
   .nav-sheet-close {
     background: none;
@@ -552,13 +672,18 @@
     display: inline-flex;
     border-radius: var(--radius-sm);
   }
+  .nav-sheet-close:hover {
+    background: var(--primary-soft);
+    color: var(--primary-hover);
+  }
   .nav-sheet-close svg {
     width: 20px;
     height: 20px;
   }
   .nav-sheet-name {
-    font-weight: 500;
-    margin: 0 0 var(--space-2);
+    margin: 0 0 var(--space-3);
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
   }
   .nav-sheet nav {
     display: flex;
@@ -575,7 +700,8 @@
     color: var(--text);
     text-decoration: none;
     font: inherit;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 600;
     background: none;
     border: none;
     cursor: pointer;
@@ -584,11 +710,12 @@
   }
   .nav-sheet nav a:hover,
   .nav-sheet nav button:hover {
-    background: var(--bg-2);
+    background: var(--primary-soft);
+    color: var(--primary-hover);
   }
   .nav-sheet nav svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     color: var(--text-muted);
     flex: none;
   }
@@ -617,11 +744,13 @@
     font-size: var(--fs-md);
     margin: 0 0 var(--space-2);
     line-height: var(--leading-tight);
+    letter-spacing: -0.01em;
   }
   .dialog > p {
     margin: 0 0 var(--space-4);
     color: var(--text-muted);
     font-size: var(--fs-xs);
+    line-height: 1.5;
   }
   .dialog .error-text {
     display: block;
@@ -646,7 +775,7 @@
     gap: var(--space-5);
     text-align: center;
   }
-  @media (min-width: 460px) {
+  @media (min-width: 470px) {
     .home {
       border-inline: 1px solid var(--border);
     }
@@ -654,15 +783,32 @@
   .home .brand {
     font-size: var(--fs-xl);
     font-weight: 700;
-    letter-spacing: 0.02em;
+    line-height: 1;
+    letter-spacing: -0.035em;
+  }
+  .home .brand::after {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-left: 5px;
+    border-radius: 50%;
+    background: var(--primary);
+    vertical-align: 0.5em;
   }
   .home .tagline {
     margin: calc(var(--space-4) * -1) 0 0;
     color: var(--text-muted);
-    font-size: var(--fs-xs);
+    font-size: 14px;
     max-width: 30ch;
+    line-height: 1.55;
   }
-  .home .signin {
+  .home-card {
+    width: 100%;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -672,7 +818,21 @@
     font-size: var(--fs-2xs);
     color: var(--text-muted);
     max-width: 32ch;
-    line-height: var(--leading-body);
+    line-height: 1.5;
+  }
+  .dev-block {
+    width: 100%;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+    padding: var(--space-3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    background: rgba(255, 255, 255, 0.45);
+  }
+  .dev-block .caption {
+    font-size: var(--fs-2xs);
   }
 }
 

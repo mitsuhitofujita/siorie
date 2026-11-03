@@ -15,7 +15,7 @@ export function ErrorState({
     <div className="card state">
       <TriangleAlert strokeWidth={1.5} />
       <p>{message}</p>
-      <Button variant="outline" onClick={onRetry}>
+      <Button variant="outline" size="sm" onClick={onRetry}>
         <RotateCcw strokeWidth={1.75} />
         Retry
       </Button>

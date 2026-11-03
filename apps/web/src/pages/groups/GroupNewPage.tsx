@@ -24,7 +24,7 @@ export function GroupNewPage() {
   return (
     <>
       <h1 className="pagetitle">New group</h1>
-      <form className="form" onSubmit={handleSubmit}>
+      <form className="form form-card" onSubmit={handleSubmit}>
         <TextField
           id="group-name"
           label="Name"
@@ -37,7 +37,7 @@ export function GroupNewPage() {
         />
         {error && <p className="error-text">{error}</p>}
         <div className="toolbar">
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" className="btn-block" disabled={isSubmitting}>
             <Check strokeWidth={1.75} />
             {isSubmitting ? 'Creating…' : 'Create'}
           </Button>
