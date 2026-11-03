@@ -250,10 +250,14 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
   }
+  /* a stack of separate cards: each `.row` is its own `.card` link */
   .list {
     list-style: none;
     margin: 0;
     padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
   }
   .row {
     display: flex;
@@ -262,9 +266,6 @@
     padding: var(--space-3) var(--space-4);
     color: var(--text);
     text-decoration: none;
-  }
-  .row + .row {
-    border-top: 1px solid var(--border);
   }
   .row:hover {
     background: var(--bg-2);

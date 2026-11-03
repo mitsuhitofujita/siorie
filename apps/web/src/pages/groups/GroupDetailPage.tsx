@@ -58,11 +58,11 @@ export function GroupDetailPage() {
       ) : items.data.length === 0 ? (
         <EmptyState icon={BookOpen} message="No items yet." />
       ) : (
-        <ul className="list card">
+        <ul className="list">
           {items.data.map((item) => (
             <li key={item.id}>
               <Link
-                className="row"
+                className="row card"
                 to={`/groups/${group.data.id}/items/${item.id}`}
               >
                 <span className="title">{item.title}</span>

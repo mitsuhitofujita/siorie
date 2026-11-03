@@ -32,10 +32,10 @@ export function GroupsListPage() {
       {groups.data.length === 0 ? (
         <EmptyState message="No groups yet." />
       ) : (
-        <ul className="list card">
+        <ul className="list">
           {groups.data.map((group) => (
             <li key={group.id}>
-              <Link className="row" to={`/groups/${group.id}`}>
+              <Link className="row card" to={`/groups/${group.id}`}>
                 <span className="title">{group.name}</span>
                 <ChevronRight className="chev" strokeWidth={1.75} />
               </Link>
