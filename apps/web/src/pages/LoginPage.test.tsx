@@ -5,7 +5,7 @@ import { renderWithProviders } from '@/test/renderWithProviders'
 import { LoginPage } from './LoginPage'
 
 describe('LoginPage', () => {
-  it('shows a skeleton and no sign-in button while auth status is unknown', () => {
+  it('renders nothing while auth status is unknown', () => {
     renderWithProviders(<LoginPage />, { authState: { status: 'loading' } })
 
     expect(screen.queryByTestId('google-signin-button')).not.toBeInTheDocument()

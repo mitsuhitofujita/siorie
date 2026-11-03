@@ -1,67 +1,114 @@
 import { act, renderHook } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import { useFetch } from './use-fetch'
 
 function deferred<T>() {
   let resolve!: (value: T) => void
-  const promise = new Promise<T>((res) => {
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((res, rej) => {
     resolve = res
+    reject = rej
   })
-  return { promise, resolve }
+  return { promise, resolve, reject }
 }
 
-describe('useFetch skeleton timing', () => {
-  beforeEach(() => {
-    vi.useFakeTimers()
-  })
-  afterEach(() => {
-    vi.useRealTimers()
-  })
-
-  it('never shows the skeleton when the response beats the delay', async () => {
-    const d = deferred<string[]>()
-    const fetcher = () => d.promise
+describe('useFetch', () => {
+  it('starts in the loading state', () => {
+    const pending = deferred<string[]>()
+    const fetcher = () => pending.promise
     const { result } = renderHook(() => useFetch(fetcher))
 
-    expect(result.current.showSkeleton).toBe(false)
+    expect(result.current.status).toBe('loading')
+  })
+
+  it('resolves to success with the fetched data', async () => {
+    const request = deferred<string[]>()
+    const fetcher = () => request.promise
+    const { result } = renderHook(() => useFetch(fetcher))
 
     await act(async () => {
-      d.resolve(['a'])
+      request.resolve(['a'])
     })
-    await act(() => vi.advanceTimersByTimeAsync(500))
 
-    expect(result.current.showSkeleton).toBe(false)
-    expect(result.current.status).toBe('success')
+    const state = result.current
+    expect(state.status).toBe('success')
+    if (state.status === 'success') {
+      expect(state.data).toEqual(['a'])
+    }
   })
 
-  it('shows the skeleton once the load runs past the delay', async () => {
-    const d = deferred<string[]>()
-    const fetcher = () => d.promise
+  it('resolves to error when the fetcher rejects', async () => {
+    const request = deferred<string[]>()
+    const fetcher = () => request.promise
     const { result } = renderHook(() => useFetch(fetcher))
-
-    await act(() => vi.advanceTimersByTimeAsync(150))
-
-    expect(result.current.showSkeleton).toBe(true)
-  })
-
-  it('holds the skeleton for a minimum time after the load resolves', async () => {
-    const d = deferred<string[]>()
-    const fetcher = () => d.promise
-    const { result } = renderHook(() => useFetch(fetcher))
-
-    await act(() => vi.advanceTimersByTimeAsync(150))
-    expect(result.current.showSkeleton).toBe(true)
 
     await act(async () => {
-      d.resolve(['a'])
+      request.reject(new Error('boom'))
     })
-    // Resolved right after the skeleton appeared: it stays put for now.
-    await act(() => vi.advanceTimersByTimeAsync(100))
-    expect(result.current.showSkeleton).toBe(true)
+
+    expect(result.current.status).toBe('error')
+  })
+
+  it('refetch resets to loading and replaces the data', async () => {
+    const first = deferred<string[]>()
+    const second = deferred<string[]>()
+    let current = first
+    const fetcher = () => current.promise
+    const { result } = renderHook(() => useFetch(fetcher))
+
+    await act(async () => {
+      first.resolve(['a'])
+    })
     expect(result.current.status).toBe('success')
 
-    await act(() => vi.advanceTimersByTimeAsync(300))
-    expect(result.current.showSkeleton).toBe(false)
+    current = second
+    act(() => {
+      result.current.refetch()
+    })
+    expect(result.current.status).toBe('loading')
+
+    await act(async () => {
+      second.resolve(['b'])
+    })
+
+    const state = result.current
+    expect(state.status).toBe('success')
+    if (state.status === 'success') {
+      expect(state.data).toEqual(['b'])
+    }
+  })
+
+  it('ignores a stale response after a refetch starts', async () => {
+    const first = deferred<string[]>()
+    const second = deferred<string[]>()
+    let current = first
+    const fetcher = () => current.promise
+    const { result } = renderHook(() => useFetch(fetcher))
+
+    current = second
+    act(() => {
+      result.current.refetch()
+    })
+
+    await act(async () => {
+      second.resolve(['new'])
+    })
+
+    const state = result.current
+    expect(state.status).toBe('success')
+    if (state.status === 'success') {
+      expect(state.data).toEqual(['new'])
+    }
+
+    await act(async () => {
+      first.resolve(['old'])
+    })
+
+    const finalState = result.current
+    expect(finalState.status).toBe('success')
+    if (finalState.status === 'success') {
+      expect(finalState.data).toEqual(['new'])
+    }
   })
 })

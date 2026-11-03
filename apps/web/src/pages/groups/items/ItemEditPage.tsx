@@ -5,7 +5,6 @@ import { Check, Trash2 } from 'lucide-react'
 import { Button } from '@/components/Button'
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
 import { ErrorState } from '@/components/ErrorState'
-import { Skeleton } from '@/components/Skeleton'
 import { TextField } from '@/components/TextField'
 import { api } from '@/lib/api'
 import { useFetch } from '@/lib/use-fetch'
@@ -46,16 +45,6 @@ export function ItemEditPage() {
     error: deleteError,
     submit: submitDelete,
   } = useSubmit(api.deleteItem, "Couldn't delete. Please try again.")
-
-  if (item.showSkeleton) {
-    return (
-      <div className="stack-3">
-        <Skeleton className="h-7 w-40" />
-        <Skeleton className="h-11 w-full" />
-        <Skeleton className="h-11 w-full" />
-      </div>
-    )
-  }
 
   if (item.status === 'loading') {
     return null

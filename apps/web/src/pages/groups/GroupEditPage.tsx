@@ -5,7 +5,6 @@ import { Check, Trash2 } from 'lucide-react'
 import { Button } from '@/components/Button'
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
 import { ErrorState } from '@/components/ErrorState'
-import { Skeleton } from '@/components/Skeleton'
 import { TextField } from '@/components/TextField'
 import { api } from '@/lib/api'
 import { useFetch } from '@/lib/use-fetch'
@@ -47,15 +46,6 @@ export function GroupEditPage() {
     error: deleteError,
     submit: submitDelete,
   } = useSubmit(api.deleteGroup, "Couldn't delete. Please try again.")
-
-  if (group.showSkeleton) {
-    return (
-      <div className="stack-3">
-        <Skeleton className="h-7 w-40" />
-        <Skeleton className="h-11 w-full" />
-      </div>
-    )
-  }
 
   if (group.status === 'loading') {
     return null

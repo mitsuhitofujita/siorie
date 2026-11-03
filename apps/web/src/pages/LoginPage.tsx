@@ -1,4 +1,3 @@
-import { Skeleton } from '@/components/Skeleton'
 import { GoogleSignInButton } from '@/lib/auth'
 import { useAuth } from '@/lib/auth-context'
 
@@ -12,12 +11,7 @@ export function LoginPage() {
   const { state } = useAuth()
 
   if (state.status === 'loading') {
-    return (
-      <main className="home">
-        <Skeleton className="h-11 w-40" />
-        <Skeleton className="h-10 w-52" />
-      </main>
-    )
+    return null
   }
 
   return (

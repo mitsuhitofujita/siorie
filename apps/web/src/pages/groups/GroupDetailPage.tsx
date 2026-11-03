@@ -5,7 +5,6 @@ import { BookOpen, ChevronRight, Pencil, Plus } from 'lucide-react'
 import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
 import { ErrorState } from '@/components/ErrorState'
-import { Skeleton } from '@/components/Skeleton'
 import { api } from '@/lib/api'
 import { useFetch } from '@/lib/use-fetch'
 
@@ -23,16 +22,6 @@ export function GroupDetailPage() {
     return api.listItems(groupId)
   }, [groupId])
   const items = useFetch(fetchItems)
-
-  if (group.showSkeleton) {
-    return (
-      <div className="stack-3">
-        <Skeleton className="h-7 w-40" />
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-12 w-full" />
-      </div>
-    )
-  }
 
   if (group.status === 'loading') {
     return null
@@ -64,13 +53,7 @@ export function GroupDetailPage() {
         </Button>
       </div>
 
-      {items.showSkeleton ? (
-        <div className="stack-2">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-        </div>
-      ) : items.status === 'loading' ? null : items.status === 'error' ? (
+      {items.status === 'loading' ? null : items.status === 'error' ? (
         <ErrorState onRetry={items.refetch} />
       ) : items.data.length === 0 ? (
         <EmptyState icon={BookOpen} message="No items yet." />

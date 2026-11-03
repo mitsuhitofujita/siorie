@@ -4,22 +4,11 @@ import { ChevronRight, Plus } from 'lucide-react'
 import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
 import { ErrorState } from '@/components/ErrorState'
-import { Skeleton } from '@/components/Skeleton'
 import { api } from '@/lib/api'
 import { useFetch } from '@/lib/use-fetch'
 
 export function GroupsListPage() {
   const groups = useFetch(api.listGroups)
-
-  if (groups.showSkeleton) {
-    return (
-      <div className="stack-2">
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-12 w-full" />
-      </div>
-    )
-  }
 
   if (groups.status === 'loading') {
     return null

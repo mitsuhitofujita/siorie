@@ -673,14 +673,6 @@
     max-width: 32ch;
     line-height: var(--leading-body);
   }
-
-  /* skeleton placeholder */
-  .skeleton {
-    background: var(--bg-1);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    animation: skeleton-pulse 1.4s ease-in-out infinite;
-  }
 }
 
 @keyframes overlay-in {
@@ -735,21 +727,10 @@
     transform: translateX(100%);
   }
 }
-@keyframes skeleton-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.55;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .overlay-scrim,
   .dialog,
-  .nav-sheet,
-  .skeleton {
+  .nav-sheet {
     animation: none !important;
   }
 }
