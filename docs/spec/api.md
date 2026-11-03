@@ -136,6 +136,9 @@ two implementations:
 
 ## Tests & local dev
 
+- From the repository root, `just dev` runs the Firestore emulator, this API,
+  and the Vite dev server together with prefixed logs; `just dev-static` builds
+  the SPA and serves it from this process instead (port 8080, no Vite).
 - `apps/api/justfile`: `dev` (`go run ./cmd/server`), `firestore-emulator` (runs
   the emulator on port 8090 for local dev), `build`, `test` (spins up a
   throwaway emulator on port 8091 so the Firestore integration tests run under

@@ -313,3 +313,16 @@ and `docs/archive/decisions/`. One section per unit of work.
   `.row` sits alone in its own `<li>`, and separate cards don't need it.
 - Put `.card` on the `<Link>` itself rather than on the `<li>`, so the whole
   card is the tap target and the hover fill stays inside the rounded corners.
+
+## One-terminal local dev (2026-11-03)
+
+- `just dev` runs the Firestore emulator, API, and Vite dev server under
+  `concurrently`, prefixing each line with `[firestore]`, `[api]`, or `[web]`.
+  The API waits for port 8090 and Vite waits for `/api/hello`, so the stack
+  starts in order and one Ctrl+C tears it down.
+- `just dev-static` builds the SPA first, then serves it from the API at
+  `http://localhost:8080` with `APP_ORIGIN`/`WEB_ROOT` overridden, for a
+  production-like single-origin check.
+- Chose `concurrently` (a Web devDependency) over separate terminals because
+  the three processes are only useful together and the startup order was the
+  part that was easy to get wrong.
