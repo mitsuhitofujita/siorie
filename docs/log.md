@@ -354,3 +354,19 @@ and `docs/archive/decisions/`. One section per unit of work.
 - The deploy workflow passes `install_args: "just@latest"` to mise-action, so
   the runner still has just without a repository pin. The README now says just
   and gh are expected from the global mise config.
+
+## Web UI restyle (2026-11-03)
+
+- Replaced the moss palette with the approved blue (#3148f6) / charcoal / grey
+  system, moved buttons from pills to 10 px radii, and made cards 12 px white
+  surfaces; shadows now appear only on the nav sheet and dialogs.
+- Kept groups as independent white cards with a 12 px stack gap, but made a
+  group's items a flat white band (no radius or side border, 1 px top/bottom
+  rules and row dividers) whose titles clip to one line before the right-aligned
+  `vol.` figure.
+- Gave both detail pages the `Group` / `Item` eyebrow plus wrapping title head,
+  centered the item volume panel and made its action full width, added the
+  `danger-ghost` delete variant, and put forms and login controls in white
+  cards.
+- Kept the OS font stack and Google's own rendered sign-in button unchanged;
+  routes, API calls, and persistence behaviour are untouched.
