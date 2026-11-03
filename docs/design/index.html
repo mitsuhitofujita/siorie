@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>siorie — UI design spec</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="spec-page">
+    <header class="spec-header">
+      <div class="spec-header-inner">
+        <a class="wordmark" href="./index.html">siorie</a>
+        <nav>
+          <a href="#palette">Palette</a>
+          <a href="#type">Type</a>
+          <a href="#components">Components</a>
+          <a href="#pages">Pages</a>
+          <a href="#rules">Rules</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="spec-main">
+      <section class="spec-section spec-hero">
+        <div class="spec-kicker">UI design spec · 2026-11-03</div>
+        <h1>Blue, grey, and a flatter list.</h1>
+        <p>
+          Static HTML review mocks for siorie, a small reading tracker.
+          Mobile-only, light-only, one 430px column. The React app is not
+          changed yet — this is the review before implementation.
+        </p>
+        <div class="spec-row" style="margin-top: 24px">
+          <a class="btn btn-primary btn-sm" href="./groups.html" target="_blank" rel="noreferrer">
+            Open the app mock
+          </a>
+          <a class="btn btn-outline btn-sm" href="#pages">Page index</a>
+        </div>
+      </section>
+
+      <section class="spec-section">
+        <div class="spec-kicker">At a glance</div>
+        <h2>What this direction changes</h2>
+        <div class="spec-grid cols-2">
+          <div class="spec-frame">
+            <strong>Groups stay independent cards</strong>
+            <p class="spec-note">
+              One white card per group, 12px gap, 12px radius. The list is not
+              one enclosing box.
+            </p>
+          </div>
+          <div class="spec-frame">
+            <strong>Items share a flat white band</strong>
+            <p class="spec-note">
+              One white band, no radius or side border. 1px top/bottom rules
+              plus row dividers; the white fill keeps the rows legible. Titles
+              stay on one line and truncate before <code class="spec-code">vol.</code>.
+            </p>
+          </div>
+          <div class="spec-frame">
+            <strong>Group detail gets a 3-tier head</strong>
+            <p class="spec-note">
+              <code class="spec-code">Group</code> + Edit on top, the group
+              title in the middle, <code class="spec-code">Items</code> + Add
+              item below. Item detail mirrors it with
+              <code class="spec-code">Item</code> + Edit and a wrapping title.
+            </p>
+          </div>
+          <div class="spec-frame">
+            <strong>One blue, used sparingly</strong>
+            <p class="spec-note">
+              #3148F6 is the primary action and focus colour. #1C4B8F is the
+              quieter hover / sub-accent. Everything else is grey or charcoal.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="spec-section" id="palette">
+        <div class="spec-kicker">01 · Colour</div>
+        <h2>Palette</h2>
+        <p>
+          The five specified colours are the brand palette. Muted text, borders,
+          error, and the scrim are derived functional roles, not new brand
+          colours. No gradients, no extra accent hue.
+        </p>
+
+        <div class="spec-grid cols-5">
+          <div class="spec-swatch">
+            <div class="spec-swatch-color" style="background: #3148f6"></div>
+            <div class="spec-swatch-meta">
+              <strong>Primary</strong>
+              <code>#3148F6</code>
+            </div>
+          </div>
+          <div class="spec-swatch">
+            <div class="spec-swatch-color" style="background: #1c4b8f"></div>
+            <div class="spec-swatch-meta">
+              <strong>Deep blue</strong>
+              <code>#1C4B8F</code>
+            </div>
+          </div>
+          <div class="spec-swatch">
+            <div class="spec-swatch-color" style="background: #1c2127"></div>
+            <div class="spec-swatch-meta">
+              <strong>Charcoal</strong>
+              <code>#1C2127</code>
+            </div>
+          </div>
+          <div class="spec-swatch">
+            <div class="spec-swatch-color" style="background: #e9e9e9"></div>
+            <div class="spec-swatch-meta">
+              <strong>Page grey</strong>
+              <code>#E9E9E9</code>
+            </div>
+          </div>
+          <div class="spec-swatch">
+            <div class="spec-swatch-color" style="background: #ffffff"></div>
+            <div class="spec-swatch-meta">
+              <strong>Surface</strong>
+              <code>#FFFFFF</code>
+            </div>
+          </div>
+        </div>
+
+        <h3>Semantic roles &amp; contrast</h3>
+        <table class="spec-table">
+          <thead>
+            <tr>
+              <th>Token</th>
+              <th>Value</th>
+              <th>Use</th>
+              <th>Contrast</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>--bg</code></td>
+              <td><code>#E9E9E9</code></td>
+              <td>Page ground, desktop gutter</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><code>--surface</code></td>
+              <td><code>#FFFFFF</code></td>
+              <td>Cards, form card, inputs, header, sheet, dialog</td>
+              <td>1.21:1 against page grey (so cards keep a 1px outline)</td>
+            </tr>
+            <tr>
+              <td><code>--text</code></td>
+              <td><code>#1C2127</code></td>
+              <td>Body, headings, item titles, volume figures</td>
+              <td>16.2:1 on white · 13.3:1 on #E9E9E9</td>
+            </tr>
+            <tr>
+              <td><code>--text-muted</code></td>
+              <td><code>#5E6673</code></td>
+              <td>Hints, captions, footer, secondary labels</td>
+              <td>5.79:1 on white · 4.77:1 on #E9E9E9</td>
+            </tr>
+            <tr>
+              <td><code>--primary</code></td>
+              <td><code>#3148F6</code></td>
+              <td>Primary buttons, links, focus ring, brand dot</td>
+              <td>White text 6.2:1 · 5.1:1 on #E9E9E9</td>
+            </tr>
+            <tr>
+              <td><code>--primary-hover</code> / <code>--accent</code></td>
+              <td><code>#1C4B8F</code></td>
+              <td>Hover/pressed, eyebrow labels, secondary emphasis</td>
+              <td>White text 8.56:1 · 7.05:1 on #E9E9E9</td>
+            </tr>
+            <tr>
+              <td><code>--line</code></td>
+              <td><code>#C9CCD2</code></td>
+              <td>Card outlines, form hairline, item row dividers</td>
+              <td>Decorative boundary; the surface fill carries the contrast</td>
+            </tr>
+            <tr>
+              <td><code>--line-strong</code></td>
+              <td><code>#767D89</code></td>
+              <td>Input borders, top/bottom of the flat item list</td>
+              <td>4.15:1 on white · 3.42:1 on #E9E9E9</td>
+            </tr>
+            <tr>
+              <td><code>--error</code></td>
+              <td><code>#A33A32</code></td>
+              <td>Error text, destructive action</td>
+              <td>6.54:1 on white</td>
+            </tr>
+            <tr>
+              <td><code>--ring</code></td>
+              <td><code>rgba(49,72,246,.30)</code></td>
+              <td>3px focus ring on buttons and inputs</td>
+              <td>Non-text; paired with a visible border</td>
+            </tr>
+            <tr>
+              <td><code>--scrim</code></td>
+              <td><code>rgba(28,33,39,.46)</code></td>
+              <td>Sheet and dialog backdrop</td>
+              <td>—</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="spec-note">
+          White cards on #E9E9E9 are only 1.21:1, so no card may rely on fill
+          alone: every card, form, and input keeps a 1px outline. The flat item
+          list uses <code class="spec-code">--line-strong</code> at its ends so
+          the list has a readable edge without becoming a box.
+        </p>
+      </section>
+
+      <section class="spec-section" id="type">
+        <div class="spec-kicker">02 · Type</div>
+        <h2>Typography</h2>
+        <p>
+          The existing OS font stack is kept. No web font is downloaded, so the
+          rounded-gothic rendering remains best-effort per platform. Hierarchy
+          comes from size, weight, and spacing, not from a second family.
+        </p>
+        <div class="spec-code" style="display: block; padding: 12px; white-space: pre-wrap">
+          ui-rounded, 'Hiragino Maru Gothic ProN', 'Hiragino Sans', 'Yu Gothic',
+          'Yu Gothic UI', Meiryo, system-ui, sans-serif
+        </div>
+
+        <h3>Scale</h3>
+        <div class="spec-type-row">
+          <code>--fs-xl 42</code>
+          <span style="font-size: var(--fs-xl); font-weight: 700; line-height: 1; letter-spacing: -0.03em">42</span>
+          <span class="spec-note">Brand / completed-volume figure</span>
+        </div>
+        <div class="spec-type-row">
+          <code>--fs-lg 26</code>
+          <span style="font-size: var(--fs-lg); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em">Groups</span>
+          <span class="spec-note">Page title / group title / item title</span>
+        </div>
+        <div class="spec-type-row">
+          <code>--fs-md 20</code>
+          <span style="font-size: var(--fs-md); font-weight: 600; line-height: 1.2">Items</span>
+          <span class="spec-note">Section heading</span>
+        </div>
+        <div class="spec-type-row">
+          <code>--fs-base 16</code>
+          <span style="font-size: var(--fs-base)">ONE PIECE</span>
+          <span class="spec-note">Body, item title, input value</span>
+        </div>
+        <div class="spec-type-row">
+          <code>--fs-xs 13</code>
+          <span style="font-size: var(--fs-xs); font-weight: 600">Completed volume</span>
+          <span class="spec-note">Labels, dialog body, error text</span>
+        </div>
+        <div class="spec-type-row">
+          <code>--fs-2xs 11</code>
+          <span style="font-size: var(--fs-2xs); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent)">Group</span>
+          <span class="spec-note">Eyebrow, hint, volume label, caption, footer</span>
+        </div>
+        <p class="spec-note">
+          The 10px caption of the moss system is raised to 11px so the footer and
+          eyebrows stay legible. Body line-height remains 1.618; headings use
+          1.2. Weights: 600 for labels and section heads, 700 for page and
+          entity titles.
+        </p>
+      </section>
+
+      <section class="spec-section" id="space">
+        <div class="spec-kicker">03 · Space &amp; shape</div>
+        <h2>Spacing and radius</h2>
+        <p>
+          The Fibonacci spacing scale is unchanged. The page gets a little more
+          air: 24px main padding, 20px card padding, 12px between group cards.
+        </p>
+
+        <h3>Spacing</h3>
+        <div class="spec-space-row">
+          <code>--space-1 4</code>
+          <span class="spec-space-bar" style="width: 4px"></span>
+          <span class="spec-note">Tight label gap</span>
+        </div>
+        <div class="spec-space-row">
+          <code>--space-2 8</code>
+          <span class="spec-space-bar" style="width: 8px"></span>
+          <span class="spec-note">Icon/label gap, field gap</span>
+        </div>
+        <div class="spec-space-row">
+          <code>--space-3 12</code>
+          <span class="spec-space-bar" style="width: 12px"></span>
+          <span class="spec-note">Group card gap, row gap</span>
+        </div>
+        <div class="spec-space-row">
+          <code>--space-4 20</code>
+          <span class="spec-space-bar" style="width: 20px"></span>
+          <span class="spec-note">Card padding, form gap</span>
+        </div>
+        <div class="spec-space-row">
+          <code>--space-5 32</code>
+          <span class="spec-space-bar" style="width: 32px"></span>
+          <span class="spec-note">Home stack, state padding</span>
+        </div>
+        <div class="spec-space-row">
+          <code>--space-6 52</code>
+          <span class="spec-space-bar" style="width: 52px"></span>
+          <span class="spec-note">Home vertical padding</span>
+        </div>
+
+        <h3>Radius</h3>
+        <div class="spec-radius-row">
+          <code>--radius-sm 6</code>
+          <span class="spec-radius-box" style="border-radius: 6px"></span>
+          <span class="spec-note">Nav sheet rows, small controls</span>
+        </div>
+        <div class="spec-radius-row">
+          <code>--radius 10</code>
+          <span class="spec-radius-box" style="border-radius: 10px"></span>
+          <span class="spec-note">Buttons, inputs</span>
+        </div>
+        <div class="spec-radius-row">
+          <code>--radius-md 12</code>
+          <span class="spec-radius-box" style="border-radius: 12px"></span>
+          <span class="spec-note">Cards, form card, group cards</span>
+        </div>
+        <div class="spec-radius-row">
+          <code>--radius-lg 16</code>
+          <span class="spec-radius-box" style="border-radius: 16px"></span>
+          <span class="spec-note">Dialog, home card</span>
+        </div>
+        <p class="spec-note">
+          No pill buttons in this direction. The avatar is the only circle; the
+          flat item list is a white band with radius 0 and no side border. The
+          Google sign-in button keeps Google's 4px shape — the one control
+          outside this radius scale.
+        </p>
+      </section>
+
+      <section class="spec-section" id="components">
+        <div class="spec-kicker">04 · Components</div>
+        <h2>Components</h2>
+        <p>
+          These are live examples using the same classes as the page mocks.
+          Every button keeps its leading line icon; the Google-rendered sign-in
+          button is the sole exception.
+        </p>
+
+        <h3>Buttons</h3>
+        <div class="spec-row">
+          <button class="btn btn-primary" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            Primary
+          </button>
+          <button class="btn btn-outline" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+            Outline
+          </button>
+          <button class="btn btn-ghost" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+            Ghost
+          </button>
+          <button class="btn btn-danger" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
+            Danger
+          </button>
+          <button class="btn btn-danger-ghost" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
+            Danger ghost
+          </button>
+        </div>
+        <div class="spec-row" style="margin-top: 12px">
+          <button class="btn btn-primary btn-sm" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            Small
+          </button>
+          <button class="btn btn-primary btn-xs" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            Tiny
+          </button>
+          <button class="btn btn-primary" type="button" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            Disabled
+          </button>
+        </div>
+        <p class="spec-note">
+          44px default · 36px small (section heads, form-adjacent actions) · 30px
+          tiny (eyebrow actions). The blue primary button is the only filled
+          blue surface on a page. Use it once per screen. Every production
+          button keeps its leading line icon; the Google-rendered sign-in button
+          is the sole exception, and the dev-only Dev Login control is outside
+          the icon rule.
+        </p>
+
+        <h3>Form card</h3>
+        <div class="spec-mobile">
+          <div class="app-main">
+            <form class="form form-card" action="#" method="post">
+              <div class="field">
+                <label class="label" for="demo-name">Name</label>
+                <input class="input" id="demo-name" type="text" value="マンガ喫茶" />
+                <span class="hint">Up to 100 characters.</span>
+              </div>
+              <div class="field">
+                <label class="label" for="demo-focus">Focused</label>
+                <input class="input demo-focus" id="demo-focus" type="text" value="入力中" />
+              </div>
+              <div class="field">
+                <label class="label" for="demo-error">Error</label>
+                <input class="input" id="demo-error" type="text" value="" aria-invalid="true" />
+                <span class="error-text">Couldn't save. Please try again.</span>
+              </div>
+              <button class="btn btn-primary btn-block" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>
+                Save
+              </button>
+            </form>
+          </div>
+        </div>
+        <p class="spec-note">
+          The form is a white card on the grey ground. Inputs are 44px with a
+          1px <code class="spec-code">--line-strong</code> border; focus adds the
+          blue border and the 3px ring. Submit is full-width.
+        </p>
+
+        <h3>Group cards</h3>
+        <div class="spec-mobile">
+          <div class="app-main">
+            <ul class="list">
+              <li>
+                <a class="group-card" href="#">
+                  <span class="title">マンガ喫茶</span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+              </li>
+              <li>
+                <a class="group-card" href="#">
+                  <span class="title">購入済み</span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <p class="spec-note">
+          One card per group, 12px gap, 12px radius. Hover turns the border blue
+          and adds the 7% blue tint. The whole card is the link.
+        </p>
+
+        <h3>Group detail: 3-tier head + flat item list</h3>
+        <div class="spec-mobile">
+          <div class="app-main">
+            <div class="page-head">
+              <div class="eyebrow-row">
+                <span class="eyebrow">Group</span>
+                <a class="btn btn-ghost btn-xs" href="#">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+                  Edit
+                </a>
+              </div>
+              <h1 class="group-title">マンガ喫茶</h1>
+            </div>
+            <div class="sectionhead">
+              <h2>Items</h2>
+              <a class="btn btn-primary btn-sm" href="#">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                Add item
+              </a>
+            </div>
+            <ul class="item-list">
+              <li>
+                <a class="item-row" href="#">
+                  <span class="title">ONE PIECE</span>
+                  <span class="vol"><span class="unit">vol.</span>104</span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+              </li>
+              <li>
+                <a class="item-row" href="#">
+                  <span class="title">葬送のフリーレン 公式コミックガイド</span>
+                  <span class="vol"><span class="unit">vol.</span>12</span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+              </li>
+              <li>
+                <a class="item-row" href="#">
+                  <span class="title">ヴィンランド・サガ</span>
+                  <span class="vol"><span class="unit">vol.</span>5</span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <p class="spec-note">
+          The item list is deliberately not a card: one white band with no
+          radius or side border, a 1px
+          <code class="spec-code">--line-strong</code> top/bottom rule and
+          <code class="spec-code">--line</code> between rows. The white fill
+          keeps the rows legible; the flatness comes from the missing card
+          outline and radius. Each title is fixed to one line and truncates with
+          an ellipsis before the fixed <code class="spec-code">vol.</code>
+          column, so it never wraps or overlaps the figure. Hover is the same 7%
+          blue tint. The whole row is the link.
+        </p>
+
+        <h3>Empty and error states</h3>
+        <div class="spec-grid cols-2">
+          <div class="spec-frame">
+            <div class="card state" style="max-width: 430px; margin-inline: auto">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12" /><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" /></svg>
+              <p>No groups yet.</p>
+            </div>
+          </div>
+          <div class="spec-frame">
+            <div class="card state" style="max-width: 430px; margin-inline: auto">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>
+              <p>Couldn't load. Please try again.</p>
+              <button class="btn btn-outline btn-sm" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+        <p class="spec-note">
+          Empty and error keep the white card fill because they are not list
+          rows. The create action stays in the section head; the empty state
+          does not duplicate it.
+        </p>
+
+        <h3>Item detail: volume panel</h3>
+        <div class="spec-mobile">
+          <div class="app-main">
+            <div class="page-head">
+              <div class="eyebrow-row">
+                <span class="eyebrow">Item</span>
+                <a class="btn btn-ghost btn-xs" href="#">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+                  Edit
+                </a>
+              </div>
+              <h1 class="item-title">葬送のフリーレン 公式コミックガイド</h1>
+            </div>
+            <section class="volume card">
+              <div class="volume-label">Completed volume</div>
+              <span class="volume-num">12</span>
+            </section>
+            <div class="item-actions">
+              <button class="btn btn-primary" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                Add a volume
+              </button>
+            </div>
+          </div>
+        </div>
+        <p class="spec-note">
+          The item detail mirrors the group detail: <code class="spec-code">Item</code>
+          + Edit, then a title that wraps onto as many lines as it needs. The
+          completed-volume figure is centered in its panel and stays the hero of
+          the leaf page. The +1 action stays here, not on the item list rows.
+        </p>
+
+        <h3 id="overlays">Overlays</h3>
+        <div class="spec-grid cols-2">
+          <div>
+            <div class="spec-note" style="margin-bottom: 8px"><strong>Nav sheet</strong></div>
+            <div class="spec-overlay-frame">
+              <div class="overlay-scrim"></div>
+              <aside class="nav-sheet">
+                <div class="nav-sheet-head">
+                  <h2>Menu</h2>
+                  <button class="nav-sheet-close" type="button" aria-label="Close menu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                  </button>
+                </div>
+                <p class="nav-sheet-name">Mitsuhito Fujita</p>
+                <nav>
+                  <a href="#">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" /><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65" /><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65" /></svg>
+                    Groups
+                  </a>
+                  <button type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+                    Log out
+                  </button>
+                </nav>
+              </aside>
+            </div>
+          </div>
+          <div>
+            <div class="spec-note" style="margin-bottom: 8px"><strong>Confirm dialog</strong></div>
+            <div class="spec-overlay-frame">
+              <div class="overlay-scrim"></div>
+              <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="demo-dialog-title">
+                <h2 id="demo-dialog-title">Delete this group?</h2>
+                <p>Its items will be deleted too. This can't be undone.</p>
+                <div class="actions">
+                  <button class="btn btn-outline btn-sm" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                    Cancel
+                  </button>
+                  <button class="btn btn-danger btn-sm" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="spec-note">
+          Overlays are the only place a shadow appears. The scrim is charcoal at
+          46%; the sheet slides from the right; the dialog is a 16px-radius card.
+        </p>
+      </section>
+
+      <section class="spec-section" id="pages">
+        <div class="spec-kicker">05 · Pages</div>
+        <h2>Page index</h2>
+        <p>
+          Open any page to review it at the 430px app width. These are static
+          mocks: form submits, the avatar, and the delete buttons do not call the
+          API.
+        </p>
+        <div class="spec-grid cols-3">
+          <a class="spec-page-link" href="./login.html" target="_blank" rel="noreferrer">
+            <strong>Login</strong>
+            <span>/login · Google sign-in placeholder + dev-only entry</span>
+          </a>
+          <a class="spec-page-link" href="./groups.html" target="_blank" rel="noreferrer">
+            <strong>Groups</strong>
+            <span>/groups · independent group cards</span>
+          </a>
+          <a class="spec-page-link" href="./group-new.html" target="_blank" rel="noreferrer">
+            <strong>New group</strong>
+            <span>/groups/new · name + create</span>
+          </a>
+          <a class="spec-page-link" href="./group-detail.html" target="_blank" rel="noreferrer">
+            <strong>Group detail</strong>
+            <span>/groups/:id · 3-tier head + flat item list</span>
+          </a>
+          <a class="spec-page-link" href="./group-edit.html" target="_blank" rel="noreferrer">
+            <strong>Edit group</strong>
+            <span>/groups/:id/edit · save + delete</span>
+          </a>
+          <a class="spec-page-link" href="./item-new.html" target="_blank" rel="noreferrer">
+            <strong>New item</strong>
+            <span>/groups/:id/items/new · title + volume</span>
+          </a>
+          <a class="spec-page-link" href="./item-detail.html" target="_blank" rel="noreferrer">
+            <strong>Item detail</strong>
+            <span>/groups/:id/items/:itemId · Item + Edit, wrapping title, centered volume</span>
+          </a>
+          <a class="spec-page-link" href="./item-edit.html" target="_blank" rel="noreferrer">
+            <strong>Edit item</strong>
+            <span>/groups/:id/items/:itemId/edit · save + delete</span>
+          </a>
+        </div>
+      </section>
+
+      <section class="spec-section" id="rules">
+        <div class="spec-kicker">06 · Rules</div>
+        <h2>Rules for the implementation</h2>
+        <p>
+          The visual source of truth is this folder. If the HTML and a later
+          prompt disagree, the HTML wins for spacing, colour, and hierarchy; the
+          routes, API contract, and copy stay as they are.
+        </p>
+        <div class="spec-grid cols-2">
+          <div class="spec-frame">
+            <strong>Use</strong>
+            <ul style="margin: 8px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.7; color: var(--text-muted)">
+              <li>One blue primary action per screen; #3148F6.</li>
+              <li>#1C4B8F for hover, pressed, eyebrows, and secondary emphasis.</li>
+              <li>White cards on #E9E9E9, always with a 1px outline.</li>
+              <li>The flat item list: one white band, no radius or side border, top/bottom + row rules.</li>
+              <li>Item titles are one line; truncate with an ellipsis before the fixed <code class="spec-code">vol.</code> column.</li>
+              <li>24px page padding, 20px card padding, 12px group-card gap.</li>
+              <li>English UI copy; Japanese is user content only.</li>
+              <li>Keep the Google-rendered sign-in button as Google draws it.</li>
+            </ul>
+          </div>
+          <div class="spec-frame">
+            <strong>Avoid</strong>
+            <ul style="margin: 8px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.7; color: var(--text-muted)">
+              <li>Gradients, glassmorphism, or decorative background shapes.</li>
+              <li>Card shadows; shadows are for overlays only.</li>
+              <li>Pill buttons or a second accent hue.</li>
+              <li>An enclosing rounded box around the item list.</li>
+              <li>Wrapping item titles, or letting them collide with <code class="spec-code">vol.</code>.</li>
+              <li>A desktop multi-column layout; the app stays 430px.</li>
+              <li>Inline +1 on item rows; the +1 stays on item detail.</li>
+              <li>A web font or a dark mode.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

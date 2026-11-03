@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>siorie — new group</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <a class="wordmark" href="./groups.html">siorie</a>
+        <button class="avatar-btn" type="button" aria-label="Open menu">
+          <span class="avatar-fallback">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </span>
+        </button>
+      </header>
+
+      <main class="app-main">
+        <h1 class="pagetitle">New group</h1>
+
+        <form class="form form-card" action="#" method="post">
+          <div class="field">
+            <label class="label" for="group-name">Name</label>
+            <input
+              class="input"
+              id="group-name"
+              name="name"
+              type="text"
+              maxlength="100"
+              placeholder="e.g. マンガ喫茶"
+              required
+            />
+            <span class="hint">Up to 100 characters.</span>
+          </div>
+
+          <button class="btn btn-primary btn-block" type="submit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Create
+          </button>
+        </form>
+      </main>
+
+      <footer class="app-footer">siorie</footer>
+    </div>
+  </body>
+</html>
