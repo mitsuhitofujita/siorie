@@ -28,7 +28,7 @@ production (co-served by the Go binary).
 
 | Path | Element |
 | --- | --- |
-| `/` | `RootRoute` — no UI; a skeleton while auth is `loading`, else `<Navigate>` to `/groups` or `/login`. The one place `loading` is handled. |
+| `/` | `RootRoute` — no UI; renders nothing while auth is `loading`, else `<Navigate>` to `/groups` or `/login`. |
 | `/login` | `LoginPage`, wrapped in `<RequireGuest>`. |
 | `/groups` | `GroupsListPage` |
 | `/groups/new` | `GroupNewPage` |
@@ -45,9 +45,9 @@ and edit are always separate pages.
 ### Route guards (`components/route-guards.tsx`)
 
 - `RequireAuth` — a settled `unauthenticated` state redirects to `/login`;
-  `loading` and `authenticated` fall through so each page shows its own loading
-  UI. (Trade-off: an unauthenticated deep link briefly shows the target
-  skeleton and fires one 401 before the redirect.)
+  `loading` and `authenticated` fall through so each page handles its own
+  loading. (Trade-off: an unauthenticated deep link fires one 401 before the
+  redirect.)
 - `RequireGuest` — a settled `authenticated` state redirects to `/groups`. This
   is what makes the post-sign-in transition declarative: sign-in flips the auth
   state and the redirect follows.
@@ -84,17 +84,15 @@ component-only-export rule holds) throws if used outside `AuthProvider`.
   `listGroups`, `getGroup`, `createGroup`, `updateGroup`, `deleteGroup`,
   `listItems`, `getItem`, `createItem`, `updateItem`, `deleteItem`.
 - `lib/use-fetch.ts` — `useFetch(fetcher)` returns
-  `{ status: 'loading' | 'success' | 'error', data?, refetch, showSkeleton }`. A
-  `requestId` ref discards a stale in-flight response and suppresses updates
-  after unmount. `showSkeleton` is a delayed, debounced loading flag that keeps
-  the skeleton from flashing on a page transition: it stays `false` for the
-  first 150 ms of a load (a response that beats that swaps straight from blank
-  to content, no skeleton), then turns `true` and holds for at least 300 ms so
-  the skeleton can't itself flicker out; a load slower than the sum keeps it
-  `true` until the load resolves. Every list/detail page branches on it —
-  skeleton while `showSkeleton`, nothing while `status` is still `loading` but
-  `showSkeleton` is `false` (the pre-delay window), otherwise the result. Pages
-  use `useFetch` instead of ad-hoc `useState`/`useEffect`.
+  `{ status: 'loading' | 'success' | 'error', data?, refetch }`. A `requestId`
+  ref discards a stale in-flight response and suppresses updates after unmount.
+  Pages use `useFetch` instead of ad-hoc `useState`/`useEffect`.
+
+  There is no loading UI anywhere in the app: a page renders `null` while its
+  fetch is in flight, then the result. Nothing is drawn until the data is
+  there, so no placeholder can flash on a page transition. The same holds for
+  auth: `RootRoute` and `LoginPage` render nothing while `AuthState` is
+  `loading`.
 - `lib/use-submit.ts` — `useSubmit(action, errorMessage)` returns
   `{ isSubmitting, error, submit }`. `submit(...)` resolves to a discriminated
   `{ ok: true; value } | { ok: false }` (so a void-returning delete can't be
@@ -103,16 +101,17 @@ component-only-export rule holds) throws if used outside `AuthProvider`.
 
 ## Pages
 
-- **`GroupsListPage`** — `useFetch(api.listGroups)`. Loading → a delayed skeleton
-  (see `use-fetch.ts`); error → `ErrorState`. A section head with "Groups" and a
-  small "New group" button
+- **`GroupsListPage`** — `useFetch(api.listGroups)`. Loading → nothing; error →
+  `ErrorState`. A section head with "Groups" and a small "New group" button
   (always shown once settled). Empty → `EmptyState` "No groups yet."; otherwise a
-  card list of rows linking to `/groups/:groupId`.
+  stack of separate cards, one per group, each card itself the link to
+  `/groups/:groupId`.
 - **`GroupDetailPage`** — two independent `useFetch` calls (the group, its item
   list). A failed group fetch replaces the whole page; a failed item-list fetch
   replaces only the item section. Heads for the group name + "Edit" and for
-  "Items" + "Add item". Item rows show the title, a `vol. N` figure, and link to
-  the item detail page. Empty items → `EmptyState`.
+  "Items" + "Add item". Items are separate cards in the same style as the groups
+  list, each showing the title and a `vol. N` figure and linking to the item
+  detail page. Empty items → `EmptyState`.
 - **`GroupNewPage`** / **`GroupEditPage`** — a `Name` `TextField` (`maxLength`
   100). New: `useSubmit(api.createGroup)`, navigates to `/groups` on success.
   Edit: `useFetch(api.getGroup)` seeds the field during render (guarded by an
@@ -149,7 +148,7 @@ fallback). shadcn/ui is not used.
   list pages omit it, since the create action lives in the section head).
 - `ErrorState` — card with a warning icon, a fixed message, and a "Retry"
   button.
-- `Avatar`, `Skeleton` — as named.
+- `Avatar` — as named.
 - `layout/AppLayout` — the `.app-shell`: header (wordmark linking to `/` +
   `NavMenu`), `<Outlet/>`, footer (plain wordmark text).
 - `layout/NavMenu` — the header avatar button opens a right-side `Sheet` with the
@@ -163,7 +162,9 @@ palette (functional pairs clear WCAG AA), a φ-based type scale, Fibonacci-px
 spacing, `8·φⁿ` radius, pill buttons. `@theme inline` exposes the semantic
 colours to Tailwind utilities. Component styles live in an `@layer components`
 block and are used as semantic classes (`className="btn btn-primary"`), not
-utility strings.
+utility strings. A list is a `.list` `<ul>` (a vertical stack with an 8 px
+`--space-2` gap) whose `<li>`s each hold one `<Link className="row card">`, so
+every entry is its own bordered card and the whole card is the tap target.
 
 The design is mobile-only and light-only: one centred column ≤ 430 px with a
 hairline side border on wider viewports; `/` and `/login` render outside the

@@ -287,3 +287,29 @@ and `docs/archive/decisions/`. One section per unit of work.
   sections, `GroupEditPage`, `ItemDetailPage`, `ItemEditPage`) branches on
   `showSkeleton` first, then renders `null` while `status` is still `loading`
   in the pre-delay window.
+
+## Remove all loading UI (2026-09-10)
+
+- The white rounded blocks seen mid-load on the group- and item-detail pages
+  were the skeletons themselves: the 150 ms delay added on 2026-09-07 only ever
+  suppressed them for sub-150 ms responses, and the real API is slower than
+  that, so the skeleton showed on nearly every navigation and then had to be
+  held for its 300 ms minimum.
+- Stripped the whole mechanism instead of retuning the timers: `useDelayedSkeleton`
+  and `showSkeleton` are gone from `useFetch` (it now returns just
+  `status`/`data`/`refetch`), the `Skeleton` component, its `.skeleton` CSS and
+  the `skeleton-pulse` keyframes are deleted, and every page renders `null`
+  while loading. `RootRoute` and `LoginPage` do the same while auth is loading.
+- Chose "nothing until the data lands" as the simplest possible base to build
+  on; the trade-off (a blank content area with no feedback on a slow or
+  cold-start load) is accepted for now.
+
+## One card per entry in the Groups and Items lists (2026-09-10)
+
+- The groups list and a group's item list were a single `.card` box holding
+  every row. Each row is now its own `.card` link, and `.list` stacks them with
+  an 8 px (`--space-2`) gap.
+- Dropped the `.row + .row` divider rule. It never matched, because every
+  `.row` sits alone in its own `<li>`, and separate cards don't need it.
+- Put `.card` on the `<Link>` itself rather than on the `<li>`, so the whole
+  card is the tap target and the hover fill stays inside the rounded corners.
