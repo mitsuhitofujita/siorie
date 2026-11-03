@@ -153,14 +153,15 @@ push-triggered deploy and no push / PR CI.
   Environment `production` (deployment-branch policy: `main` only; secrets
   `GOOGLE_CLIENT_ID` and `APP_ORIGIN` — secrets, not variables, because the repo
   is public and run logs are world-readable).
-- Steps: `actions/checkout` → `jdx/mise-action` (installs every `mise.toml` tool
-  and puts each bin dir on PATH, which is what makes `docker-credential-gcloud`
-  resolvable) → `just setup` → `just check` (the gate, before any credential is
-  minted) → `google-github-actions/auth` (GitHub OIDC → the WIF provider →
-  impersonate `deployer`; writes a credential file honoured by gcloud, the
-  Docker credential helper, and Terraform) → `just infra/docker-auth` →
-  `just infra/publish-image "$GOOGLE_CLIENT_ID"` → `just infra/init app` →
-  `just infra/apply app -input=false -auto-approve -var …`.
+- Steps: `actions/checkout` → `jdx/mise-action` (installs every `mise.toml`
+  tool plus `just@latest`, and puts each bin dir on PATH, which is what makes
+  `docker-credential-gcloud` resolvable) → `just setup` → `just check` (the
+  gate, before any credential is minted) → `google-github-actions/auth`
+  (GitHub OIDC → the WIF provider → impersonate `deployer`; writes a
+  credential file honoured by gcloud, the Docker credential helper, and
+  Terraform) → `just infra/docker-auth` → `just infra/publish-image
+  "$GOOGLE_CLIENT_ID"` → `just infra/init app` → `just infra/apply app
+  -input=false -auto-approve -var …`.
 - `image_tag` is `git rev-parse --short=12 HEAD` of the checked-out commit — the
   same expression `publish-image` tags with, so the pushed and applied tags
   cannot diverge, and the one `GOOGLE_CLIENT_ID` secret feeds both the build arg

@@ -346,3 +346,11 @@ and `docs/archive/decisions/`. One section per unit of work.
 - Updated the overview spec to replace the exact-Terraform-version claim and
   refreshed the root justfile recipe list with `dev`, `dev-static`, and
   `build-web`.
+
+## Just from the global install (2026-11-03)
+
+- Removed `just = "latest"` from the repository's `mise.toml`; it is a global
+  mise tool like `gh`, with no per-repository entry.
+- The deploy workflow passes `install_args: "just@latest"` to mise-action, so
+  the runner still has just without a repository pin. The README now says just
+  and gh are expected from the global mise config.
