@@ -25,9 +25,21 @@ dev:
 firestore-emulator:
     #!/usr/bin/env bash
     set -uo pipefail
-    gcloud emulators firestore start --host-port=localhost:{{dev_firestore_emulator_port}} &
+    port={{dev_firestore_emulator_port}}
+    emulator_pid=""
+    cleanup() {
+        trap - INT TERM EXIT
+        if [ -n "$emulator_pid" ]; then
+            kill "$emulator_pid" 2>/dev/null || true
+        fi
+        # `gcloud` runs the emulator (a Java process) in its own process group,
+        # so killing the wrapper alone leaves it running; reap whatever is
+        # actually listening on the port as well.
+        kill $(lsof -ti:"$port" 2>/dev/null) 2>/dev/null || true
+    }
+    trap cleanup INT TERM EXIT
+    gcloud emulators firestore start --host-port=localhost:"$port" &
     emulator_pid=$!
-    trap 'kill "$emulator_pid" 2>/dev/null || true; kill $(lsof -ti:{{dev_firestore_emulator_port}} 2>/dev/null) 2>/dev/null || true' EXIT
     wait "$emulator_pid"
 
 # Build the API binary.

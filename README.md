@@ -21,12 +21,25 @@ just setup
 
 ### Development servers
 
-Run the API and Web dev servers in separate terminals:
+Run the Firestore emulator, API, and Web dev server together in one terminal:
 
 ```sh
-just dev-api
-just dev-web
+just dev
 ```
+
+Logs are prefixed with `[firestore]`, `[api]`, and `[web]`. The API starts after
+the emulator answers, and Vite starts after the API answers, so the first
+browser load does not race the stack. Ctrl+C stops all three.
+
+To build the SPA and serve it from the API instead (production-like, no HMR):
+
+```sh
+just dev-static
+```
+
+Open http://localhost:8080; rerun `just dev-static` after Web changes. The
+individual `dev-firestore`, `dev-api`, and `dev-web` recipes remain for
+debugging one process at a time.
 
 ### Checks
 
