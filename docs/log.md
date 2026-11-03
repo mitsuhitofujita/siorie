@@ -337,3 +337,12 @@ and `docs/archive/decisions/`. One section per unit of work.
   different repository and would have been false as tracked documentation.
 - Kept the authoring rules (template, scope, acceptance criteria, doc-update
   mapping) unchanged in substance.
+
+## Latest tool versions (2026-11-03)
+
+- `gh`, `gcloud`, and Terraform track the latest releases. `mise.toml` sets
+  `gcloud` and `terraform` to `latest`, and `gh` comes from the global mise
+  config at `latest`.
+- Updated the overview spec to replace the exact-Terraform-version claim and
+  refreshed the root justfile recipe list with `dev`, `dev-static`, and
+  `build-web`.

@@ -16,7 +16,7 @@ infra/
   justfile                      terraform + image recipes
 .github/workflows/deploy.yml    manual production deploy
 justfile      repository entry point
-mise.toml     pinned tool versions
+mise.toml     tool versions
 ```
 
 The repo is a monorepo with no pnpm workspace and no shared package directory:
@@ -55,13 +55,15 @@ A **group** has a name. An **item** has a title and a completed-volume count
 
 ## Tooling
 
-- The root `justfile` is the single entry point: `setup`, `dev-api`, `dev-web`,
-  `dev-firestore`, `preview-web`, `build`, `test`, `lint`, `format`, `check`.
+- The root `justfile` is the single entry point: `setup`, `dev`, `dev-static`,
+  `build-web`, `dev-api`, `dev-web`, `dev-firestore`, `preview-web`, `build`,
+  `test`, `lint`, `format`, `check`.
   Go recipes are delegated to `apps/api/justfile`; web recipes call the
   `package.json` scripts via `pnpm --dir apps/web`; `format` and `check` also run
   `terraform fmt` over `infra/`.
 - `just check` runs format-check, lint, test, and build for both apps plus
   `terraform fmt -check`, and rewrites nothing. `just format` is the separate
   file-rewriting task.
-- `mise.toml` pins Go, Node (LTS), pnpm, just, gcloud, Java (for the Firestore
-  emulator), and Terraform (an exact version, for apply reproducibility).
+- `mise.toml` pins Go, Node (LTS), pnpm, just, and Java (for the Firestore
+  emulator); `gcloud` and Terraform are set to `latest`. `gh` is installed
+  through mise's global config and also tracks `latest`.
