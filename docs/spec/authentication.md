@@ -69,7 +69,11 @@ header must be present and exactly equal to the server's `APP_ORIGIN`, else
 - the `SameSite=Lax` session cookie.
 
 For this to work locally, `APP_ORIGIN` must be set to the Vite dev origin
-(`http://localhost:5173`), not the Go server's own port.
+(`http://localhost:5173`), not the Go server's own port. In production it is
+the deterministic Cloud Run URL. The service's other default URL (the legacy
+`*.a.run.app` hash form) only redirects SPA GET/HEAD requests to the canonical
+origin; a state-changing API request arriving there still fails `validateOrigin`
+with `403`.
 
 ## Client-side route protection
 

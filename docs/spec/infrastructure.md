@@ -100,12 +100,23 @@ rollbacks.
   `allUsers`. The service is internet-reachable and the Go API is the
   authorization boundary. The project has no organization or domain-restriction
   org policy, so `allUsers` is accepted.
-- Output: `cloud_run_url` (the assigned URL, a legacy-hash `*.a.run.app` form).
+- Cloud Run assigns the service two default URLs: the deterministic
+  `https://<service>-<project-number>.<region>.run.app` and a legacy hash
+  `https://<service-identifier>.run.app` (`*.a.run.app`). The deterministic URL
+  is canonical, and `APP_ORIGIN` carries it. A GET/HEAD for an SPA path
+  arriving on any other host is answered with `302 Found` to `APP_ORIGIN` plus
+  the same path and query; `/api/*` paths, non-GET/HEAD requests, and an
+  unparseable `APP_ORIGIN` are never redirected. The redirect is 302 rather
+  than 301/308 so a later change of the canonical URL is not pinned by browser
+  caches.
+- Output: `cloud_run_url` (the deterministic default URL, canonical). It is
+  selected from the service's `urls` by excluding the `*.a.run.app` form;
+  `.uri` still reports the legacy form, so it is not used.
 - Variables: `project_id`, `region`, and three **default-less** `-var`s that
   must be passed on every plan/apply — `image_tag`, `google_client_id`,
-  `app_origin` (the last is the service's real URL, since a resource cannot
-  reference its own `.uri`; the operator passes `terraform output
-  cloud_run_url`).
+  `app_origin` (the canonical origin, i.e. the deterministic default URL; a
+  resource cannot reference its own `urls`, so the operator passes `terraform
+  output cloud_run_url`).
 
 All layers pin `terraform ~> 1.15` and `hashicorp/google ~> 6.50` with committed
 lock files; `terraform.tfvars` is committed for each layer.
@@ -174,4 +185,7 @@ push-triggered deploy and no push / PR CI.
 - The one-time setup outside Terraform: create the `production` GitHub
   Environment with the `main`-only branch policy and the two Environment
   secrets, and register the production origin as an Authorized JavaScript origin
-  on the OAuth Web client in the Google Cloud Console.
+  on the OAuth Web client in the Google Cloud Console. The origin for both the
+  `APP_ORIGIN` secret and the OAuth client is the deterministic default URL
+  (`cloud_run_url`), never the legacy hash form. Update both if the canonical
+  URL ever changes.

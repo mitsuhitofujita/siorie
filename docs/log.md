@@ -381,3 +381,21 @@ and `docs/archive/decisions/`. One section per unit of work.
   "just@latest"` from the workflow; mise-action now installs just from the
   repository pin like every other tool. Updated the README, the overview and
   infrastructure specs, and the workflow comment to match.
+
+## Canonical Cloud Run URL (2026-11-04)
+
+- Cloud Run assigns the service both a deterministic default URL
+  (`<service>-<project-number>.<region>.run.app`) and a legacy hash URL
+  (`*.a.run.app`). Made the deterministic one canonical: `APP_ORIGIN` carries
+  it and the SPA redirects a GET/HEAD arriving on any other host to it with a
+  `302`.
+- `cloud_run_url` now returns the deterministic URL, filtered from the
+  service's `urls` by excluding `.a.run.app`; `.uri` still reports the legacy
+  form. Chose `302` over `301`/`308` so a later change of the canonical URL is
+  not pinned by browser caches.
+- Updated the README, the `infra/justfile` comments, and the infrastructure and
+  authentication specs to say the `APP_ORIGIN` secret and the OAuth Authorized
+  JavaScript origin must use the deterministic URL. The deploy workflow is
+  unchanged.
+- `docs/spec/api.md` still describes `spaHandler(webRoot)` without the host
+  redirect; left untouched per this task's doc scope.

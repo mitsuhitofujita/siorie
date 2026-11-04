@@ -66,7 +66,7 @@ gh run watch
 
 or from the Actions tab: **deploy** → **Run workflow** → branch `main`. The run executes `just check` as a gate, then builds and pushes the image, then applies `infra/app`. It authenticates as the `deployer` service account through Workload Identity Federation (GitHub OIDC); no service-account keys exist.
 
-One-time setup, already done for this repository and recorded here for a rebuild: apply `infra/bootstrap` (the Workload Identity pool and the deployer bindings) and `infra/platform` (the deployer's roles); create the GitHub Environment `production` with a deployment-branch policy allowing only `main`; add the Environment secrets `GOOGLE_CLIENT_ID` (the OAuth Web client ID) and `APP_ORIGIN` (the service URL, `just infra/output app` → `cloud_run_url`). If the Cloud Run URL ever changes, update `APP_ORIGIN`.
+One-time setup, already done for this repository and recorded here for a rebuild: apply `infra/bootstrap` (the Workload Identity pool and the deployer bindings) and `infra/platform` (the deployer's roles); create the GitHub Environment `production` with a deployment-branch policy allowing only `main`; add the Environment secrets `GOOGLE_CLIENT_ID` (the OAuth Web client ID) and `APP_ORIGIN` (the canonical service URL: the deterministic default URL, `just infra/output app` → `cloud_run_url`). Cloud Run also assigns a legacy hash URL (`*.a.run.app`) to the same service, but SPA requests on that host are redirected to the canonical one; use the deterministic URL for `APP_ORIGIN` and in the OAuth client's Authorized JavaScript origins. If the canonical URL ever changes, update both.
 
 ### From a workstation (rollback and fallback)
 
@@ -76,7 +76,7 @@ just infra/publish-image <client-id>   # builds and pushes app:<short SHA of HEA
 just infra/apply app \
   -var image_tag=<sha> \
   -var google_client_id=<client-id> \
-  -var app_origin=<cloud-run-url>
+  -var app_origin=<deterministic-cloud-run-url>
 ```
 
 To roll back, apply with an older `image_tag` that still exists in Artifact Registry. `infra/bootstrap` and `infra/platform` are always applied from a workstation.
