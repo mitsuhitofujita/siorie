@@ -64,7 +64,8 @@ A **group** has a name. An **item** has a title and a completed-volume count
 - `just check` runs format-check, lint, test, and build for both apps plus
   `terraform fmt -check`, and rewrites nothing. `just format` is the separate
   file-rewriting task.
-- `mise.toml` pins Go, Node (LTS), pnpm, and Java (for the Firestore
-  emulator); `gcloud` and Terraform are set to `latest`. `gh` and `just` are
-  global mise tools that track `latest` and have no repository entry; the
-  deploy workflow installs `just@latest` explicitly.
+- `mise.toml` pins Go, Node (LTS), pnpm, Java (for the Firestore emulator),
+  and just; `gcloud` and Terraform are set to `latest`. `gh` is a global mise
+  tool that tracks `latest` and has no repository entry. just must stay a
+  repository pin: installing it only as an explicit mise-action argument leaves
+  its shim without a configured version, which fails the deploy workflow.

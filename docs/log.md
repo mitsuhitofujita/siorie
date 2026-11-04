@@ -347,7 +347,7 @@ and `docs/archive/decisions/`. One section per unit of work.
   refreshed the root justfile recipe list with `dev`, `dev-static`, and
   `build-web`.
 
-## Just from the global install (2026-11-03)
+## Just from the global install (2026-11-03, reverted)
 
 - Removed `just = "latest"` from the repository's `mise.toml`; it is a global
   mise tool like `gh`, with no per-repository entry.
@@ -370,3 +370,14 @@ and `docs/archive/decisions/`. One section per unit of work.
   cards.
 - Kept the OS font stack and Google's own rendered sign-in button unchanged;
   routes, API calls, and persistence behaviour are untouched.
+
+## Just back to a repository pin (2026-11-03)
+
+- The deploy workflow failed with `mise ERROR No version is set for shim: just`.
+  Installing just only through mise-action's `install_args` gave the runner a
+  binary but no configured version in `mise.toml`, so its shim could not
+  resolve.
+- Restored `just = "latest"` in `mise.toml` and dropped `install_args:
+  "just@latest"` from the workflow; mise-action now installs just from the
+  repository pin like every other tool. Updated the README, the overview and
+  infrastructure specs, and the workflow comment to match.

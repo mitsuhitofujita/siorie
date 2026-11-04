@@ -154,7 +154,7 @@ push-triggered deploy and no push / PR CI.
   `GOOGLE_CLIENT_ID` and `APP_ORIGIN` — secrets, not variables, because the repo
   is public and run logs are world-readable).
 - Steps: `actions/checkout` → `jdx/mise-action` (installs every `mise.toml`
-  tool plus `just@latest`, and puts each bin dir on PATH, which is what makes
+  tool, just included, and puts each bin dir on PATH, which is what makes
   `docker-credential-gcloud` resolvable) → `just setup` → `just check` (the
   gate, before any credential is minted) → `google-github-actions/auth`
   (GitHub OIDC → the WIF provider → impersonate `deployer`; writes a

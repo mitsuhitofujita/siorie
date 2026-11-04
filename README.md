@@ -7,13 +7,13 @@ This repository is a monorepo containing a Go API (`apps/api`) and a React SPA (
 
 ### Requirements
 
-Tool versions are managed with [mise](https://mise.jdx.dev/). Install the repository's tool versions (Go, Node.js, pnpm, and Java) with:
+Tool versions are managed with [mise](https://mise.jdx.dev/). Install the repository's tool versions (Go, Node.js, pnpm, Java, and just) with:
 
 ```sh
 mise install
 ```
 
-`just` and `gh` are expected to be installed globally through mise.
+`gh` is expected to be installed globally through mise.
 
 ### Setup
 
