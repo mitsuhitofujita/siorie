@@ -98,10 +98,11 @@ publish-image google_client_id:
 #   just infra/apply app \
 #     -var image_tag=$(git rev-parse --short=12 HEAD) \
 #     -var google_client_id=<oauth-web-client-id> \
-#     -var app_origin=<cloud-run-url>
+#     -var app_origin=<deterministic-cloud-run-url>
 # image_tag, google_client_id, and app_origin have no defaults, so every app
 # plan/apply needs all three -var flags (or the matching TF_VAR_* set in the
 # environment). image_tag must be a tag that exists in Artifact Registry — run
 # publish-image first if you want the current HEAD. app_origin is the service's
-# real public URL (`just infra/output app` → cloud_run_url). The platform and
-# bootstrap layers take no -var flags.
+# canonical origin, the deterministic default URL
+# (`just infra/output app` → cloud_run_url). The platform and bootstrap layers
+# take no -var flags.

@@ -62,11 +62,12 @@ resource "google_cloud_run_v2_service" "app" {
         value = var.google_client_id
       }
 
-      # The service's own public URL, checked against the Origin header on
-      # state-changing /api/* requests. A resource cannot reference its own
-      # .uri, and building it from the project number produced the wrong value
-      # on this project (legacy hash form — discussion 0025), so the operator
-      # passes the real URL (`terraform output cloud_run_url`) as a -var.
+      # The canonical public origin, checked against the Origin header on
+      # state-changing /api/* requests. Cloud Run also assigns a legacy hash
+      # URL to the same service, but that host only redirects SPA GET/HEAD
+      # here, so APP_ORIGIN must be the deterministic URL. A resource cannot
+      # reference its own urls, so the operator passes it
+      # (`terraform output cloud_run_url`) as a -var.
       env {
         name  = "APP_ORIGIN"
         value = var.app_origin

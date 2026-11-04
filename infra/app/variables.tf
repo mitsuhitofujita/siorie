@@ -20,6 +20,6 @@ variable "google_client_id" {
 }
 
 variable "app_origin" {
-  description = "The Cloud Run service's real public origin (from `terraform output cloud_run_url`), used as the Go server's APP_ORIGIN. No default; pass -var app_origin=<url> (or TF_VAR_app_origin) at plan/apply time (discussions 0025, 0026)."
+  description = "The service's canonical public origin: the deterministic default URL (`terraform output cloud_run_url`, https://<service>-<project-number>.<region>.run.app), used as the Go server's APP_ORIGIN. No default; pass -var app_origin=<url> (or TF_VAR_app_origin) at plan/apply time."
   type        = string
 }
