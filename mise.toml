@@ -2,6 +2,7 @@
 gcloud = "latest"
 go = "latest"
 java = "temurin-25"
+just = "latest"
 node = "lts"
 pnpm = "latest"
 terraform = "latest"
