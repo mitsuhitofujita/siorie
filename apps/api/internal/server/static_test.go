@@ -31,6 +31,9 @@ func staticTestRouter(t *testing.T) http.Handler {
 
 	deps := testDeps()
 	deps.WebRoot = webRoot
+	// The canonical origin the SPA is served from; requests in the tests
+	// below carry this as their Host unless a case overrides it.
+	deps.AppOrigin = "https://app.example.com"
 	return NewRouter(deps)
 }
 
@@ -109,6 +112,7 @@ func TestSPAHandler(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			req := httptest.NewRequest(tt.method, tt.path, nil)
+			req.Host = "app.example.com"
 			rec := httptest.NewRecorder()
 			router.ServeHTTP(rec, req)
 
@@ -121,6 +125,67 @@ func TestSPAHandler(t *testing.T) {
 			if tt.wantCacheCtl != "" {
 				if got := rec.Header().Get("Cache-Control"); got != tt.wantCacheCtl {
 					t.Fatalf("Cache-Control = %q, want %q", got, tt.wantCacheCtl)
+				}
+			}
+		})
+	}
+}
+
+func TestSPAHandlerRedirectsNonCanonicalHost(t *testing.T) {
+	router := staticTestRouter(t)
+
+	tests := []struct {
+		name         string
+		method       string
+		path         string
+		host         string
+		wantStatus   int
+		wantLocation string // "" means don't check
+	}{
+		{
+			name:         "GET deep link redirects to canonical host with path and query",
+			method:       http.MethodGet,
+			path:         "/groups/abc123?x=1",
+			host:         "legacy.example.com",
+			wantStatus:   http.StatusFound,
+			wantLocation: "https://app.example.com/groups/abc123?x=1",
+		},
+		{
+			name:       "unregistered api path stays 404 on a non-canonical host",
+			method:     http.MethodGet,
+			path:       "/api/nonexistent",
+			host:       "legacy.example.com",
+			wantStatus: http.StatusNotFound,
+		},
+		{
+			name:       "non-GET path is not redirected on a non-canonical host",
+			method:     http.MethodPost,
+			path:       "/groups/abc123",
+			host:       "legacy.example.com",
+			wantStatus: http.StatusNotFound,
+		},
+		{
+			name:       "HEAD redirects like GET",
+			method:     http.MethodHead,
+			path:       "/",
+			host:       "legacy.example.com",
+			wantStatus: http.StatusFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(tt.method, tt.path, nil)
+			req.Host = tt.host
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+
+			if rec.Code != tt.wantStatus {
+				t.Fatalf("status = %d, want %d", rec.Code, tt.wantStatus)
+			}
+			if tt.wantLocation != "" {
+				if got := rec.Header().Get("Location"); got != tt.wantLocation {
+					t.Fatalf("Location = %q, want %q", got, tt.wantLocation)
 				}
 			}
 		})

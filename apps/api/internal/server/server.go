@@ -86,7 +86,7 @@ func NewRouter(deps Deps) http.Handler {
 	})
 
 	if deps.WebRoot != "" {
-		router.NotFound(spaHandler(deps.WebRoot))
+		router.NotFound(spaHandler(deps.WebRoot, deps.AppOrigin))
 	}
 
 	return router
